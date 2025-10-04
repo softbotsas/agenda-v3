@@ -1,0 +1,408 @@
+<!-- Dashboard Personalizado -->
+<div class="row">
+  <!-- Header del Dashboard -->
+  <div class="col-12">
+    <div class="card border-0 shadow-lg mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h2 class="mb-1 text-white">
+              <i class="fas fa-tachometer-alt me-2"></i>
+              Mi Agenda
+            </h2>
+            <p class="text-white-50 mb-0">Resumen de tu productividad y tareas</p>
+          </div>
+          <div class="col-md-4 text-end">
+            <div class="user-info d-flex align-items-center justify-content-end">
+              <div class="user-avatar me-3">
+                <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="25" cy="25" r="25" fill="rgba(255,255,255,0.2)"/>
+                  <circle cx="25" cy="20" r="8" fill="rgba(255,255,255,0.8)"/>
+                  <path d="M12 42c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="rgba(255,255,255,0.8)"/>
+                </svg>
+              </div>
+              <div class="text-end">
+                <div class="fw-bold text-white" id="user-name">Usuario</div>
+                <small class="text-white-50" id="user-role">Cargando...</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estadísticas Principales -->
+<div class="row mb-4">
+  <div class="col-xl-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-white bg-opacity-20 rounded-3 p-3">
+              <i class="fas fa-tasks text-white"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="mb-1 text-white-50">Tareas de Hoy</h6>
+            <h3 class="mb-0 text-white fw-bold" id="today-tasks-count">0</h3>
+            <small class="text-white-50">Por completar</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-white bg-opacity-20 rounded-3 p-3">
+              <i class="fas fa-check-circle text-white"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="mb-1 text-white-50">Completadas</h6>
+            <h3 class="mb-0 text-white fw-bold" id="completed-tasks-count">0</h3>
+            <small class="text-white-50">Hoy</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-white bg-opacity-20 rounded-3 p-3">
+              <i class="fas fa-clock text-white"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="mb-1 text-white-50">En Progreso</h6>
+            <h3 class="mb-0 text-white fw-bold" id="in-progress-count">0</h3>
+            <small class="text-white-50">Pendientes</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-3 col-md-6 mb-3">
+    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333;">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="flex-shrink-0">
+            <div class="bg-dark bg-opacity-20 rounded-3 p-3">
+              <i class="fas fa-exclamation-triangle text-dark"></i>
+            </div>
+          </div>
+          <div class="flex-grow-1 ms-3">
+            <h6 class="mb-1 text-dark">Atrasadas</h6>
+            <h3 class="mb-0 text-dark fw-bold" id="overdue-tasks-count">0</h3>
+            <small class="text-dark">SLA vencido</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gráfico de Progreso Semanal -->
+<div class="row mb-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+      <div class="card-header border-0" style="background: transparent;">
+        <h5 class="mb-0 text-dark">
+          <i class="fas fa-chart-pie text-dark me-2"></i>
+          Progreso Semanal
+        </h5>
+      </div>
+      <div class="card-body">
+        <div style="height: 350px;">
+          <canvas id="weeklyProgressChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0">
+        <h5 class="mb-0">
+          <i class="fas fa-exclamation-circle text-warning me-2"></i>
+          Tareas Prioritarias
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="priority-tasks-container">
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+            <p>Cargando tareas prioritarias...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Actividad Reciente -->
+<div class="row">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-0">
+        <h5 class="mb-0">
+          <i class="fas fa-clock text-info me-2"></i>
+          Actividad Reciente
+        </h5>
+      </div>
+      <div class="card-body">
+        <div id="recent-activity-container">
+          <div class="text-center text-muted py-3">
+            <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+            <p>Cargando actividad reciente...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Funciones específicas del dashboard
+function loadDashboardData() {
+  console.log('📊 Cargando datos del dashboard...');
+  console.log('🔍 Usuario actual:', window.currentUser);
+  
+  // Cargar estadísticas del usuario
+  loadUserStats();
+  
+  // Cargar tareas prioritarias
+  setTimeout(() => {
+    loadPriorityTasks();
+  }, 100);
+  
+  // Cargar actividad reciente
+  loadRecentActivity();
+  
+  // Cargar progreso semanal
+  setTimeout(() => {
+    loadWeeklyProgress();
+  }, 200);
+}
+
+function loadUserStats() {
+  console.log('📊 Cargando estadísticas del usuario...');
+  fetch('/agendatce/api/dashboard/stats', {
+    credentials: 'include'
+  })
+    .then(response => {
+      console.log('📡 Respuesta stats:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('📊 Datos stats:', data);
+      if (data.success) {
+        // Verificar que los elementos existan antes de asignar textContent
+        const todayTasksEl = document.getElementById('today-tasks-count');
+        const completedEl = document.getElementById('completed-tasks-count');
+        const inProgressEl = document.getElementById('in-progress-count');
+        const overdueEl = document.getElementById('overdue-tasks-count');
+        
+        if (todayTasksEl) todayTasksEl.textContent = data.data.today_tasks || 0;
+        if (completedEl) completedEl.textContent = data.data.completed_today || 0;
+        if (inProgressEl) inProgressEl.textContent = data.data.in_progress || 0;
+        if (overdueEl) overdueEl.textContent = data.data.overdue || 0;
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando estadísticas:', error);
+    });
+}
+
+function loadPriorityTasks() {
+  fetch('/agendatce/api/tasks/priority', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        displayPriorityTasks(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando tareas prioritarias:', error);
+    });
+}
+
+function displayPriorityTasks(tasks) {
+  const container = document.getElementById('priority-tasks-container');
+  
+  if (!container) {
+    console.warn('⚠️ Contenedor priority-tasks-container no encontrado');
+    return;
+  }
+  
+  if (tasks.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">No hay tareas prioritarias</p>';
+    return;
+  }
+  
+  container.innerHTML = tasks.map(task => `
+    <div class="d-flex align-items-center mb-3">
+      <div class="flex-shrink-0">
+        <div class="bg-warning bg-opacity-10 rounded-circle p-2">
+          <i class="fas fa-exclamation text-warning"></i>
+        </div>
+      </div>
+      <div class="flex-grow-1 ms-3">
+        <h6 class="mb-1">${task.title}</h6>
+        <small class="text-muted">SLA: ${task.sla_time}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadRecentActivity() {
+  fetch('/agendatce/api/activity/recent', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        displayRecentActivity(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando actividad reciente:', error);
+    });
+}
+
+function displayRecentActivity(activities) {
+  const container = document.getElementById('recent-activity-container');
+  
+  if (activities.length === 0) {
+    container.innerHTML = '<p class="text-muted text-center">No hay actividad reciente</p>';
+    return;
+  }
+  
+  container.innerHTML = activities.map(activity => `
+    <div class="d-flex align-items-center mb-3">
+      <div class="flex-shrink-0">
+        <div class="bg-success bg-opacity-10 rounded-circle p-2">
+          <i class="fas fa-check text-success"></i>
+        </div>
+      </div>
+      <div class="flex-grow-1 ms-3">
+        <h6 class="mb-1">${activity.task_title}</h6>
+        <small class="text-muted">${activity.user_name} - ${formatDateTime(activity.created_at)}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatDateTime(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function loadWeeklyProgress() {
+  fetch('/agendatce/api/dashboard/weekly', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        createWeeklyChart(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando progreso semanal:', error);
+    });
+}
+
+function createWeeklyChart(data) {
+  const canvas = document.getElementById('weeklyProgressChart');
+  if (!canvas) {
+    console.warn('⚠️ Canvas weeklyProgressChart no encontrado');
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+  
+  const completed = data.completed ? data.completed.reduce((a, b) => a + b, 0) : 0;
+  const target = data.target ? data.target.reduce((a, b) => a + b, 0) : 0;
+  const remaining = Math.max(0, target - completed);
+  
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completadas', 'Pendientes'],
+      datasets: [{
+        data: [completed, remaining],
+        backgroundColor: [
+          'rgba(102, 126, 234, 0.8)',
+          'rgba(255, 255, 255, 0.3)'
+        ],
+        borderColor: [
+          'rgba(102, 126, 234, 1)',
+          'rgba(255, 255, 255, 0.5)'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#333',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: 'white',
+          bodyColor: 'white',
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+              return `${label}: ${value} tareas (${percentage}%)`;
+            }
+          }
+        }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+// Actualizar información del usuario
+function updateDashboardUserInfo() {
+  if (window.currentUser) {
+    const userNameEl = document.getElementById('user-name');
+    const userRoleEl = document.getElementById('user-role');
+    
+    if (userNameEl) userNameEl.textContent = window.currentUser.name;
+    if (userRoleEl) userRoleEl.textContent = window.currentUser.role_name;
+  }
+}
+
+// Cargar datos cuando se carga la sección
+loadDashboardData();
+updateDashboardUserInfo();
+</script>

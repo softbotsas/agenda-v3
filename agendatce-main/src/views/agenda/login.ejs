@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Sistema de Agenda TCE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .login-body {
+            padding: 2rem;
+        }
+        .user-card {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .user-card:hover {
+            border-color: #667eea;
+            background-color: #f8f9fa;
+        }
+        .user-card.selected {
+            border-color: #667eea;
+            background-color: #e3f2fd;
+        }
+        .role-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="login-container">
+                    <div class="login-header">
+                        <h3><i class="fas fa-calendar-check me-2"></i>Sistema de Agenda TCE</h3>
+                        <p class="mb-0">Selecciona un usuario para continuar</p>
+                    </div>
+                    <div class="login-body">
+                        <div id="users-container">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Cargando...</span>
+                                </div>
+                                <p class="mt-2">Cargando usuarios...</p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <button id="login-btn" class="btn btn-primary btn-login" disabled>
+                                <i class="fas fa-sign-in-alt me-2"></i>Iniciar Sesión
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedUserId = null;
+        let availableUsers = [];
+
+        // Cargar usuarios disponibles
+        async function loadAvailableUsers() {
+            try {
+                const response = await fetch('/agenda/auth/available-users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    availableUsers = data.data;
+                    displayUsers(data.data);
+                } else {
+                    showError('Error al cargar usuarios: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión');
+            }
+        }
+
+        // Mostrar usuarios
+        function displayUsers(users) {
+            const container = document.getElementById('users-container');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted">No hay usuarios disponibles</p>';
+                return;
+            }
+
+            container.innerHTML = users.map(user => {
+                const roleClass = user.perfil_usuario === 1 ? 'bg-danger' : 
+                                user.perfil_usuario === 2 ? 'bg-warning' : 'bg-info';
+                
+                return `
+                    <div class="user-card" onclick="selectUser('${user._id}')">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-user-circle fa-2x text-muted"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${user.name}</h6>
+                                <p class="mb-1 text-muted small">${user.correo}</p>
+                                <p class="mb-0 text-muted small">${user.cargo}</p>
+                            </div>
+                            <div>
+                                <span class="badge ${roleClass} role-badge">${user.role_name}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Seleccionar usuario
+        function selectUser(userId) {
+            selectedUserId = userId;
+            
+            // Actualizar UI
+            document.querySelectorAll('.user-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            event.currentTarget.classList.add('selected');
+            document.getElementById('login-btn').disabled = false;
+        }
+
+        // Iniciar sesión
+        async function login() {
+            if (!selectedUserId) {
+                alert('Por favor selecciona un usuario');
+                return;
+            }
+
+            try {
+                const response = await fetch('/agenda/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ userId: selectedUserId })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Redirigir al dashboard
+                    window.location.href = '/agenda/';
+                } else {
+                    showError('Error al iniciar sesión: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Error de conexión');
+            }
+        }
+
+        // Mostrar error
+        function showError(message) {
+            const container = document.getElementById('users-container');
+            container.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${message}
+                </div>
+            `;
+        }
+
+        // Event listeners
+        document.getElementById('login-btn').addEventListener('click', login);
+
+        // Cargar usuarios al iniciar
+        loadAvailableUsers();
+    </script>
+</body>
+</html>

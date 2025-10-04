@@ -1,0 +1,133 @@
+# Sistema de Agenda TCE - Checklist para Líderes
+
+## ⚠️ IMPORTANTE: Este NO es un sistema de nómina
+Este es un **Sistema de Agenda/Checklist** para el seguimiento de tareas diarias de Laisa y Alejandra.
+
+## 🎯 Objetivo del Sistema
+- Marcado de tareas (binarias ✅ o contables 🔢)
+- Subida de evidencias (boletas, capturas, etc.)
+- Registro de comentarios sobre tareas realizadas
+- Seguimiento de SLAs (tiempos límite)
+- Generación de KPIs de cumplimiento y productividad
+
+## 📁 Estructura de Archivos
+**TODOS los archivos deben usar el prefijo `agenda.` para evitar conflictos:**
+
+### Modelos
+- `src/models/agenda.TaskDefinition.js`
+- `src/models/agenda.TaskAssignment.js`
+- `src/models/agenda.TaskLog.js`
+- `src/models/agenda.User.js`
+
+### Controladores
+- `src/controllers/agenda/agenda.configController.js`
+- `src/controllers/agenda/agenda.dashboardController.js`
+- `src/controllers/agenda/agenda.taskController.js`
+- `src/controllers/agenda/agenda.taskManagementController.js`
+
+### Servicios
+- `src/services/agenda/agenda.importService.js`
+- `src/services/agenda/agenda.kpiService.js`
+- `src/services/agenda/agenda.taskService.js`
+
+### Vistas
+- `src/views/agenda/agenda.index.ejs`
+
+### Router
+- `src/router/agenda.router.js`
+
+## 🛠️ Tecnologías
+- **Backend**: Node.js + Express
+- **Base de datos**: MongoDB con Mongoose
+- **Vistas**: EJS con componentes parciales
+- **UI**: Bootstrap 5 + Font Awesome
+- **Sesiones**: Express-session con MongoDB Store
+
+## 🎯 Usuarios del Sistema
+- **Laisa Rodriguez**: Líder de operaciones
+- **Alejandra Martinez**: Coordinadora de equipos
+
+## 📊 Modelos de Datos Principales
+
+### TaskDefinition
+- `title`: Título de la tarea
+- `description`: Descripción detallada
+- `mode`: "binary" | "counter"
+- `periodicity`: "daily" | "weekly" | "monthly" | "monThu" | "biweekly"
+- `target_per_period`: Meta para tareas contables
+- `sla_time`: Hora límite (formato "HH:MM")
+- `requires_evidence`: Boolean
+- `tags`: Array de strings
+
+### TaskAssignment
+- `task_definition`: Referencia a TaskDefinition
+- `user`: Usuario asignado
+- `activo`: Boolean
+- `start_date`: Date
+- `end_date`: Date (opcional)
+
+### TaskLog
+- `task_assignment`: Referencia a TaskAssignment
+- `user`: Usuario que registró
+- `action_type`: "completed" | "increment"
+- `value`: Number
+- `comment`: String
+- `evidence_files`: Array de strings
+- `log_date`: Date
+
+## 🔧 Reglas de Desarrollo
+
+### Nomenclatura
+- **Archivos**: Siempre usar prefijo `agenda.`
+- **Variables**: camelCase
+- **Constantes**: UPPER_SNAKE_CASE
+- **Funciones**: camelCase descriptivo
+
+### Estructura de Código
+- **Controllers**: Solo lógica de request/response
+- **Services**: Lógica de negocio y cálculos
+- **Models**: Solo esquemas de MongoDB
+- **Views**: Solo presentación, lógica mínima
+
+### APIs
+- **Rutas**: `/agenda/api/...`
+- **Métodos**: GET, POST, PUT, DELETE según corresponda
+- **Respuestas**: Siempre incluir `success: boolean` y `data` o `message`
+
+### Base de Datos
+- **Colección**: `agenda_tce`
+- **Modelos**: Usar Mongoose con validaciones
+- **Índices**: En campos de búsqueda frecuente
+
+## 🚫 Cosas que NO hacer
+- ❌ No crear archivos sin prefijo `agenda.`
+- ❌ No mezclar lógica de negocio en controladores
+- ❌ No hardcodear IDs de usuarios
+- ❌ No crear rutas sin prefijo `/agenda/`
+- ❌ No usar datos simulados en producción
+
+## ✅ Mejores Prácticas
+- ✅ Usar async/await para operaciones asíncronas
+- ✅ Validar datos de entrada
+- ✅ Manejar errores apropiadamente
+- ✅ Usar middleware de autenticación
+- ✅ Documentar funciones complejas
+- ✅ Mantener consistencia en nombres
+
+## 🎯 Estado Actual
+- **✅ Estructura base** completada
+- **✅ Modelos** definidos
+- **✅ Router** con APIs simuladas
+- **✅ Vista principal** funcional
+- **🔄 En desarrollo**: Integración con BD real
+- **📋 Pendiente**: CRUD completo, evidencias, reportes
+
+## 📝 Notas de Desarrollo
+- Los datos actuales son simulados para desarrollo
+- El sistema está preparado para expansión
+- Mantener compatibilidad con futuras versiones
+- Priorizar funcionalidad sobre perfección
+
+---
+**Última actualización**: Diciembre 2024
+**Proyecto**: Sistema de Agenda TCE - Checklist para Líderes

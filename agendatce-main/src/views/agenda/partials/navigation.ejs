@@ -1,0 +1,92 @@
+<!-- Navegación Principal -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-calendar-check me-2"></i>
+      Sistema de Agenda TCE
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto" id="main-navigation">
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#" onclick="showSection('dashboard')" style="transition: all 0.3s ease;">
+            <i class="fas fa-tachometer-alt me-1"></i>
+            Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#" onclick="showSection('today-tasks')" style="transition: all 0.3s ease;">
+            <i class="fas fa-calendar-day me-1"></i>
+            Hoy
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white" href="#" onclick="showSection('all-tasks')" style="transition: all 0.3s ease;">
+            <i class="fas fa-list me-1"></i>
+            Todas las Tareas
+          </a>
+        </li>
+        <!-- Historial para Admin y Supervisor -->
+        <li class="nav-item admin-supervisor-only" style="display: none;">
+          <a class="nav-link text-white" href="#" onclick="showSection('history')" style="transition: all 0.3s ease;">
+            <i class="fas fa-history me-1"></i>
+            Historial
+          </a>
+        </li>
+        <!-- Configuración solo para Admin -->
+        <li class="nav-item admin-only" style="display: none;">
+          <a class="nav-link text-white" href="#" onclick="showSection('configuration')" style="transition: all 0.3s ease;">
+            <i class="fas fa-cog me-1"></i>
+            Configuración
+          </a>
+        </li>
+      </ul>
+      
+      <ul class="navbar-nav">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" style="transition: all 0.3s ease;">
+            <div class="user-avatar me-2 d-inline-block">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="12" fill="rgba(255,255,255,0.2)"/>
+                <circle cx="12" cy="9" r="4" fill="rgba(255,255,255,0.8)"/>
+                <path d="M6 21c0-3.31 2.69-6 6-6s6 2.69 6 6" fill="rgba(255,255,255,0.8)"/>
+              </svg>
+            </div>
+            <span id="current-user-name" class="text-white">Usuario</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><h6 class="dropdown-header">
+              <div id="current-user-email">usuario@tce.com</div>
+              <small class="text-muted" id="current-user-role">Rol</small>
+            </h6></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#" onclick="showUserProfile()">
+              <i class="fas fa-user me-2"></i>Mi Perfil
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+            </a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+  <div class="container-fluid">
+    <ol class="breadcrumb mb-0" id="breadcrumb-nav">
+      <li class="breadcrumb-item active">
+        <i class="fas fa-home me-1"></i>
+        Dashboard
+      </li>
+    </ol>
+  </div>
+</nav>
+

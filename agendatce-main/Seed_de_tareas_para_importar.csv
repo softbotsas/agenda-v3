@@ -1,0 +1,42 @@
+title,periodicity,mode,target_per_period,sla_time,requires_evidence,tags
+Reportarse en grupos de interacción,daily,counter,3.0,09:00,False,['comunicacion']
+Revisar que todos los choferes estén en ruta,daily,binary,,09:00,False,['rutas']
+Corroborar y contactar chofer que no haya iniciado,daily,binary,,09:30,False,['rutas']
+Ponerse al día en grupos y pendientes,daily,counter,2.0,12:00,False,['comunicacion']
+Reportar a Aura/Mary quiénes están laborando (drivers),daily,binary,,09:30,False,"['finanzas', 'rutas']"
+Revisar órdenes no realizadas y causas,daily,binary,,12:00,False,['rutas']
+Verificar PRETRIP de drivers,daily,binary,,09:00,False,"['rutas', 'seguridad']"
+Verificar POSTTRIP de drivers,daily,binary,,18:00,False,"['rutas', 'seguridad']"
+Mecánica básica fuera de CLT (detalle mínimo),weekly,binary,,,False,['mecanica']
+Participar en reunión USA,weekly,binary,,,False,['reuniones']
+Participar en reunión de líderes GTM,weekly,binary,,,False,['reuniones']
+Apoyo a Call Center (resolver dudas),daily,counter,2.0,17:00,False,['callcenter']
+Emitir comunicados importantes,weekly,binary,,,False,['comunicacion']
+Grabar video de app o función nueva,monthly,binary,,,True,['formacion']
+Publicaciones para prospectos de driver,weekly,binary,,,True,['reclutamiento']
+Revisar reportes del día anterior (drivers),daily,binary,,10:00,False,['rutas']
+Boleta de depósito del día anterior cargada,daily,binary,,10:00,True,['finanzas']
+Talacheros: verificar publicidad Lun/Jue,monThu,binary,,18:00,True,"['talacheros', 'marketing']"
+Talacheros: revisar Facebook y evidencias,monThu,binary,,18:00,True,"['talacheros', 'marketing']"
+Solicitar pagos a Paola (talacheros),weekly,binary,,,False,"['talacheros', 'finanzas']"
+Organización de eventos (si aplica),monthly,binary,,,True,['eventos']
+"Organizar rutas y coberturas (ausencias, rutas pesadas)",daily,binary,,,False,['rutas']
+Notificar a dispatcher cambios de ruta,daily,binary,,,False,"['rutas', 'dispatcher']"
+Chicas USA: verificar hora de ingreso,daily,binary,,09:10,False,"['usa', 'rrhh']"
+Chicas USA: revisar cámaras,daily,counter,2.0,17:00,False,"['usa', 'control']"
+Chicas USA: revisar reportes de fin de día,daily,binary,,18:00,False,"['usa', 'reportes']"
+Corrección de guías con errores y retroalimentación,daily,binary,,,False,"['usa', 'formacion']"
+Sesión AnyDesk de coaching (si es necesario),weekly,binary,,,False,"['usa', 'formacion']"
+Pagos de Colombia: llevar archivo y solicitar (día 15),monthly,binary,,,True,"['finanzas', 'colombia']"
+Enviar boletas de pagos de Colombia a Yorman y Alejandro,monthly,binary,,,True,"['finanzas', 'colombia']"
+Atender ayudas de Centroamérica,daily,binary,,,False,"['centroamerica', 'soporte']"
+Gestionar cajas no identificadas en bodega,daily,binary,,,False,['bodega']
+Apoyos al driver solicitados en grupos,daily,counter,1.0,,False,"['rutas', 'soporte']"
+Autorización de permisos/vacaciones (drivers y chicas USA),daily,binary,,,False,['rrhh']
+Entrevistas de contratación de drivers,weekly,binary,,,False,['reclutamiento']
+Onboarding driver: cronograma + material + Harrison,weekly,binary,,,True,"['reclutamiento', 'formacion']"
+Entregar instrucciones de contacto en CLT y horarios,weekly,binary,,,False,['reclutamiento']
+"Actualizar archivos maestros (licencias, domicilios, storages, accesos, directorio, feriados, mecánicos, gastos)",daily,binary,,18:00,False,['backoffice']
+Supervisión a líderes GTM (coaching),weekly,binary,,,False,['liderazgo']
+Entrevista activa con chofer actual (quincenal),biweekly,binary,,,False,"['rrhh', 'rutas']"
+Monitoreo de carga (alta/baja) y organizar recolección,daily,binary,,,False,"['rutas', 'bodega']"

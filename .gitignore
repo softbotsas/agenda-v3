@@ -1,0 +1,4 @@
+node_modules
+
+# Ignorar archivos subidos por los usuarios
+public/assets/media

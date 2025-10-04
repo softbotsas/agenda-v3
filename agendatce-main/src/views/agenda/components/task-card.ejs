@@ -1,0 +1,81 @@
+<!-- Componente de Tarjeta de Tarea -->
+<div class="task-card-component" data-task-id="<%= task.id %>">
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <div class="d-flex align-items-start">
+            <div class="flex-shrink-0 me-3">
+              <div class="bg-primary bg-opacity-10 rounded-3 p-2">
+                <i class="fas fa-<%= task.mode === 'binary' ? 'check-square' : 'calculator' %> text-primary"></i>
+              </div>
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-1"><%= task.title %></h6>
+              <p class="text-muted mb-2 small"><%= task.description %></p>
+              
+              <!-- Tags -->
+              <% if (task.tags && task.tags.length > 0) { %>
+                <div class="mb-2">
+                  <% task.tags.forEach(tag => { %>
+                    <span class="badge bg-light text-dark me-1"><%= tag.name || tag %></span>
+                  <% }); %>
+                </div>
+              <% } %>
+              
+              <!-- Progreso para tareas contadoras -->
+              <% if (task.mode === 'counter') { %>
+                <div class="progress mb-2" style="height: 6px;">
+                  <div class="progress-bar bg-primary" role="progressbar" 
+                       style="width: <%= Math.round((task.current / task.target_per_period) * 100) %>%"></div>
+                </div>
+                <small class="text-muted"><%= task.current %>/<%= task.target_per_period %> completado</small>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="text-end">
+            <!-- SLA Status -->
+            <% if (task.sla_time) { %>
+              <div class="mb-2">
+                <span class="badge bg-<%= task.sla_status === 'success' ? 'success' : task.sla_status === 'warning' ? 'warning' : 'danger' %>">
+                  <i class="fas fa-clock me-1"></i>
+                  SLA: <%= task.sla_time %>
+                </span>
+              </div>
+            <% } %>
+            
+            <!-- Botones de Acción -->
+            <div class="btn-group-vertical btn-group-sm" role="group">
+              <% if (task.mode === 'binary') { %>
+                <button type="button" class="btn btn-success" 
+                        onclick="completeBinaryTask('<%= task.id %>')"
+                        <%= task.completed ? 'disabled' : '' %>>
+                  <i class="fas fa-check me-1"></i>
+                  <%= task.completed ? 'Completada' : 'Completar' %>
+                </button>
+              <% } else { %>
+                <button type="button" class="btn btn-primary" 
+                        onclick="incrementCounterTask('<%= task.id %>')">
+                  <i class="fas fa-plus me-1"></i>
+                  Incrementar
+                </button>
+              <% } %>
+              
+              <button type="button" class="btn btn-outline-secondary" 
+                      onclick="viewTaskDetails('<%= task.id %>')">
+                <i class="fas fa-eye me-1"></i>
+                Ver Detalles
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+

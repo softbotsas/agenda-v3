@@ -1,0 +1,220 @@
+<!-- Reconfirmaciones -->
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="mb-0">
+                    <i class="fas fa-redo text-warning me-2"></i>
+                    Reconfirmaciones
+                </h2>
+            </div>
+
+            <!-- Panel de Filtros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtros de Búsqueda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="reconfirmations-fecha" class="form-label">Fecha</label>
+                            <input type="date" class="form-control" id="reconfirmations-fecha" name="fecha">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="reconfirmations-ruta" class="form-label">Ruta</label>
+                            <select class="form-select" id="reconfirmations-ruta" name="ruta">
+                                <option value="">Todas las rutas</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="reconfirmations-chofer" class="form-label">Chofer</label>
+                            <select class="form-select" id="reconfirmations-chofer" name="chofer">
+                                <option value="">Todos los choferes</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="button" class="btn btn-primary w-100" onclick="filtrarReconfirmaciones()">
+                                <i class="fas fa-search me-2"></i>Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Resultados -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-table me-2"></i>Resultados de Reconfirmaciones
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="reconfirmations-table">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nro Guía</th>
+                                    <th>Remitente</th>
+                                    <th>Status</th>
+                                    <th>Comentario</th>
+                                    <th>Monto</th>
+                                    <th>Registrado por</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reconfirmations-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">
+                                        <i class="fas fa-search fa-2x mb-3"></i>
+                                        <br>Seleccione filtros y haga clic en "Filtrar" para ver los resultados
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let reconfirmationsData = [];
+
+// Cargar datos iniciales
+document.addEventListener('DOMContentLoaded', function() {
+    cargarRutasReconfirmaciones();
+    cargarChoferesReconfirmaciones();
+});
+
+// Cargar rutas para el select
+async function cargarRutasReconfirmaciones() {
+    try {
+        const response = await fetch('/agendatce/api/reconfirmations/rutas');
+        const result = await response.json();
+        
+        if (result.success) {
+            const select = document.getElementById('reconfirmations-ruta');
+            select.innerHTML = '<option value="">Todas las rutas</option>';
+            
+            result.data.forEach(ruta => {
+                const option = document.createElement('option');
+                option.value = ruta._id;
+                option.textContent = ruta.nombre || ruta.descripcion || `Ruta ${ruta._id}`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando rutas:', error);
+    }
+}
+
+// Cargar choferes para el select
+async function cargarChoferesReconfirmaciones() {
+    try {
+        const response = await fetch('/agendatce/api/reconfirmations/choferes');
+        const result = await response.json();
+        
+        if (result.success) {
+            const select = document.getElementById('reconfirmations-chofer');
+            select.innerHTML = '<option value="">Todos los choferes</option>';
+            
+            result.data.forEach(chofer => {
+                const option = document.createElement('option');
+                option.value = chofer._id;
+                option.textContent = chofer.nombre || chofer.name || `Chofer ${chofer._id}`;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Error cargando choferes:', error);
+    }
+}
+
+// Filtrar reconfirmaciones
+async function filtrarReconfirmaciones() {
+    const fecha = document.getElementById('reconfirmations-fecha').value;
+    const ruta = document.getElementById('reconfirmations-ruta').value;
+    const chofer = document.getElementById('reconfirmations-chofer').value;
+    
+    try {
+        let url = '/agendatce/api/reconfirmations/filtrar?';
+        const params = new URLSearchParams();
+        
+        if (fecha) params.append('fecha', fecha);
+        if (ruta) params.append('ruta', ruta);
+        if (chofer) params.append('chofer', chofer);
+        
+        url += params.toString();
+        
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        if (result.success) {
+            reconfirmationsData = result.data;
+            mostrarReconfirmaciones(reconfirmationsData);
+        } else {
+            console.error('Error filtrando reconfirmaciones:', result.message);
+            mostrarMensaje('Error al filtrar reconfirmaciones', 'error');
+        }
+    } catch (error) {
+        console.error('Error filtrando reconfirmaciones:', error);
+        mostrarMensaje('Error de conexión al filtrar reconfirmaciones', 'error');
+    }
+}
+
+// Mostrar reconfirmaciones en la tabla
+function mostrarReconfirmaciones(data) {
+    const tbody = document.getElementById('reconfirmations-tbody');
+    
+    if (!data || data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center text-muted py-4">
+                    <i class="fas fa-inbox fa-2x mb-3"></i>
+                    <br>No se encontraron reconfirmaciones con los filtros seleccionados
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    tbody.innerHTML = data.map(item => `
+        <tr>
+            <td>${item.nroGuia || 'N/A'}</td>
+            <td>${item.remitente || 'N/A'}</td>
+            <td>
+                <span class="badge ${getStatusBadgeClass(item.status)}">
+                    ${item.status || 'Pendiente'}
+                </span>
+            </td>
+            <td>${item.comentario || 'Sin comentarios'}</td>
+            <td>$${item.monto ? item.monto.toFixed(2) : '0.00'}</td>
+            <td>${item.registradoPor || 'N/A'}</td>
+        </tr>
+    `).join('');
+}
+
+// Obtener clase CSS para el badge de status
+function getStatusBadgeClass(status) {
+    switch(status?.toLowerCase()) {
+        case 'reconfirmado':
+        case 'reconfirmada':
+            return 'bg-success';
+        case 'pendiente':
+            return 'bg-warning';
+        case 'rechazado':
+        case 'rechazada':
+            return 'bg-danger';
+        default:
+            return 'bg-secondary';
+    }
+}
+
+// Mostrar mensaje de notificación
+function mostrarMensaje(mensaje, tipo = 'info') {
+    // Implementar notificación según el sistema usado
+    console.log(`${tipo.toUpperCase()}: ${mensaje}`);
+}
+</script>

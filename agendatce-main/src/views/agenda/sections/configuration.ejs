@@ -1,0 +1,1021 @@
+<!-- Configuración del Sistema -->
+<style>
+/* Estilos para mejorar visibilidad de tabs */
+.nav-tabs .nav-link {
+    color: #495057 !important;
+    background-color: #f8f9fa !important;
+    border: 1px solid #dee2e6 !important;
+    border-bottom: none !important;
+    font-weight: 500;
+}
+
+.nav-tabs .nav-link:hover {
+    color: #007bff !important;
+    background-color: #e9ecef !important;
+    border-color: #dee2e6 #dee2e6 #007bff !important;
+}
+
+.nav-tabs .nav-link.active {
+    color: #fff !important;
+    background-color: #007bff !important;
+    border-color: #007bff #007bff #fff !important;
+    font-weight: 600;
+}
+
+.nav-tabs {
+    border-bottom: 2px solid #007bff !important;
+}
+
+.tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 20px;
+    background-color: #fff;
+}
+</style>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title">
+          <i class="fas fa-cog me-2"></i>
+          Configuración del Sistema
+        </h5>
+      </div>
+      <div class="card-body">
+        <!-- Tabs de navegación -->
+        <ul class="nav nav-tabs" id="configTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="employees-tab" data-bs-toggle="tab" data-bs-target="#employees" type="button" role="tab">
+              <i class="fas fa-users me-1"></i>
+              Empleados
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button" role="tab">
+              <i class="fas fa-tasks me-1"></i>
+              Tareas
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="departments-tab" data-bs-toggle="tab" data-bs-target="#departments" type="button" role="tab">
+              <i class="fas fa-building me-1"></i>
+              Departamentos
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tags-tab" data-bs-toggle="tab" data-bs-target="#tags" type="button" role="tab">
+              <i class="fas fa-tags me-1"></i>
+              Etiquetas
+            </button>
+          </li>
+        </ul>
+
+        <!-- Contenido de los tabs -->
+        <div class="tab-content" id="configTabsContent">
+          <!-- Tab Empleados -->
+          <div class="tab-pane fade show active" id="employees" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+              <h5 class="mb-0">Gestión de Empleados</h5>
+              <button class="btn btn-primary" onclick="showAddEmployeeModal()">
+                <i class="fas fa-plus me-1"></i>Agregar Empleado
+              </button>
+            </div>
+            
+            <div id="employees-container">
+              <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando empleados...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Tareas -->
+          <div class="tab-pane fade" id="tasks" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+              <h5 class="mb-0">Gestión de Tareas</h5>
+              <button class="btn btn-primary" onclick="showAddTaskModal()">
+                <i class="fas fa-plus me-1"></i>Agregar Tarea
+              </button>
+            </div>
+            
+            <div id="tasksContainer">
+              <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando tareas...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Departamentos -->
+          <div class="tab-pane fade" id="departments" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+              <h5 class="mb-0">Gestión de Departamentos</h5>
+              <button class="btn btn-primary" onclick="showAddDepartmentModal()">
+                <i class="fas fa-plus me-1"></i>Agregar Departamento
+              </button>
+            </div>
+            
+            <div id="departments-container">
+              <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando departamentos...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab Etiquetas -->
+          <div class="tab-pane fade" id="tags" role="tabpanel">
+            <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
+              <h5 class="mb-0">Gestión de Etiquetas</h5>
+              <button class="btn btn-primary" onclick="showAddTagModal()">
+                <i class="fas fa-plus me-1"></i>Agregar Etiqueta
+              </button>
+            </div>
+            
+            <div id="tags-container">
+              <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Cargando...</span>
+                </div>
+                <p class="mt-2 text-muted">Cargando etiquetas...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modales -->
+<!-- Modal Agregar Empleado -->
+<div class="modal fade" id="addEmployeeModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Nuevo Empleado</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addEmployeeForm">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="employeeName" class="form-label">Nombre Completo *</label>
+                <input type="text" class="form-control" id="employeeName" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="employeeEmail" class="form-label">Correo Electrónico *</label>
+                <input type="email" class="form-control" id="employeeEmail" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="employeeRole" class="form-label">Rol *</label>
+                <select class="form-select" id="employeeRole" required>
+                  <option value="">Seleccionar rol</option>
+                  <option value="0">Admin</option>
+                  <option value="1">Supervisor</option>
+                  <option value="2">Empleado</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="employeeDepartment" class="form-label">Departamento *</label>
+                <select class="form-select" id="employeeDepartment" required>
+                  <option value="">Cargando departamentos...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="employeePosition" class="form-label">Cargo</label>
+                <input type="text" class="form-control" id="employeePosition">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Enlazar con Usuario del Sistema</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="employeeSystemUserDisplay" placeholder="Sin usuario enlazado" readonly>
+                  <input type="hidden" id="employeeSystemUser" value="">
+                  <button class="btn btn-outline-secondary" type="button" onclick="openUserSearchModal('add')">
+                    <i class="fas fa-search me-1"></i>
+                    Buscar Usuario
+                  </button>
+                  <button class="btn btn-outline-danger" type="button" onclick="clearUserSelection('add')" style="display: none;" id="clearUserBtnAdd">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div class="form-text">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Busca y selecciona un usuario del sistema principal para crear el enlace
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveEmployee()">
+          <i class="fas fa-save me-1"></i>Guardar Empleado
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Empleado -->
+<div class="modal fade" id="editEmployeeModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Empleado</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editEmployeeForm">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editEmployeeName" class="form-label">Nombre Completo *</label>
+                <input type="text" class="form-control" id="editEmployeeName" required>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editEmployeeEmail" class="form-label">Correo Electrónico *</label>
+                <input type="email" class="form-control" id="editEmployeeEmail" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editEmployeeRole" class="form-label">Rol *</label>
+                <select class="form-select" id="editEmployeeRole" required>
+                  <option value="">Seleccionar rol</option>
+                  <option value="0">Admin</option>
+                  <option value="1">Supervisor</option>
+                  <option value="3">Empleado</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editEmployeeDepartment" class="form-label">Departamento *</label>
+                <select class="form-select" id="editEmployeeDepartment" required>
+                  <option value="">Cargando departamentos...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="editEmployeePosition" class="form-label">Cargo</label>
+            <input type="text" class="form-control" id="editEmployeePosition">
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label">Enlazar con Usuario del Sistema</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="editEmployeeSystemUserDisplay" placeholder="Sin usuario enlazado" readonly>
+              <input type="hidden" id="editEmployeeSystemUser" value="">
+              <button class="btn btn-outline-secondary" type="button" onclick="openUserSearchModal('edit')">
+                <i class="fas fa-search me-1"></i>
+                Buscar Usuario
+              </button>
+              <button class="btn btn-outline-danger" type="button" onclick="clearUserSelection('edit')" style="display: none;" id="clearUserBtnEdit">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div class="form-text">Opcional: Busca y selecciona un usuario del sistema principal para crear el enlace</div>
+          </div>
+          
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="editEmployeeActive" checked>
+              <label class="form-check-label" for="editEmployeeActive">
+                Empleado activo
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="updateEmployee()">
+          <i class="fas fa-save me-1"></i>Actualizar Empleado
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Agregar Tarea -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Nueva Tarea</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addTaskForm">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label for="addTaskTitle" class="form-label">Título de la Tarea *</label>
+                <input type="text" class="form-control" id="addTaskTitle" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label for="addTaskDescription" class="form-label">Descripción</label>
+                <textarea class="form-control" id="addTaskDescription" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="addTaskMode" class="form-label">Modo *</label>
+                <select class="form-select" id="addTaskMode" required onchange="updateTaskMode('add')">
+                  <option value="binary">Binaria (Sí/No)</option>
+                  <option value="counter">Contador</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="addTaskPeriodicity" class="form-label">Periodicidad *</label>
+                <select class="form-select" id="addTaskPeriodicity" required onchange="updateFrequencyOptions('add')">
+                  <option value="daily">Diaria</option>
+                  <option value="weekly">Semanal</option>
+                  <option value="monthly">Mensual</option>
+                  <option value="biweekly">Quincenal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          
+          <!-- Días específicos -->
+          <div class="row" id="addSpecificDaysRow" style="display: none;">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label class="form-label">Días específicos</label>
+                <div id="addDaysSelectionContainer" class="border rounded p-3">
+                  <!-- Los días se generarán dinámicamente -->
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6" id="addTaskTargetContainer" style="display: none;">
+              <div class="mb-3">
+                <label for="addTaskTarget" class="form-label">Veces por día</label>
+                <input type="number" class="form-control" id="addTaskTarget" min="1" value="1">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="addTaskSLA" class="form-label">SLA (Hora límite)</label>
+                <input type="time" class="form-control" id="addTaskSLA">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="addTaskDepartment" class="form-label">Departamento</label>
+                <select class="form-select" id="addTaskDepartment" onchange="filterUsersByDepartment('add')">
+                  <option value="">Sin departamento</option>
+                  <option value="dept_gt">Guatemala</option>
+                  <option value="dept_usa">Estados Unidos</option>
+                  <option value="dept_co">Colombia</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="addTaskEvidence">
+                  <label class="form-check-label" for="addTaskEvidence">
+                    Requiere evidencia *
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Usuarios Asignados *</label>
+                <div id="addTaskUsers" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                  <div class="text-center text-muted">Cargando usuarios...</div>
+                </div>
+                <div class="form-text">Selecciona uno o más usuarios para asignar esta tarea. Si uno completa la tarea, se marcará como completada para ambos.</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Etiquetas</label>
+                <div id="addTaskTags" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                  <div class="text-center text-muted">Cargando etiquetas...</div>
+                </div>
+                <div class="form-text">Selecciona las etiquetas para esta tarea.</div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveTask()">
+          <i class="fas fa-save me-1"></i>Guardar Tarea
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Tarea -->
+<div class="modal fade" id="editTaskModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Editar Tarea</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editTaskForm">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label for="editTaskTitle" class="form-label">Título de la Tarea *</label>
+                <input type="text" class="form-control" id="editTaskTitle" required>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label for="editTaskDescription" class="form-label">Descripción</label>
+                <textarea class="form-control" id="editTaskDescription" rows="3"></textarea>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editTaskMode" class="form-label">Modo *</label>
+                <select class="form-select" id="editTaskMode" required onchange="updateTaskMode('edit')">
+                  <option value="binary">Binaria (Sí/No)</option>
+                  <option value="counter">Contador</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editTaskPeriodicity" class="form-label">Periodicidad *</label>
+                <select class="form-select" id="editTaskPeriodicity" required onchange="updateFrequencyOptions('edit')">
+                  <option value="daily">Diaria</option>
+                  <option value="weekly">Semanal</option>
+                  <option value="monthly">Mensual</option>
+                  <option value="biweekly">Quincenal</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          
+          <!-- Días específicos -->
+          <div class="row" id="editSpecificDaysRow" style="display: none;">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label class="form-label">Días específicos</label>
+                <div id="editDaysSelectionContainer" class="border rounded p-3">
+                  <!-- Los días se generarán dinámicamente -->
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6" id="editTaskTargetContainer" style="display: none;">
+              <div class="mb-3">
+                <label for="editTaskTarget" class="form-label">Veces por día</label>
+                <input type="number" class="form-control" id="editTaskTarget" min="1" value="1">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editTaskSLA" class="form-label">SLA (Hora límite)</label>
+                <input type="time" class="form-control" id="editTaskSLA">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="editTaskDepartment" class="form-label">Departamento</label>
+                <select class="form-select" id="editTaskDepartment" onchange="filterUsersByDepartment('edit')">
+                  <option value="">Sin departamento</option>
+                  <!-- Se llenará dinámicamente -->
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="editTaskEvidence">
+                  <label class="form-check-label" for="editTaskEvidence">
+                    Requiere evidencia *
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Usuarios Asignados *</label>
+                <div id="editTaskUsers" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                  <div class="text-center text-muted">Cargando usuarios...</div>
+                </div>
+                <div class="form-text">Selecciona uno o más usuarios para asignar esta tarea. Si uno completa la tarea, se marcará como completada para ambos.</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Etiquetas</label>
+                <div id="editTaskTags" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                  <div class="text-center text-muted">Cargando etiquetas...</div>
+                </div>
+                <div class="form-text">Selecciona las etiquetas para esta tarea.</div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="updateTask()">
+          <i class="fas fa-save me-1"></i>Actualizar Tarea
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para agregar departamento -->
+<div class="modal fade" id="addDepartmentModal" tabindex="-1" aria-labelledby="addDepartmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDepartmentModalLabel">Agregar Departamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addDepartmentForm">
+          <div class="mb-3">
+            <label for="departmentName" class="form-label">Nombre del Departamento *</label>
+            <input type="text" class="form-control" id="departmentName" required>
+          </div>
+          <div class="mb-3">
+            <label for="departmentCode" class="form-label">Código *</label>
+            <input type="text" class="form-control" id="departmentCode" required>
+          </div>
+          <div class="mb-3">
+            <label for="departmentDescription" class="form-label">Descripción</label>
+            <textarea class="form-control" id="departmentDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="departmentCountry" class="form-label">País *</label>
+            <select class="form-select" id="departmentCountry" required>
+              <option value="">Selecciona un país</option>
+              <option value="Guatemala">Guatemala</option>
+              <option value="Estados Unidos">Estados Unidos</option>
+              <option value="Colombia">Colombia</option>
+              <option value="Nicaragua">Nicaragua</option>
+              <option value="Honduras">Honduras</option>
+              <option value="El Salvador">El Salvador</option>
+              <option value="Costa Rica">Costa Rica</option>
+              <option value="Panamá">Panamá</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="departmentActive" checked>
+              <label class="form-check-label" for="departmentActive">
+                Departamento activo
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveDepartment()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para editar departamento -->
+<div class="modal fade" id="editDepartmentModal" tabindex="-1" aria-labelledby="editDepartmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDepartmentModalLabel">Editar Departamento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editDepartmentForm">
+          <div class="mb-3">
+            <label for="editDepartmentName" class="form-label">Nombre del Departamento *</label>
+            <input type="text" class="form-control" id="editDepartmentName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editDepartmentCode" class="form-label">Código *</label>
+            <input type="text" class="form-control" id="editDepartmentCode" required>
+          </div>
+          <div class="mb-3">
+            <label for="editDepartmentDescription" class="form-label">Descripción</label>
+            <textarea class="form-control" id="editDepartmentDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="editDepartmentActive">
+              <label class="form-check-label" for="editDepartmentActive">
+                Departamento activo
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="updateDepartment()">Actualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para agregar etiqueta -->
+<div class="modal fade" id="addTagModal" tabindex="-1" aria-labelledby="addTagModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addTagModalLabel">Agregar Etiqueta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addTagForm">
+          <div class="mb-3">
+            <label for="tagName" class="form-label">Nombre de la Etiqueta *</label>
+            <input type="text" class="form-control" id="tagName" required>
+          </div>
+          <div class="mb-3">
+            <label for="tagDisplayName" class="form-label">Nombre para Mostrar *</label>
+            <input type="text" class="form-control" id="tagDisplayName" required>
+          </div>
+          <div class="mb-3">
+            <label for="tagDescription" class="form-label">Descripción</label>
+            <textarea class="form-control" id="tagDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="tagCategory" class="form-label">Categoría</label>
+            <select class="form-select" id="tagCategory" required>
+              <option value="">Selecciona una categoría</option>
+              <option value="operaciones">Operaciones</option>
+              <option value="administracion">Administración</option>
+              <option value="rrhh">Recursos Humanos</option>
+              <option value="finanzas">Finanzas</option>
+              <option value="logistica">Logística</option>
+              <option value="tecnologia">Tecnología</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="tagColor" class="form-label">Color</label>
+            <input type="color" class="form-control form-control-color" id="tagColor" value="#007bff">
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="tagActive" checked>
+              <label class="form-check-label" for="tagActive">
+                Etiqueta activa
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="saveTag()">Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para editar etiqueta -->
+<div class="modal fade" id="editTagModal" tabindex="-1" aria-labelledby="editTagModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTagModalLabel">Editar Etiqueta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editTagForm">
+          <div class="mb-3">
+            <label for="editTagName" class="form-label">Nombre de la Etiqueta *</label>
+            <input type="text" class="form-control" id="editTagName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editTagDisplayName" class="form-label">Nombre para Mostrar *</label>
+            <input type="text" class="form-control" id="editTagDisplayName" required>
+          </div>
+          <div class="mb-3">
+            <label for="editTagDescription" class="form-label">Descripción</label>
+            <textarea class="form-control" id="editTagDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="editTagCategory" class="form-label">Categoría</label>
+            <select class="form-select" id="editTagCategory" required>
+              <option value="">Selecciona una categoría</option>
+              <option value="operaciones">Operaciones</option>
+              <option value="administracion">Administración</option>
+              <option value="rrhh">Recursos Humanos</option>
+              <option value="finanzas">Finanzas</option>
+              <option value="logistica">Logística</option>
+              <option value="tecnologia">Tecnología</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="editTagColor" class="form-label">Color</label>
+            <input type="color" class="form-control form-control-color" id="editTagColor" value="#007bff">
+          </div>
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="editTagActive">
+              <label class="form-check-label" for="editTagActive">
+                Etiqueta activa
+              </label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" onclick="updateTag()">Actualizar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Funciones para manejar periodicidad en modales de tareas
+console.log('🔧 Cargando funciones de periodicidad en configuration.ejs...');
+
+        window.updateFrequencyOptions = function(modalType) {
+            console.log('🔄 updateFrequencyOptions llamada para modal:', modalType);
+            const periodicitySelect = document.getElementById(`${modalType}TaskPeriodicity`);
+            const specificDaysRow = document.getElementById(`${modalType}SpecificDaysRow`);
+            
+            if (!periodicitySelect) {
+                console.log('❌ Elementos no encontrados');
+                return;
+            }
+            
+            const periodicity = periodicitySelect.value;
+            console.log('📅 Periodicidad seleccionada:', periodicity);
+            
+            // Ocultar días específicos por defecto
+            if (specificDaysRow) specificDaysRow.style.display = 'none';
+            
+            if (periodicity === 'daily') {
+                console.log('📅 Tarea diaria - no se muestran días específicos');
+                // Para tareas diarias, no mostramos días específicos
+                return;
+            } else if (periodicity === 'weekly' || periodicity === 'monthly' || periodicity === 'biweekly') {
+                console.log('📅 Configurando días específicos para periodicidad:', periodicity);
+                // Para otras periodicidades, mostramos días específicos
+                window.updateDaysOptions(modalType);
+                return;
+            }
+            
+            // Actualizar días específicos
+            window.updateDaysOptions(modalType);
+        };
+
+window.updateDaysOptions = function(modalType) {
+    console.log('📅 updateDaysOptions llamada para modal:', modalType);
+    const periodicity = document.getElementById(`${modalType}TaskPeriodicity`).value;
+    const specificDaysRow = document.getElementById(`${modalType}SpecificDaysRow`);
+    const daysContainer = document.getElementById(`${modalType}DaysSelectionContainer`);
+    
+    if (!specificDaysRow || !daysContainer) {
+        console.log('❌ Elementos de días no encontrados');
+        return;
+    }
+    
+    console.log('📊 Periodicidad:', periodicity);
+    
+    // Limpiar contenedor
+    daysContainer.innerHTML = '';
+    
+    if (periodicity === 'daily') {
+        console.log('📅 Ocultando sección de días específicos para tareas diarias');
+        specificDaysRow.style.display = 'none';
+        
+    } else if (periodicity === 'weekly') {
+        console.log('📅 Generando checkboxes para días de la semana');
+        specificDaysRow.style.display = 'block';
+        
+        const daysOfWeek = [
+            { value: 'monday', label: 'Lunes' },
+            { value: 'tuesday', label: 'Martes' },
+            { value: 'wednesday', label: 'Miércoles' },
+            { value: 'thursday', label: 'Jueves' },
+            { value: 'friday', label: 'Viernes' },
+            { value: 'saturday', label: 'Sábado' },
+            { value: 'sunday', label: 'Domingo' }
+        ];
+        
+        daysOfWeek.forEach(day => {
+            const div = document.createElement('div');
+            div.className = 'form-check form-check-inline';
+            div.innerHTML = `
+                <input class="form-check-input" type="checkbox" id="${modalType}_day_${day.value}" value="${day.value}">
+                <label class="form-check-label" for="${modalType}_day_${day.value}">${day.label}</label>
+            `;
+            daysContainer.appendChild(div);
+        });
+        
+    } else if (periodicity === 'monthly') {
+        console.log('📅 Generando checkboxes para días del mes');
+        specificDaysRow.style.display = 'block';
+        
+        for (let day = 1; day <= 31; day++) {
+            const div = document.createElement('div');
+            div.className = 'form-check form-check-inline';
+            div.innerHTML = `
+                <input class="form-check-input" type="checkbox" id="${modalType}_day_${day}" value="${day}">
+                <label class="form-check-label" for="${modalType}_day_${day}">${day}</label>
+            `;
+            daysContainer.appendChild(div);
+        }
+        
+    } else if (periodicity === 'biweekly') {
+        console.log('📅 Generando checkboxes para días quincenales');
+        specificDaysRow.style.display = 'block';
+        
+        for (let day = 1; day <= 15; day++) {
+            const div = document.createElement('div');
+            div.className = 'form-check form-check-inline';
+            div.innerHTML = `
+                <input class="form-check-input" type="checkbox" id="${modalType}_day_${day}" value="${day}">
+                <label class="form-check-label" for="${modalType}_day_${day}">${day}</label>
+            `;
+            daysContainer.appendChild(div);
+        }
+        
+    } else {
+        console.log('📅 Ocultando sección de días específicos');
+        specificDaysRow.style.display = 'none';
+    }
+};
+
+window.updateTaskMode = function(modalType) {
+    const modeSelect = document.getElementById(`${modalType}TaskMode`);
+    const targetContainer = document.getElementById(`${modalType}TaskTargetContainer`);
+    const periodicitySelect = document.getElementById(`${modalType}TaskPeriodicity`);
+    
+    if (modeSelect && targetContainer) {
+        // Solo mostrar "Veces por día" si es modo contador Y periodicidad diaria
+        if (modeSelect.value === 'counter' && periodicitySelect && periodicitySelect.value === 'daily') {
+            targetContainer.style.display = 'block';
+        } else {
+            targetContainer.style.display = 'none';
+        }
+    }
+    
+    // Actualizar opciones de periodicidad cuando cambia el modo
+    if (periodicitySelect && periodicitySelect.value) {
+        window.updateFrequencyOptions(modalType);
+    }
+};
+
+async function loadSystemUsers() {
+    try {
+        console.log('🔄 loadSystemUsers - Iniciando carga de usuarios del sistema...');
+        
+        const response = await fetch('/agendatce/api/config/system-users', {
+            credentials: 'include'
+        });
+        
+        console.log('🔄 loadSystemUsers - Response status:', response.status);
+        console.log('🔄 loadSystemUsers - Response ok:', response.ok);
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log('🔄 loadSystemUsers - Result:', result);
+            
+            const systemUsersSelect = document.getElementById('employeeSystemUser');
+            
+            if (!systemUsersSelect) {
+                console.error('❌ loadSystemUsers - No se encontró el elemento employeeSystemUser');
+                return;
+            }
+            
+            // Limpiar opciones existentes
+            systemUsersSelect.innerHTML = '<option value="">Sin enlace (usuario independiente)</option>';
+            
+            // Agregar usuarios del sistema
+            if (result.success && result.data && result.data.length > 0) {
+                console.log('🔄 loadSystemUsers - Agregando', result.data.length, 'usuarios');
+                result.data.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user._id;
+                    option.textContent = `${user.name} (${user.correo})`;
+                    systemUsersSelect.appendChild(option);
+                });
+            } else {
+                console.log('⚠️ loadSystemUsers - No hay usuarios disponibles o error en la respuesta');
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'No hay usuarios disponibles';
+                systemUsersSelect.appendChild(option);
+            }
+            
+            // Los usuarios se cargan en el modal de búsqueda
+        } else {
+            console.error('❌ loadSystemUsers - Error en la respuesta:', response.status, response.statusText);
+            const systemUsersSelect = document.getElementById('employeeSystemUser');
+            if (systemUsersSelect) {
+                systemUsersSelect.innerHTML = '<option value="">Error cargando usuarios</option>';
+            }
+        }
+    } catch (error) {
+        console.error('❌ loadSystemUsers - Error:', error);
+        const systemUsersSelect = document.getElementById('employeeSystemUser');
+        if (systemUsersSelect) {
+            systemUsersSelect.innerHTML = '<option value="">Error cargando usuarios</option>';
+        }
+    }
+}
+
+// En la función que abre el modal de agregar empleado
+async function showAddEmployeeModal() {
+    await loadSystemUsers(); // ✅ AGREGAR ESTA LÍNEA
+    const modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+    modal.show();
+}
+
+console.log('✅ Funciones de periodicidad cargadas en configuration.ejs:', {
+    updateFrequencyOptions: typeof window.updateFrequencyOptions,
+    updateDaysOptions: typeof window.updateDaysOptions,
+    updateTaskMode: typeof window.updateTaskMode
+});
+
+// Inicialización del sistema de búsqueda de usuarios
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ Sistema de búsqueda de usuarios inicializado');
+});
+</script>
+
+

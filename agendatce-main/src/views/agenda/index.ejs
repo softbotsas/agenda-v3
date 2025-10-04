@@ -1,0 +1,4036 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Agenda TCE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .agenda-header { background: #000000; color: white; }
+        .task-card { transition: transform 0.2s; }
+        .task-card:hover { transform: translateY(-2px); }
+        .sla-warning { border-left: 4px solid #ffc107; }
+        .sla-danger { border-left: 4px solid #dc3545; }
+        .sla-success { border-left: 4px solid #28a745; }
+        
+        /* Colores para los gradientes del dashboard */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%) !important;
+        }
+        .bg-gradient-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+        }
+        .bg-gradient-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%) !important;
+        }
+        .bg-gradient-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg agenda-header">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-calendar-check me-2"></i>
+                Sistema de Agenda TCE
+            </a>
+            <div class="navbar-nav ms-auto">
+                <button class="btn btn-outline-light btn-sm me-2" onclick="refreshData()">
+                    <i class="fas fa-sync-alt me-1"></i>
+                    Actualizar
+                </button>
+                
+                <!-- Dropdown del usuario -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user me-2"></i>
+                        <span id="current-user-name">Usuario</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><h6 class="dropdown-header" id="current-user-role">Cargando...</h6></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt me-2"></i>
+                            Cerrar Sesión
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Navegación -->
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-outline-primary" onclick="showView('dashboard')">
+                                            <i class="fas fa-chart-bar me-1"></i>
+                                            Dashboard
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="showView('today')">
+                                            <i class="fas fa-calendar-day me-1"></i>
+                                            Hoy
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" onclick="showView('all-tasks')">
+                                            <i class="fas fa-list me-1"></i>
+                                            Todas las Tareas
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary admin-supervisor-only" id="history-btn" onclick="showView('history')" style="display: none;">
+                                            <i class="fas fa-history me-1"></i>
+                                            Historial
+                                        </button>
+                                        <button type="button" class="btn btn-outline-primary admin-only" id="config-btn" onclick="showView('config')" style="display: none;">
+                                            <i class="fas fa-cog me-1"></i>
+                                            Configuración
+                                        </button>
+                                    </div>
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-info me-2" id="task-count">0 tareas</span>
+                                <button class="btn btn-success btn-sm" onclick="exportData()">
+                                    <i class="fas fa-download me-1"></i>
+                                    Exportar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido Principal -->
+    <div class="container-fluid mt-3">
+        <div id="main-content">
+            <!-- Aquí se carga el contenido dinámico -->
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar usuario -->
+    <div class="modal fade" id="userModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalTitle">Nuevo Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="user_id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="user_nombre" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="user_email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Color</label>
+                            <input type="color" class="form-control form-control-color" id="user_color" value="#007bff">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="user_vinculado">
+                                <label class="form-check-label" for="user_vinculado">
+                                    ¿Está registrado en el sistema principal?
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3" id="system-user-group" style="display: none;">
+                            <label class="form-label">Usuario del Sistema</label>
+                            <select class="form-select" id="user_system_id">
+                                <option value="">Seleccionar usuario...</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUser()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para registrar tarea -->
+    <div class="modal fade" id="taskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Tarea</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                        <div class="modal-body">
+                            <form id="taskForm">
+                                <input type="hidden" id="assignment_id">
+                                <input type="hidden" id="task_mode">
+
+                                <div class="mb-3">
+                                    <label class="form-label">Tarea</label>
+                                    <input type="text" class="form-control" id="task_title" readonly>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Realizado por</label>
+                                    <select class="form-select" id="task_user" required>
+                                        <option value="">Seleccionar usuario...</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3" id="value-group" style="display: none;">
+                                    <label class="form-label">Cantidad</label>
+                                    <input type="number" class="form-control" id="task_value" value="1" min="1">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Comentario</label>
+                                    <textarea class="form-control" id="task_comment" rows="2" placeholder="Comentario sobre la tarea..."></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Nota adicional</label>
+                                    <textarea class="form-control" id="task_nota" rows="2" placeholder="Nota personal sobre la actividad..."></textarea>
+                                </div>
+
+                                <div class="mb-3" id="evidence-group" style="display: none;">
+                                    <label class="form-label">Evidencia <span class="text-danger">*</span></label>
+                                    <input type="file" class="form-control" id="task_evidence" multiple accept="image/*,.pdf,.doc,.docx" required>
+                                    <small class="form-text text-muted">Adjunta capturas, boletas o documentos relacionados (obligatorio)</small>
+                                </div>
+                            </form>
+                        </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTask()">Registrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar etiqueta -->
+    <div class="modal fade" id="tagModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tagModalTitle">Nueva Etiqueta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="tagForm">
+                        <input type="hidden" id="tag_id">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la etiqueta</label>
+                            <input type="text" class="form-control" id="tag_name" required placeholder="ej: rutas, finanzas, rrhh">
+                            <small class="form-text text-muted">Solo letras minúsculas, números y guiones</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nombre para mostrar</label>
+                            <input type="text" class="form-control" id="tag_display_name" required placeholder="ej: Rutas, Finanzas, RRHH">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" id="tag_description" rows="2" placeholder="Descripción de la etiqueta..."></textarea>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Color</label>
+                                    <input type="color" class="form-control form-control-color" id="tag_color" value="#6c757d">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Categoría</label>
+                                    <select class="form-select" id="tag_category" required>
+                                        <option value="">Seleccionar categoría...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTag()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar tarea -->
+    <div class="modal fade" id="taskDefinitionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskDefinitionModalTitle">Nueva Tarea</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskDefinitionForm">
+                        <input type="hidden" id="task_definition_id">
+                        
+                        <!-- Título y SLA -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de la tarea *</label>
+                                    <input type="text" class="form-control" id="task_definition_title" required placeholder="ej: Revisar rutas diarias">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">SLA (Hora límite)</label>
+                                    <input type="time" class="form-control" id="task_definition_sla_time">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Descripción -->
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" id="task_definition_description" rows="3" placeholder="Descripción detallada de la tarea..."></textarea>
+                        </div>
+                        
+                        <!-- Periodicidad y frecuencia -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Periodicidad *</label>
+                                    <select class="form-select" id="task_definition_periodicity" required onchange="console.log('📅 Periodicidad cambiada a:', this.value); updateFrequencyOptions();">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="daily">Diaria</option>
+                                        <option value="weekly">Semanal</option>
+                                        <option value="monthly">Mensual</option>
+                                        <option value="biweekly">Quincenal</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Frecuencia</label>
+                                    <select class="form-select" id="task_definition_frequency" disabled onchange="updateDaysOptions()">
+                                        <option value="1">Una vez</option>
+                                    </select>
+                                    <small class="form-text text-muted" id="frequency_help">Selecciona la periodicidad primero</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Días específicos -->
+                        <div class="mb-3" id="specific_days_section" style="display: none;">
+                            <label class="form-label">Días específicos</label>
+                            <div id="days_selection_container">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                            <small class="form-text text-muted" id="days_help">Selecciona los días específicos</small>
+                        </div>
+                        
+                        <!-- Modo y meta -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo de tarea *</label>
+                                    <select class="form-select" id="task_definition_mode" required onchange="updateTargetField()">
+                                        <option value="">Seleccionar...</option>
+                                        <option value="binary">Una sola vez (Sí/No)</option>
+                                        <option value="counter">Múltiples veces (Contador)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" id="target_label">Meta por período</label>
+                                    <input type="number" class="form-control" id="task_definition_target_per_period" value="1" min="1" disabled>
+                                    <small class="form-text text-muted" id="target_help">Selecciona el tipo de tarea primero</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Asignación -->
+                        <div class="mb-3">
+                            <label class="form-label">Asignación *</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="task_assignment" id="assignment_anyone" value="anyone" checked onchange="toggleSpecificUser()">
+                                        <label class="form-check-label" for="assignment_anyone">
+                                            <strong>Cualquiera puede hacerla</strong>
+                                            <br><small class="text-muted">Laisa, Alejandra o cualquier empleado</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="task_assignment" id="assignment_specific" value="specific" onchange="toggleSpecificUser()">
+                                        <label class="form-check-label" for="assignment_specific">
+                                            <strong>Específica para alguien</strong>
+                                            <br><small class="text-muted">Solo la persona asignada</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Selector de usuario específico -->
+                        <div class="mb-3" id="specific_user_section" style="display: none;">
+                            <label class="form-label">Asignar a</label>
+                            <select class="form-select" id="task_definition_specific_user">
+                                <option value="">Seleccionar usuario...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Evidencia -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="task_definition_requires_evidence">
+                                <label class="form-check-label" for="task_definition_requires_evidence">
+                                    Requiere evidencia (boletas, capturas, etc.)
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Etiquetas -->
+                        <div class="mb-3">
+                            <label class="form-label">Etiquetas</label>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <select class="form-select" id="task_definition_tags_select" multiple>
+                                        <option value="">Seleccionar etiquetas...</option>
+                                    </select>
+                                    <small class="form-text text-muted">Mantén presionado Ctrl para seleccionar múltiples etiquetas</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="openTagModalFromTask()">
+                                        <i class="fas fa-plus me-1"></i>
+                                        Nueva Etiqueta
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="selected-tags-definition" class="mt-2"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveTaskDefinition()">Guardar Tarea</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Funciones para manejar periodicidad en modales de tareas
+        console.log('🔧 Cargando funciones de periodicidad...');
+
+        window.updateFrequencyOptions = function(modalType) {
+            console.log('🔄 updateFrequencyOptions llamada para modal:', modalType);
+            const periodicitySelect = document.getElementById(`${modalType}TaskPeriodicity`);
+            const frequencySelect = document.getElementById(`${modalType}TaskFrequency`);
+            const frequencyRow = document.getElementById(`${modalType}FrequencyRow`);
+            const specificDaysRow = document.getElementById(`${modalType}SpecificDaysRow`);
+            
+            if (!periodicitySelect || !frequencySelect) {
+                console.log('❌ Elementos no encontrados');
+                return;
+            }
+            
+            const periodicity = periodicitySelect.value;
+            console.log('📅 Periodicidad seleccionada:', periodicity);
+            
+            // Limpiar opciones existentes
+            frequencySelect.innerHTML = '<option value="">Seleccionar frecuencia...</option>';
+            
+            // Ocultar filas por defecto
+            if (frequencyRow) frequencyRow.style.display = 'none';
+            if (specificDaysRow) specificDaysRow.style.display = 'none';
+            
+            if (periodicity === 'weekly') {
+                console.log('📅 Configurando opciones semanales');
+                if (frequencyRow) frequencyRow.style.display = 'block';
+                
+                for (let i = 1; i <= 7; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por semana`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1';
+            } else if (periodicity === 'monthly') {
+                console.log('📅 Configurando opciones mensuales');
+                if (frequencyRow) frequencyRow.style.display = 'block';
+                
+                for (let i = 1; i <= 31; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por mes`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1';
+            } else if (periodicity === 'biweekly') {
+                console.log('📅 Configurando opciones quincenales');
+                if (frequencyRow) frequencyRow.style.display = 'block';
+                
+                for (let i = 1; i <= 15; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por quincena`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1';
+            }
+            
+            // Actualizar días específicos
+            window.updateDaysOptions(modalType);
+        };
+
+        window.updateDaysOptions = function(modalType) {
+            console.log('📅 updateDaysOptions llamada para modal:', modalType);
+            const periodicity = document.getElementById(`${modalType}TaskPeriodicity`).value;
+            const frequency = parseInt(document.getElementById(`${modalType}TaskFrequency`).value);
+            const specificDaysRow = document.getElementById(`${modalType}SpecificDaysRow`);
+            const daysContainer = document.getElementById(`${modalType}DaysSelectionContainer`);
+            
+            if (!specificDaysRow || !daysContainer) {
+                console.log('❌ Elementos de días no encontrados');
+                return;
+            }
+            
+            console.log('📊 Periodicidad:', periodicity, 'Frecuencia:', frequency);
+            
+            // Limpiar contenedor
+            daysContainer.innerHTML = '';
+            
+            if (periodicity === 'weekly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días de la semana');
+                specificDaysRow.style.display = 'block';
+                
+                const daysOfWeek = [
+                    { value: 'monday', label: 'Lunes' },
+                    { value: 'tuesday', label: 'Martes' },
+                    { value: 'wednesday', label: 'Miércoles' },
+                    { value: 'thursday', label: 'Jueves' },
+                    { value: 'friday', label: 'Viernes' },
+                    { value: 'saturday', label: 'Sábado' },
+                    { value: 'sunday', label: 'Domingo' }
+                ];
+                
+                daysOfWeek.forEach(day => {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="${modalType}_day_${day.value}" value="${day.value}">
+                        <label class="form-check-label" for="${modalType}_day_${day.value}">${day.label}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                });
+                
+            } else if (periodicity === 'monthly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días del mes');
+                specificDaysRow.style.display = 'block';
+                
+                for (let day = 1; day <= 31; day++) {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="${modalType}_day_${day}" value="${day}">
+                        <label class="form-check-label" for="${modalType}_day_${day}">${day}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                }
+                
+            } else if (periodicity === 'biweekly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días quincenales');
+                specificDaysRow.style.display = 'block';
+                
+                for (let day = 1; day <= 15; day++) {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="${modalType}_day_${day}" value="${day}">
+                        <label class="form-check-label" for="${modalType}_day_${day}">${day}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                }
+                
+            } else {
+                console.log('📅 Ocultando sección de días específicos');
+                specificDaysRow.style.display = 'none';
+            }
+        };
+
+        window.updateTaskMode = function(modalType) {
+            const modeSelect = document.getElementById(`${modalType}TaskMode`);
+            const targetContainer = document.getElementById(`${modalType}TaskTargetContainer`);
+            
+            if (modeSelect && targetContainer) {
+                if (modeSelect.value === 'counter') {
+                    targetContainer.style.display = 'block';
+                } else {
+                    targetContainer.style.display = 'none';
+                }
+            }
+        };
+
+        console.log('✅ Funciones de periodicidad cargadas:', {
+            updateFrequencyOptions: typeof window.updateFrequencyOptions,
+            updateDaysOptions: typeof window.updateDaysOptions,
+            updateTaskMode: typeof window.updateTaskMode
+        });
+    </script>
+    <script>
+        console.log('🚀 SCRIPT INICIADO');
+        
+        // Verificar que las funciones estén disponibles
+        console.log('🔧 Verificando funciones:', {
+            updateFrequencyOptions: typeof window.updateFrequencyOptions,
+            updateDaysOptions: typeof window.updateDaysOptions,
+            updateTaskMode: typeof window.updateTaskMode
+        });
+        
+        // Variables globales
+        let currentView = 'today';
+        let tasks = [];
+        let agendaUsers = [];
+        let taskDefinitions = [];
+        let tags = [];
+        let tagCategories = [];
+        let filteredTags = [];
+
+        // Las funciones de periodicidad están ahora en periodicity-functions.js
+
+        // Verificar funciones después de definirlas
+        console.log('✅ Funciones definidas:', {
+            updateFrequencyOptions: typeof window.updateFrequencyOptions,
+            updateDaysOptions: typeof window.updateDaysOptions,
+            updateTaskMode: typeof window.updateTaskMode
+        });
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentUser();
+            loadAgendaUsers();
+            showView('dashboard'); // Cambiar a dashboard como vista principal
+        });
+
+        // Función para cambiar vista
+        function showView(view) {
+            currentView = view;
+
+            // Actualizar botones de navegación
+            document.querySelectorAll('.btn-group .btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.add('btn-outline-primary');
+            });
+            
+            // Activar el botón correspondiente
+            const activeButton = document.querySelector(`[onclick="showView('${view}')"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+                activeButton.classList.remove('btn-outline-primary');
+            }
+
+            // Cargar contenido
+            switch(view) {
+                    case 'today':
+                        loadTodayView();
+                        break;
+                    case 'dashboard':
+                        loadDashboardView();
+                        break;
+                    case 'all-tasks':
+                        loadAllTasksView();
+                        break;
+                    case 'history':
+                        loadHistoryView();
+                        break;
+                    case 'config':
+                        loadConfigView();
+                        break;
+            }
+        }
+
+        // Vista de hoy
+        function loadTodayView() {
+            const content = `
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-calendar-day me-2"></i>
+                                    Mis Tareas de Hoy
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-filter"></i>
+                                            </span>
+                                            <select class="form-select" id="tag-filter">
+                                                <option value="">Todas las etiquetas</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="fas fa-search"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="search-tasks" placeholder="Buscar tarea...">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="tasks-container">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('main-content').innerHTML = content;
+            loadTodayTasks();
+        }
+
+        // Vista de dashboard
+        function loadDashboardView() {
+            const content = `
+                <div class="row">
+                    <!-- KPIs Principales -->
+                    <div class="col-12 mb-4">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-gradient-primary text-white h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h3 class="mb-0" id="total-tasks">0</h3>
+                                            <p class="mb-0">Tareas del Día</p>
+                                        </div>
+                                        <div class="ms-3">
+                                            <i class="fas fa-tasks fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-gradient-success text-white h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h3 class="mb-0" id="completion-rate">0%</h3>
+                                            <p class="mb-0">Cumplimiento</p>
+                                        </div>
+                                        <div class="ms-3">
+                                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-gradient-warning text-white h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h3 class="mb-0" id="late-tasks">0</h3>
+                                            <p class="mb-0">Atrasadas</p>
+                                        </div>
+                                        <div class="ms-3">
+                                            <i class="fas fa-clock fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <div class="card bg-gradient-info text-white h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h3 class="mb-0" id="total-actions">0</h3>
+                                            <p class="mb-0">Acciones Hoy</p>
+                                        </div>
+                                        <div class="ms-3">
+                                            <i class="fas fa-plus-circle fa-2x opacity-75"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resumen por Usuario -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-users me-2 text-primary"></i>
+                                    Rendimiento del Equipo
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="team-performance">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tareas por Categoría -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-tags me-2 text-primary"></i>
+                                    Tareas por Categoría
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="tasks-by-category">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actividad Reciente -->
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-history me-2 text-primary"></i>
+                                    Actividad Reciente
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="recent-activity">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Acciones Rápidas -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-bolt me-2 text-primary"></i>
+                                    Acciones Rápidas
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-2">
+                                        <button class="btn btn-outline-primary w-100" onclick="showView('today')">
+                                            <i class="fas fa-calendar-day me-2"></i>
+                                            Ver Tareas de Hoy
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <button class="btn btn-outline-success w-100" onclick="showView('all-tasks')">
+                                            <i class="fas fa-list me-2"></i>
+                                            Todas las Tareas
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <button class="btn btn-outline-info w-100" onclick="showView('config')">
+                                            <i class="fas fa-cog me-2"></i>
+                                            Configuración
+                                        </button>
+                                    </div>
+                                    <div class="col-md-3 mb-2">
+                                        <button class="btn btn-outline-warning w-100" onclick="exportData()">
+                                            <i class="fas fa-download me-2"></i>
+                                            Exportar Datos
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('main-content').innerHTML = content;
+            loadDashboardData();
+        }
+
+        // Cargar datos del dashboard
+        async function loadDashboardData() {
+            try {
+                // Simular carga de datos (después se conectará a la API)
+                setTimeout(() => {
+                    // KPIs principales
+                    document.getElementById('total-tasks').textContent = '12';
+                    document.getElementById('completion-rate').textContent = '85%';
+                    document.getElementById('late-tasks').textContent = '2';
+                    document.getElementById('total-actions').textContent = '18';
+
+                    // Rendimiento del equipo
+                    const teamPerformance = `
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Laisa Rodriguez</span>
+                                <span class="badge bg-success">92%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Alejandra Martinez</span>
+                                <span class="badge bg-warning">78%</span>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 78%"></div>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('team-performance').innerHTML = teamPerformance;
+
+                    // Tareas por categoría
+                    const tasksByCategory = `
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Rutas</span>
+                                <span class="badge bg-primary">8</span>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Comunicación</span>
+                                <span class="badge bg-info">5</span>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Finanzas</span>
+                                <span class="badge bg-success">3</span>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>RRHH</span>
+                                <span class="badge bg-warning">2</span>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('tasks-by-category').innerHTML = tasksByCategory;
+
+                    // Actividad reciente
+                    const recentActivity = `
+                        <div class="timeline">
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex">
+                                    <div class="timeline-marker bg-success rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                                    <div>
+                                        <small class="text-muted">Hace 5 minutos</small>
+                                        <p class="mb-0">Laisa completó "Revisar que todos los choferes estén en ruta"</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex">
+                                    <div class="timeline-marker bg-primary rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                                    <div>
+                                        <small class="text-muted">Hace 15 minutos</small>
+                                        <p class="mb-0">Alejandra registró 2 acciones en "Reportarse en grupos de interacción"</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="timeline-item mb-3">
+                                <div class="d-flex">
+                                    <div class="timeline-marker bg-warning rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                                    <div>
+                                        <small class="text-muted">Hace 1 hora</small>
+                                        <p class="mb-0">Laisa completó "Verificar PRETRIP de drivers"</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('recent-activity').innerHTML = recentActivity;
+                }, 1000);
+            } catch (error) {
+                console.error('Error al cargar datos del dashboard:', error);
+            }
+        }
+
+        // Vista de todas las tareas
+        async function loadAllTasksView() {
+            const content = `
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title">
+                                    <i class="fas fa-list me-2"></i>
+                                    Todas las Tareas
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Filtros y búsqueda -->
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Buscar tarea</label>
+                                        <input type="text" class="form-control" id="task-search" placeholder="Buscar por título o descripción...">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Periodicidad</label>
+                                        <select class="form-select" id="periodicity-filter">
+                                            <option value="">Todas</option>
+                                            <option value="daily">Diarias</option>
+                                            <option value="weekly">Semanales</option>
+                                            <option value="monthly">Mensuales</option>
+                                            <option value="biweekly">Quincenales</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Tipo</label>
+                                        <select class="form-select" id="mode-filter">
+                                            <option value="">Todos</option>
+                                            <option value="binary">Binarias</option>
+                                            <option value="counter">Contador</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">Evidencia</label>
+                                        <select class="form-select" id="evidence-filter">
+                                            <option value="">Todas</option>
+                                            <option value="true">Requiere evidencia</option>
+                                            <option value="false">No requiere evidencia</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button class="btn btn-primary w-100" onclick="filterTasks()">
+                                            <i class="fas fa-search me-1"></i>
+                                            Filtrar
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Contador de resultados -->
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="text-muted" id="tasks-count">Cargando...</span>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
+                                        <i class="fas fa-times me-1"></i>
+                                        Limpiar filtros
+                                    </button>
+                                </div>
+
+                                <!-- Lista de tareas -->
+                                <div id="all-tasks-container">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Cargando tareas...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('main-content').innerHTML = content;
+            await loadAllTasks();
+
+            // Agregar búsqueda en tiempo real
+            document.getElementById('task-search').addEventListener('input', function() {
+                filterTasks();
+            });
+        }
+
+        // Variables globales para filtros
+        let allTasksData = [];
+        let filteredTasksData = [];
+
+        // Cargar todas las tareas
+        async function loadAllTasks() {
+            try {
+                const response = await fetch('/agendatce/api/config/tasks');
+                const data = await response.json();
+
+                if (data.success) {
+                    allTasksData = data.data;
+                    filteredTasksData = [...allTasksData];
+                    displayAllTasks(filteredTasksData);
+                    updateTasksCount();
+                } else {
+                    document.getElementById('all-tasks-container').innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error al cargar las tareas
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al cargar tareas:', error);
+                document.getElementById('all-tasks-container').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar las tareas
+                    </div>
+                `;
+            }
+        }
+
+        // Filtrar tareas
+        function filterTasks() {
+            const searchTerm = document.getElementById('task-search').value.toLowerCase();
+            const periodicity = document.getElementById('periodicity-filter').value;
+            const mode = document.getElementById('mode-filter').value;
+            const evidence = document.getElementById('evidence-filter').value;
+
+            filteredTasksData = allTasksData.filter(task => {
+                // Filtro de búsqueda
+                const matchesSearch = !searchTerm || 
+                    task.title.toLowerCase().includes(searchTerm) ||
+                    (task.description && task.description.toLowerCase().includes(searchTerm));
+
+                // Filtro de periodicidad
+                const matchesPeriodicity = !periodicity || task.periodicity === periodicity;
+
+                // Filtro de modo
+                const matchesMode = !mode || task.mode === mode;
+
+                // Filtro de evidencia
+                const matchesEvidence = evidence === '' || 
+                    (evidence === 'true' && task.requires_evidence) ||
+                    (evidence === 'false' && !task.requires_evidence);
+
+                return matchesSearch && matchesPeriodicity && matchesMode && matchesEvidence;
+            });
+
+            displayAllTasks(filteredTasksData);
+            updateTasksCount();
+        }
+
+        // Limpiar filtros
+        function clearFilters() {
+            document.getElementById('task-search').value = '';
+            document.getElementById('periodicity-filter').value = '';
+            document.getElementById('mode-filter').value = '';
+            document.getElementById('evidence-filter').value = '';
+            
+            filteredTasksData = [...allTasksData];
+            displayAllTasks(filteredTasksData);
+            updateTasksCount();
+        }
+
+        // Actualizar contador de tareas
+        function updateTasksCount() {
+            const count = filteredTasksData.length;
+            const total = allTasksData.length;
+            document.getElementById('tasks-count').textContent = 
+                `Mostrando ${count} de ${total} tareas`;
+        }
+
+        // Mostrar todas las tareas
+        function displayAllTasks(tasks) {
+            const container = document.getElementById('all-tasks-container');
+
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-tasks text-muted fa-3x mb-3"></i>
+                        <h5>No hay tareas definidas</h5>
+                        <p class="text-muted">No hay tareas en el sistema.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Agrupar tareas por periodicidad
+            const groupedTasks = {
+                'daily': tasks.filter(t => t.periodicity === 'daily'),
+                'weekly': tasks.filter(t => t.periodicity === 'weekly'),
+                'monthly': tasks.filter(t => t.periodicity === 'monthly'),
+                'monThu': tasks.filter(t => t.periodicity === 'monThu'),
+                'biweekly': tasks.filter(t => t.periodicity === 'biweekly')
+            };
+
+            const periodicityLabels = {
+                'daily': 'Diarias',
+                'weekly': 'Semanales',
+                'monthly': 'Mensuales',
+                'monThu': 'Lunes y Jueves',
+                'biweekly': 'Quincenales'
+            };
+
+            let html = '';
+
+            Object.keys(groupedTasks).forEach(periodicity => {
+                const tasksInGroup = groupedTasks[periodicity];
+                if (tasksInGroup.length > 0) {
+                    html += `
+                        <div class="mb-4">
+                            <h6 class="text-primary mb-3">
+                                <i class="fas fa-calendar me-2"></i>
+                                ${periodicityLabels[periodicity]} (${tasksInGroup.length})
+                            </h6>
+                            <div class="row">
+                                ${tasksInGroup.map(task => `
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h6 class="card-title">${task.title}</h6>
+                                                <div class="mb-2">
+                                                    <span class="badge bg-primary me-1">${task.mode === 'counter' ? 'Contador' : 'Binaria'}</span>
+                                                    <span class="badge bg-info me-1">${task.target_per_period} por período</span>
+                                                    ${task.requires_evidence ? '<span class="badge bg-warning">Requiere evidencia</span>' : ''}
+                                                </div>
+                                                <div class="mb-2">
+                                                    ${task.tags && task.tags.length > 0 ? task.tags.map(tag => `<span class="badge bg-secondary me-1">${tag.display_name || tag.name || tag}</span>`).join('') : '<span class="text-muted">Sin etiquetas</span>'}
+                                                </div>
+                                                ${task.sla_time ? `<small class="text-muted">SLA: ${task.sla_time}</small>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Vista de historial
+        async function loadHistoryView() {
+            console.log('📂 Cargando sección: history');
+            
+            // Mostrar loading mientras carga
+            document.getElementById('main-content').innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando historial...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Cargando historial de actividades...</p>
+                </div>
+            `;
+
+            // Cargar la sección de historial dinámicamente
+            fetch('/agendatce/sections/history', {
+                credentials: 'include'
+            })
+            .then(response => {
+                console.log('📡 Respuesta de historial recibida:', response.status);
+                return response.text();
+            })
+            .then(html => {
+                console.log('📄 HTML de historial recibido, longitud:', html.length);
+                document.getElementById('main-content').innerHTML = html;
+                console.log('✅ HTML insertado en DOM');
+                
+                // Ejecutar la inicialización del historial después de insertar el HTML
+                setTimeout(() => {
+                    console.log('🚀 Inicializando historial después de carga dinámica...');
+                    
+                    // Intentar usar initializeHistory primero, luego loadHistoryData como fallback
+                    if (window.initializeHistory) {
+                        console.log('✅ Usando window.initializeHistory');
+                        window.initializeHistory();
+                    } else if (window.loadHistoryData) {
+                        console.log('✅ Usando window.loadHistoryData');
+                        window.loadHistoryData();
+                    } else {
+                        console.error('❌ Ninguna función de historial encontrada');
+                        console.log('🔍 Funciones disponibles en window:', Object.keys(window).filter(k => k.includes('History') || k.includes('history')));
+                    }
+                }, 200);
+            })
+            .catch(error => {
+                console.error('❌ Error cargando historial:', error);
+                document.getElementById('main-content').innerHTML = `
+                    <div class="alert alert-danger text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                        <h5>Error al cargar el historial</h5>
+                        <p>No se pudo cargar el historial de actividades. Intenta nuevamente.</p>
+                        <button class="btn btn-primary" onclick="loadHistoryView()">
+                            <i class="fas fa-refresh me-1"></i>Reintentar
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+
+        // FUNCIÓN QUE MUESTRA EL HISTORIAL - 100% FUNCIONAL
+        function displaySimpleHistory(activities) {
+            console.log('🎨 displaySimpleHistory llamada con:', activities.length, 'actividades');
+            
+            const container = document.getElementById('history-container');
+            
+            if (!container) {
+                console.error('❌ Container history-container no encontrado en displaySimpleHistory');
+                return;
+            }
+
+            if (!activities || activities.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-history text-muted fa-3x mb-3"></i>
+                        <h5>No hay actividades registradas</h5>
+                        <p class="text-muted">Las actividades aparecerán aquí cuando se registren tareas.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Agrupar por fecha
+            const groupedActivities = {};
+            activities.forEach(activity => {
+                const date = new Date(activity.created_at).toLocaleDateString('es-ES');
+                if (!groupedActivities[date]) {
+                    groupedActivities[date] = [];
+                }
+                groupedActivities[date].push(activity);
+            });
+
+            console.log('📅 Actividades agrupadas por fecha:', Object.keys(groupedActivities));
+
+            let html = '';
+
+            Object.keys(groupedActivities).sort((a, b) => new Date(b) - new Date(a)).forEach(date => {
+                const dayActivities = groupedActivities[date];
+                
+                html += `
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            ${date} (${dayActivities.length} actividades)
+                        </h6>
+                        <div class="timeline">
+                            ${dayActivities.map(activity => {
+                                const actionIcon = {
+                                    'completed': 'check-circle',
+                                    'increment': 'plus-circle',
+                                    'not_applicable': 'ban'
+                                }[activity.action_type] || 'circle';
+                                
+                                const actionColor = {
+                                    'completed': 'success',
+                                    'increment': 'info',
+                                    'not_applicable': 'secondary'
+                                }[activity.action_type] || 'primary';
+                                
+                                const actionText = {
+                                    'completed': 'Completó',
+                                    'increment': 'Incrementó',
+                                    'not_applicable': 'Marcó como No Aplica'
+                                }[activity.action_type] || 'Registró acción';
+                                
+                                return `
+                                    <div class="timeline-item mb-3">
+                                        <div class="d-flex">
+                                            <div class="timeline-marker bg-${actionColor} rounded-circle me-3" style="width: 12px; height: 12px; margin-top: 6px;"></div>
+                                            <div class="flex-grow-1">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <p class="mb-1">
+                                                            <strong>${activity.user_name || 'Usuario desconocido'}</strong> 
+                                                            ${actionText} 
+                                                            <strong>"${activity.task_title || 'Tarea desconocida'}"</strong>
+                                                            ${activity.action_type === 'increment' ? `(+${activity.value})` : ''}
+                                                        </p>
+                                                        ${activity.comment ? `<p class="text-muted mb-1">${activity.comment}</p>` : ''}
+                                                        ${activity.evidence && activity.evidence.length > 0 ? `
+                                                            <div class="mt-2">
+                                                                <small class="text-muted">Evidencias adjuntas:</small>
+                                                                ${activity.evidence.map(ev => `
+                                                                    <span class="badge bg-light text-dark me-1">
+                                                                        <i class="fas fa-paperclip me-1"></i>${ev.original_name || ev.filename}
+                                                                    </span>
+                                                                `).join('')}
+                                                            </div>
+                                                        ` : ''}
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <small class="text-muted">${new Date(activity.created_at).toLocaleTimeString('es-ES')}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            console.log('✅ HTML del historial insertado correctamente');
+        }
+
+        // Filtrar historial
+        async function filterHistory() {
+            const userId = document.getElementById('history-user-filter').value;
+            const startDate = document.getElementById('history-start-date').value;
+            const endDate = document.getElementById('history-end-date').value;
+
+            let url = '/agendatce/api/history/all?';
+            const params = [];
+            
+            if (userId) params.push(`user_id=${userId}`);
+            if (startDate) params.push(`start_date=${startDate}`);
+            if (endDate) params.push(`end_date=${endDate}`);
+            
+            url += params.join('&');
+
+            try {
+                const response = await fetch(url, {
+                    credentials: 'include'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    displayHistory(data.data);
+                } else {
+                    alert('Error al filtrar historial');
+                }
+            } catch (error) {
+                console.error('Error al filtrar historial:', error);
+                alert('Error al filtrar historial');
+            }
+        }
+
+              // Las tareas se cargan desde la base de datos via API
+        const allTasks = [];
+
+        // Función para determinar si una tarea debe mostrarse hoy
+        function shouldShowTaskToday(task) {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); // 0 = Domingo, 1 = Lunes, etc.
+            const dayOfMonth = today.getDate();
+            
+            switch(task.periodicity) {
+                case 'daily':
+                    return true;
+                case 'weekly':
+                    return dayOfWeek === 1; // Lunes
+                case 'monthly':
+                    return dayOfMonth === 1; // Primer día del mes
+                case 'monThu':
+                    return dayOfWeek === 1 || dayOfWeek === 4; // Lunes o Jueves
+                case 'biweekly':
+                    return dayOfWeek === 1 && Math.floor(dayOfMonth / 7) % 2 === 0; // Lunes cada 2 semanas
+                default:
+                    return false;
+            }
+        }
+
+        // Cargar tareas de hoy
+        async function loadTodayTasks() {
+            try {
+                // Mostrar loading
+                const container = document.getElementById('tasks-container');
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando tareas...</span>
+                        </div>
+                    </div>
+                `;
+
+                // Cargar tareas desde la API
+                const response = await fetch('/agendatce/api/tasks/today');
+                const data = await response.json();
+
+                if (data.success) {
+                    // Mostrar información de fecha de Charlotte
+                    if (data.dateInfo) {
+                        const dateInfo = data.dateInfo;
+                        const headerElement = document.querySelector('.card-header h5');
+                        if (headerElement) {
+                            headerElement.innerHTML = `
+                                <i class="fas fa-calendar-day me-2"></i>
+                                Mis Tareas de Hoy
+                                <small class="text-muted ms-2">
+                                    <i class="fas fa-clock me-1"></i>
+                                    ${dateInfo.day_name} ${dateInfo.day_of_month} (Charlotte, USA)
+                                    <span class="badge bg-info ms-1">${dateInfo.tasks_showing_today}/${dateInfo.total_tasks_available}</span>
+                                </small>
+                            `;
+                        }
+                    }
+
+                    displayTasks(data.data);
+                    updateTaskCount(data.data.length);
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error al cargar las tareas
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error al cargar tareas:', error);
+                const container = document.getElementById('tasks-container');
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar las tareas
+                    </div>
+                `;
+            }
+        }
+
+        // Mostrar tareas
+        function displayTasks(tasks) {
+            const container = document.getElementById('tasks-container');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                        <h5>¡No hay tareas para hoy!</h5>
+                        <p class="text-muted">No hay tareas programadas para este día.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = tasks.map(task => {
+                const isCompleted = task.completed;
+                const isLate = task.is_late;
+                const progress = task.mode === 'counter' ?
+                    `${task.current}/${task.target_per_period}` :
+                    (isCompleted ? 'Completada' : 'Pendiente');
+                
+                const cardClass = isCompleted ? 'sla-success' : (isLate ? 'sla-danger' : 'sla-warning');
+                const badgeClass = isCompleted ? 'bg-success' : (isLate ? 'bg-danger' : 'bg-warning');
+                
+                // Determinar periodicidad para mostrar
+                const periodicityText = {
+                    'daily': 'Diaria',
+                    'weekly': 'Semanal',
+                    'monthly': 'Mensual',
+                    'monThu': 'Lun/Jue',
+                    'biweekly': 'Quincenal'
+                };
+                
+                return `
+                    <div class="card mb-3 task-card ${cardClass}" data-task-id="${task.id}">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="card-title mb-1">
+                                        ${task.title}
+                                        ${isLate ? '<i class="fas fa-exclamation-triangle text-danger ms-2" title="Tarea atrasada"></i>' : ''}
+                                        ${task.requires_evidence ? '<i class="fas fa-paperclip text-info ms-2" title="Requiere evidencia"></i>' : ''}
+                                    </h6>
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        <span class="badge bg-primary">${periodicityText[task.periodicity]}</span>
+                                        ${task.tags && task.tags.length > 0 ? task.tags.map(tag => `<span class="badge bg-secondary">${tag.display_name || tag.name || tag}</span>`).join('') : ''}
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge ${badgeClass} me-2">${progress}</span>
+                                        ${task.sla_time ? `<small class="text-muted">SLA: ${task.sla_time}</small>` : ''}
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    ${!isCompleted ? `
+                                        <button class="btn btn-primary btn-sm me-2" onclick="openTaskModal('${task.id}', '${task.mode}', '${task.title}', ${task.requires_evidence})">
+                                            <i class="fas fa-plus me-1"></i>
+                                            ${task.mode === 'counter' ? 'Registrar Acción' : 'Completar'}
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-success btn-sm" disabled>
+                                            <i class="fas fa-check me-1"></i>
+                                            Completada
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+
+        // Abrir modal de tarea
+        function openTaskModal(taskId, mode, title, requiresEvidence = false) {
+            document.getElementById('assignment_id').value = taskId;
+            document.getElementById('task_mode').value = mode;
+            document.getElementById('task_title').value = title;
+            document.getElementById('task_value').value = 1;
+            document.getElementById('task_comment').value = '';
+            document.getElementById('task_nota').value = '';
+            document.getElementById('task_user').value = '';
+
+            const valueGroup = document.getElementById('value-group');
+            const evidenceGroup = document.getElementById('evidence-group');
+            
+            valueGroup.style.display = mode === 'counter' ? 'block' : 'none';
+            evidenceGroup.style.display = requiresEvidence ? 'block' : 'none';
+
+            const modal = new bootstrap.Modal(document.getElementById('taskModal'));
+            modal.show();
+        }
+
+        // Guardar tarea
+        async function saveTask() {
+            const assignmentId = document.getElementById('assignment_id').value;
+            const mode = document.getElementById('task_mode').value;
+            const value = parseInt(document.getElementById('task_value').value) || 1;
+            const comment = document.getElementById('task_comment').value;
+            const nota = document.getElementById('task_nota').value;
+            const userId = document.getElementById('task_user').value;
+            const evidenceFiles = document.getElementById('task_evidence').files;
+
+            // Validar que se seleccione un usuario
+            if (!userId) {
+                alert('Por favor selecciona un usuario');
+                return;
+            }
+
+            // Validar que se proporcione un comentario
+            if (!comment.trim()) {
+                alert('Por favor proporciona un comentario');
+                return;
+            }
+
+            // Validar evidencia si es requerida
+            const evidenceGroup = document.getElementById('evidence-group');
+            if (evidenceGroup.style.display === 'block' && evidenceFiles.length === 0) {
+                alert('Esta tarea requiere evidencia. Por favor adjunta al menos un archivo.');
+                return;
+            }
+
+            try {
+                // Preparar datos para enviar
+                const formData = new FormData();
+                formData.append('assignment_id', assignmentId);
+                formData.append('user_id', userId);
+                formData.append('action_type', mode === 'counter' ? 'increment' : 'completed');
+                formData.append('value', value);
+                formData.append('comment', comment);
+                formData.append('nota', nota);
+
+                // Agregar archivos de evidencia
+                for (let i = 0; i < evidenceFiles.length; i++) {
+                    formData.append('evidence_file', evidenceFiles[i]);
+                }
+
+                const response = await fetch('/agendatce/api/tasks/log', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
+
+                    // Mostrar mensaje de éxito
+                    alert('Tarea registrada exitosamente');
+
+                    // Recargar vista
+                    if (currentView === 'today') {
+                        loadTodayView();
+                    }
+                } else {
+                    alert('Error al registrar tarea: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error al guardar tarea:', error);
+                alert('Error al registrar tarea');
+            }
+        }
+
+        // Actualizar contador de tareas
+        function updateTaskCount(count) {
+            document.getElementById('task-count').textContent = `${count} tareas`;
+        }
+
+        // Refrescar datos
+        function refreshData() {
+            if (currentView === 'today') {
+                loadTodayView();
+            }
+            alert('Datos actualizados');
+        }
+
+        // Exportar datos
+        function exportData() {
+            alert('Función de exportación en desarrollo');
+        }
+
+        // Cargar información del usuario actual
+        async function loadCurrentUser() {
+            try {
+                console.log('🔍 Cargando información del usuario actual...');
+                
+                // Intentar obtener datos de la API primero
+                const response = await fetch('/agendatce/auth/current-user');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    console.log('✅ Usuario actual cargado desde API:', data.data);
+                    updateUserInfo(data.data);
+                } else {
+                    console.log('⚠️ API no disponible, usando datos de sesión...');
+                    // Fallback: usar datos básicos de la sesión
+                    // Temporalmente comentado para debug
+                    /*
+                    const sessionData = {
+                        _id: '<%= typeof user !== "undefined" ? user._id : "" %>',
+                        name: '<%= typeof user !== "undefined" ? user.name : "Usuario" %>',
+                        perfil_usuario: <%= typeof user !== "undefined" ? user.perfil_usuario : 3 %>,
+                        cargo: '<%= typeof user !== "undefined" ? user.cargo : "Sin cargo" %>'
+                    };
+                    
+                    if (sessionData._id && sessionData.name) {
+                        console.log('✅ Usando datos de sesión:', sessionData);
+                        updateUserInfo(sessionData);
+                    }
+                    */
+                    
+                    // Fallback: usar datos por defecto
+                    console.log('⚠️ No hay datos de sesión, usando datos por defecto');
+                    const defaultData = {
+                        name: 'Usuario',
+                        perfil_usuario: 3,
+                        cargo: 'Sin cargo'
+                    };
+                    updateUserInfo(defaultData);
+                }
+            } catch (error) {
+                console.error('❌ Error cargando usuario actual:', error);
+                console.log('⚠️ Usando datos por defecto debido al error');
+                const defaultData = {
+                    name: 'Usuario',
+                    perfil_usuario: 3,
+                    cargo: 'Sin cargo'
+                };
+                updateUserInfo(defaultData);
+            }
+        }
+
+        // Actualizar información del usuario en el header
+        function updateUserInfo(user) {
+            try {
+                console.log('👤 Actualizando información del usuario:', user);
+                
+                // Actualizar nombre del usuario
+                const nameElement = document.getElementById('current-user-name');
+                if (nameElement && user.name) {
+                    nameElement.textContent = user.name;
+                }
+                
+                // Actualizar rol del usuario
+                const roleElement = document.getElementById('current-user-role');
+                if (roleElement) {
+                    const roleText = user.perfil_usuario === 1 ? 'Administrador' : 
+                                   user.perfil_usuario === 2 ? 'Supervisor' : 'Empleado';
+                    roleElement.textContent = `${roleText} - ${user.cargo || 'Sin cargo'}`;
+                }
+                
+                // Actualizar visibilidad de botones según el rol
+                console.log('🔒 Llamando updateNavigationVisibility para:', user.name || user.nombre);
+                updateNavigationVisibility(user);
+                
+                // Guardar información del usuario globalmente
+                window.currentUser = user;
+                
+                console.log('✅ Información del usuario actualizada correctamente');
+            } catch (error) {
+                console.error('❌ Error actualizando información del usuario:', error);
+                showUserError();
+            }
+        }
+
+        // Actualizar visibilidad de navegación según el rol
+        function updateNavigationVisibility(user) {
+            try {
+                console.log('🔒 updateNavigationVisibility llamada con usuario:', user);
+                console.log('🔒 perfil_usuario:', user.perfil_usuario);
+                
+                const historyBtn = document.getElementById('history-btn');
+                const configBtn = document.getElementById('config-btn');
+                
+                console.log('🔒 Elementos encontrados:');
+                console.log('  - historyBtn:', historyBtn ? '✅ Encontrado' : '❌ No encontrado');
+                console.log('  - configBtn:', configBtn ? '✅ Encontrado' : '❌ No encontrado');
+                
+                // Permisos por rol:
+                // Admin (1): Todo (Dashboard, Hoy, Todas las tareas, Historial, Configuración)
+                // Supervisor (2): Todo EXCEPTO Configuración (Dashboard, Hoy, Todas las tareas, Historial)
+                // Empleado (3): Solo funciones básicas
+                
+                const isAdmin = user.perfil_usuario === 1;
+                const isSupervisor = user.perfil_usuario === 2;
+                const isEmployee = user.perfil_usuario === 3;
+                
+                console.log('🔒 Roles detectados:');
+                console.log('  - isAdmin:', isAdmin);
+                console.log('  - isSupervisor:', isSupervisor);
+                console.log('  - isEmployee:', isEmployee);
+                
+                // Historial: Admin y Supervisor pueden ver
+                if (historyBtn) {
+                    const showHistory = isAdmin || isSupervisor;
+                    historyBtn.style.display = showHistory ? 'inline-block' : 'none';
+                    console.log('🔒 Historial configurado:', showHistory ? '✅ Visible' : '❌ Oculto');
+                } else {
+                    console.error('❌ historyBtn no encontrado');
+                }
+                
+                // Configuración: Solo Admin puede ver
+                if (configBtn) {
+                    const showConfig = isAdmin;
+                    configBtn.style.display = showConfig ? 'inline-block' : 'none';
+                    console.log('🔒 Configuración configurada:', showConfig ? '✅ Visible' : '❌ Oculto');
+                } else {
+                    console.error('❌ configBtn no encontrado');
+                }
+                
+                console.log('🔒 Permisos finales:');
+                console.log('  - Rol:', isAdmin ? 'Administrador' : isSupervisor ? 'Supervisor' : 'Empleado');
+                console.log('  - Historial:', (isAdmin || isSupervisor) ? '✅ Visible' : '❌ Oculto');
+                console.log('  - Configuración:', isAdmin ? '✅ Visible' : '❌ Oculto');
+                
+            } catch (error) {
+                console.error('❌ Error actualizando visibilidad:', error);
+            }
+        }
+
+        // Mostrar error si no se puede cargar el usuario
+        function showUserError() {
+            const nameElement = document.getElementById('current-user-name');
+            const roleElement = document.getElementById('current-user-role');
+            
+            if (nameElement) {
+                nameElement.textContent = 'Usuario';
+            }
+            if (roleElement) {
+                roleElement.textContent = 'Error al cargar datos';
+            }
+        }
+
+        // Función de logout
+        async function logout() {
+            try {
+                const response = await fetch('/agendatce/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/agendatce/login';
+                } else {
+                    console.error('Error al cerrar sesión');
+                    alert('Error al cerrar sesión');
+                }
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                alert('Error al cerrar sesión');
+            }
+        }
+
+        // Cargar usuarios de agenda
+        async function loadAgendaUsers() {
+            try {
+                const response = await fetch('/agendatce/api/config/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    agendaUsers = data.data;
+                    updateUserSelect();
+                }
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+            }
+        }
+
+        // Actualizar select de usuarios
+        function updateUserSelect() {
+            const select = document.getElementById('task_user');
+            select.innerHTML = '<option value="">Seleccionar usuario...</option>';
+            
+            agendaUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user._id;
+                option.textContent = user.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Vista de configuración
+        function loadConfigView() {
+            console.log('🔧 loadConfigView() iniciando...');
+            
+            // Mostrar loading inicial
+            document.getElementById('main-content').innerHTML = `
+                <div class="text-center py-5">
+                                                <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando configuración...</span>
+                                                </div>
+                    <p class="mt-3 text-muted">Cargando configuración del sistema...</p>
+                </div>
+            `;
+
+            // Cargar la sección de configuración dinámicamente
+            fetch('/agendatce/sections/configuration', {
+                credentials: 'include'
+            })
+            .then(response => {
+                console.log('📡 Respuesta de configuración recibida:', response.status);
+                return response.text();
+            })
+            .then(html => {
+                console.log('📄 HTML de configuración recibido, longitud:', html.length);
+                document.getElementById('main-content').innerHTML = html;
+                console.log('✅ HTML insertado en DOM');
+                
+                // Esperar un momento para que el DOM se actualice completamente
+                setTimeout(() => {
+                    console.log('⏰ Iniciando loadConfigurationData...');
+                    loadConfigurationData();
+                }, 200);
+            })
+            .catch(error => {
+                console.error('❌ Error cargando configuración:', error);
+                document.getElementById('main-content').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar la configuración: ${error.message}
+                    </div>
+                `;
+            });
+        }
+
+        // Cargar lista de usuarios
+        async function loadUsersList() {
+            try {
+                const response = await fetch('/agendatce/api/config/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayUsersList(data.data);
+                }
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+            }
+        }
+
+        // Mostrar lista de usuarios
+        function displayUsersList(users) {
+            const container = document.getElementById('users-list');
+            
+            if (users.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-users text-muted fa-3x mb-3"></i>
+                        <h6>No hay usuarios registrados</h6>
+                        <p class="text-muted">Crea el primer usuario para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = users.map(user => `
+                <div class="card mb-2">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        ${user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">${user.name}</h6>
+                                        <small class="text-muted">${user.email}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge ${user.activo ? 'bg-success' : 'bg-secondary'} me-2">
+                                    ${user.activo ? 'Activo' : 'Inactivo'}
+                                </span>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="editUser('${user._id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('${user._id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Abrir modal de usuario
+        function openUserModal(userId = null) {
+            const modal = new bootstrap.Modal(document.getElementById('userModal'));
+            const title = document.getElementById('userModalTitle');
+            
+            if (userId) {
+                title.textContent = 'Editar Usuario';
+                loadUserData(userId);
+            } else {
+                title.textContent = 'Nuevo Usuario';
+                clearUserForm();
+            }
+            
+            // Cargar usuarios del sistema
+            loadSystemUsers();
+            
+            // Mostrar/ocultar grupo de usuario del sistema
+            document.getElementById('user_vinculado').addEventListener('change', function() {
+                const systemGroup = document.getElementById('system-user-group');
+                systemGroup.style.display = this.checked ? 'block' : 'none';
+            });
+            
+            modal.show();
+        }
+
+        // Cargar usuarios del sistema
+        async function loadSystemUsers() {
+            try {
+                const response = await fetch('/agendatce/api/config/system-users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('user_system_id');
+                    select.innerHTML = '<option value="">Seleccionar usuario...</option>';
+                    
+                    data.data.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user._id;
+                        option.textContent = `${user.name} (${user.correo})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar usuarios del sistema:', error);
+            }
+        }
+
+        // Limpiar formulario de usuario
+        function clearUserForm() {
+            document.getElementById('user_id').value = '';
+            document.getElementById('user_nombre').value = '';
+            document.getElementById('user_email').value = '';
+            document.getElementById('user_color').value = '#007bff';
+            document.getElementById('user_vinculado').checked = false;
+            document.getElementById('user_system_id').value = '';
+            document.getElementById('system-user-group').style.display = 'none';
+        }
+
+        // Cargar datos de usuario para editar
+        async function loadUserData(userId) {
+            try {
+                const user = agendaUsers.find(u => u._id === userId);
+                if (user) {
+                    document.getElementById('user_id').value = user._id;
+                    document.getElementById('user_nombre').value = user.name;
+                    document.getElementById('user_email').value = user.email;
+                    document.getElementById('user_color').value = user.color || '#007bff';
+                    document.getElementById('user_vinculado').checked = !!user.user_id;
+                    document.getElementById('user_system_id').value = user.user_id || '';
+                    document.getElementById('system-user-group').style.display = user.user_id ? 'block' : 'none';
+                }
+            } catch (error) {
+                console.error('Error al cargar datos del usuario:', error);
+            }
+        }
+
+        // Guardar usuario
+        async function saveUser() {
+            const userId = document.getElementById('user_id').value;
+            const nombre = document.getElementById('user_nombre').value;
+            const email = document.getElementById('user_email').value;
+            const color = document.getElementById('user_color').value;
+            const vinculado = document.getElementById('user_vinculado').checked;
+            const systemUserId = document.getElementById('user_system_id').value;
+
+            if (!nombre || !email) {
+                alert('Por favor completa todos los campos obligatorios');
+                return;
+            }
+
+            try {
+                const userData = {
+                    nombre,
+                    email,
+                    color,
+                    user_id: vinculado ? systemUserId : null
+                };
+
+                const url = userId ? `/agendatce/api/config/users/${userId}` : '/agendatce/api/config/users';
+                const method = userId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('userModal')).hide();
+                    alert(userId ? 'Usuario actualizado exitosamente' : 'Usuario creado exitosamente');
+                    loadUsersList();
+                    loadAgendaUsers(); // Recargar usuarios para el select
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error al guardar usuario:', error);
+                alert('Error al guardar usuario');
+            }
+        }
+
+        // Editar usuario
+        function editUser(userId) {
+            openUserModal(userId);
+        }
+
+        // Eliminar usuario
+        async function deleteUser(userId) {
+            if (confirm('¿Estás seguro de que quieres eliminar este usuario?')) {
+                try {
+                    const response = await fetch(`/agendatce/api/config/users/${userId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('Usuario eliminado exitosamente');
+                        loadUsersList();
+                        loadAgendaUsers(); // Recargar usuarios para el select
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error al eliminar usuario:', error);
+                    alert('Error al eliminar usuario');
+                }
+            }
+        }
+
+        // Cargar lista de tareas
+        async function loadTasksList() {
+            try {
+                const response = await fetch('/agendatce/api/configuration/tasks');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Asignar globalmente para uso en otras funciones
+                    window.taskDefinitions = data.data;
+                    console.log('📊 Tareas cargadas globalmente:', data.data.length);
+                    displayTasksList(data.data);
+                }
+            } catch (error) {
+                console.error('Error al cargar tareas:', error);
+                document.getElementById('tasksContainer').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar las tareas
+                    </div>
+                `;
+            }
+        }
+
+        // Mostrar lista de tareas
+        function displayTasksList(tasks) {
+            const container = document.getElementById('tasksContainer');
+            
+            if (tasks.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-tasks text-muted fa-3x mb-3"></i>
+                        <h6>No hay tareas definidas</h6>
+                        <p class="text-muted">Crea la primera tarea para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const html = tasks.map(task => {
+                // Mapear periodicidad a texto legible
+                const periodicityMap = {
+                    'daily': 'Diaria',
+                    'weekly': 'Semanal', 
+                    'monthly': 'Mensual',
+                    'biweekly': 'Quincenal',
+                    'monThu': 'Lun-Jue'
+                };
+                
+                // Mapear modo a texto legible
+                const modeMap = {
+                    'binary': 'Sí/No',
+                    'counter': 'Contador'
+                };
+                
+                return `
+                    <div class="card mb-2">
+                        <div class="card-body py-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1">${task.title}</h6>
+                                    <small class="text-muted">${task.description || 'Sin descripción'}</small>
+                                    <div class="mt-1">
+                                        <span class="badge bg-primary me-1">${periodicityMap[task.periodicity] || task.periodicity}</span>
+                                        <span class="badge bg-info me-1">${modeMap[task.mode] || task.mode}</span>
+                                        ${task.requires_evidence ? '<span class="badge bg-warning">Requiere evidencia</span>' : ''}
+                                        ${task.sla_time ? `<span class="badge bg-secondary">SLA: ${task.sla_time}</span>` : ''}
+                                    </div>
+                                    ${task.tags && task.tags.length > 0 ? `
+                                        <div class="mt-2">
+                                            ${task.tags.map(tag => `
+                                                <span class="badge me-1" style="background-color: ${tag.color || '#6c757d'}; color: white; font-size: 0.7em;">
+                                                    ${tag.display_name || tag.name || tag}
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editTaskDefinition('${task._id}')" title="Editar tarea">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTaskDefinition('${task._id}')" title="Eliminar tarea">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+
+        // Cargar lista de asignaciones
+        async function loadAssignmentsList() {
+            try {
+                const response = await fetch('/agendatce/api/config/assignments');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayAssignmentsList(data.data);
+                }
+            } catch (error) {
+                console.error('Error al cargar asignaciones:', error);
+                document.getElementById('assignments-list').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar las asignaciones
+                    </div>
+                `;
+            }
+        }
+
+        // Mostrar lista de asignaciones
+        function displayAssignmentsList(assignments) {
+            const container = document.getElementById('assignments-list');
+            
+            if (assignments.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-link text-muted fa-3x mb-3"></i>
+                        <h6>No hay asignaciones</h6>
+                        <p class="text-muted">Crea la primera asignación para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = assignments.map(assignment => `
+                <div class="card mb-2">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-1">${assignment.task_definition?.title || 'Tarea no encontrada'}</h6>
+                                <small class="text-muted">Asignada a: ${assignment.user?.nombre || 'Usuario no encontrado'}</small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <span class="badge ${assignment.activo ? 'bg-success' : 'bg-secondary'} me-2">
+                                    ${assignment.activo ? 'Activa' : 'Inactiva'}
+                                </span>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteAssignment('${assignment._id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // Funciones para gestión de etiquetas
+        async function loadTagsList() {
+            try {
+                const response = await fetch('/agendatce/api/config/tags');
+                const data = await response.json();
+                
+                if (data.success) {
+                    tags = data.data;
+                    filteredTags = [...tags];
+                    displayTagsList(filteredTags);
+                    loadTagCategories();
+                }
+            } catch (error) {
+                console.error('Error al cargar etiquetas:', error);
+                document.getElementById('tags-list').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error al cargar las etiquetas
+                    </div>
+                `;
+            }
+        }
+
+        async function loadTagCategories() {
+            try {
+                const response = await fetch('/agendatce/api/config/tag-categories');
+                const data = await response.json();
+                
+                if (data.success) {
+                    tagCategories = data.data;
+                    updateTagCategorySelects();
+                }
+            } catch (error) {
+                console.error('Error al cargar categorías:', error);
+            }
+        }
+
+        function updateTagCategorySelects() {
+            const filterSelect = document.getElementById('tag-category-filter');
+            const modalSelect = document.getElementById('tag_category');
+            
+            // Limpiar opciones existentes
+            filterSelect.innerHTML = '<option value="all">Todas las categorías</option>';
+            modalSelect.innerHTML = '<option value="">Seleccionar categoría...</option>';
+            
+            // Agregar categorías
+            tagCategories.forEach(category => {
+                const filterOption = document.createElement('option');
+                filterOption.value = category.value;
+                filterOption.textContent = category.name;
+                filterSelect.appendChild(filterOption);
+                
+                const modalOption = document.createElement('option');
+                modalOption.value = category.value;
+                modalOption.textContent = category.name;
+                modalSelect.appendChild(modalOption);
+            });
+        }
+
+        function displayTagsList(tagsToShow) {
+            const container = document.getElementById('tags-list');
+            
+            if (tagsToShow.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-tags text-muted fa-3x mb-3"></i>
+                        <h6>No hay etiquetas</h6>
+                        <p class="text-muted">Crea la primera etiqueta para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Agrupar por categoría
+            const groupedTags = {};
+            tagsToShow.forEach(tag => {
+                if (!groupedTags[tag.category]) {
+                    groupedTags[tag.category] = [];
+                }
+                groupedTags[tag.category].push(tag);
+            });
+
+            let html = '';
+            Object.keys(groupedTags).forEach(category => {
+                const categoryInfo = tagCategories.find(cat => cat.value === category);
+                const categoryName = categoryInfo ? categoryInfo.name : category;
+                const categoryColor = categoryInfo ? categoryInfo.color : '#6c757d';
+                const categoryIcon = categoryInfo ? categoryInfo.icon : 'fas fa-tag';
+                
+                html += `
+                    <div class="mb-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="${categoryIcon} me-2" style="color: ${categoryColor}"></i>
+                            ${categoryName} (${groupedTags[category].length})
+                        </h6>
+                        <div class="row">
+                            ${groupedTags[category].map(tag => `
+                                <div class="col-md-6 mb-3">
+                                    <div class="card h-100">
+                                        <div class="card-body py-2">
+                                            <div class="d-flex align-items-center">
+                                                <div class="me-3">
+                                                    <span class="badge" style="background-color: ${tag.color}; color: white; font-size: 0.8em;">
+                                                        ${tag.display_name}
+                                                    </span>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <small class="text-muted">${tag.name}</small>
+                                                    ${tag.description ? `<br><small class="text-muted">${tag.description}</small>` : ''}
+                                                    <br><small class="text-muted">Usos: ${tag.usage_count || 0}</small>
+                                                </div>
+                                                <div class="ms-2">
+                                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editTag('${tag._id}')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTag('${tag._id}')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function filterTags() {
+            const category = document.getElementById('tag-category-filter').value;
+            const search = document.getElementById('tag-search').value.toLowerCase();
+            
+            filteredTags = tags.filter(tag => {
+                const matchesCategory = category === 'all' || tag.category === category;
+                const matchesSearch = !search || 
+                    tag.name.toLowerCase().includes(search) ||
+                    tag.display_name.toLowerCase().includes(search) ||
+                    (tag.description && tag.description.toLowerCase().includes(search));
+                
+                return matchesCategory && matchesSearch;
+            });
+            
+            displayTagsList(filteredTags);
+        }
+
+        function clearTagFilters() {
+            document.getElementById('tag-category-filter').value = 'all';
+            document.getElementById('tag-search').value = '';
+            filteredTags = [...tags];
+            displayTagsList(filteredTags);
+        }
+
+        function openTagModal(tagId = null) {
+            const modal = new bootstrap.Modal(document.getElementById('tagModal'));
+            const title = document.getElementById('tagModalTitle');
+            
+            if (tagId) {
+                title.textContent = 'Editar Etiqueta';
+                loadTagData(tagId);
+            } else {
+                title.textContent = 'Nueva Etiqueta';
+                clearTagForm();
+            }
+            
+            modal.show();
+        }
+
+        function clearTagForm() {
+            document.getElementById('tag_id').value = '';
+            document.getElementById('tag_name').value = '';
+            document.getElementById('tag_display_name').value = '';
+            document.getElementById('tag_description').value = '';
+            document.getElementById('tag_color').value = '#6c757d';
+            document.getElementById('tag_category').value = '';
+        }
+
+        async function loadTagData(tagId) {
+            try {
+                const tag = tags.find(t => t._id === tagId);
+                if (tag) {
+                    document.getElementById('tag_id').value = tag._id;
+                    document.getElementById('tag_name').value = tag.name;
+                    document.getElementById('tag_display_name').value = tag.display_name;
+                    document.getElementById('tag_description').value = tag.description || '';
+                    document.getElementById('tag_color').value = tag.color;
+                    document.getElementById('tag_category').value = tag.category;
+                }
+            } catch (error) {
+                console.error('Error al cargar datos de la etiqueta:', error);
+            }
+        }
+
+        async function saveTag() {
+            const tagId = document.getElementById('tag_id').value;
+            const name = document.getElementById('tag_name').value.toLowerCase().trim();
+            const display_name = document.getElementById('tag_display_name').value.trim();
+            const description = document.getElementById('tag_description').value.trim();
+            const color = document.getElementById('tag_color').value;
+            const category = document.getElementById('tag_category').value;
+
+            if (!name || !display_name || !category) {
+                alert('Por favor completa todos los campos obligatorios');
+                return;
+            }
+
+            // Validar formato del nombre
+            if (!/^[a-z0-9-_]+$/.test(name)) {
+                alert('El nombre de la etiqueta solo puede contener letras minúsculas, números, guiones y guiones bajos');
+                return;
+            }
+
+            try {
+                const tagData = {
+                    name,
+                    display_name,
+                    description,
+                    color,
+                    category
+                };
+
+                const url = tagId ? `/agendatce/api/config/tags/${tagId}` : '/agendatce/api/config/tags';
+                const method = tagId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(tagData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('tagModal')).hide();
+                    alert(tagId ? 'Etiqueta actualizada exitosamente' : 'Etiqueta creada exitosamente');
+                    loadTagsList();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error al guardar etiqueta:', error);
+                alert('Error al guardar etiqueta');
+            }
+        }
+
+        function editTag(tagId) {
+            openTagModal(tagId);
+        }
+
+        async function deleteTag(tagId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta etiqueta?')) {
+                try {
+                    const response = await fetch(`/agendatce/api/config/tags/${tagId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('Etiqueta eliminada exitosamente');
+                        loadTagsList();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error al eliminar etiqueta:', error);
+                    alert('Error al eliminar etiqueta');
+                }
+            }
+        }
+
+        // Funciones para gestión de tareas
+        async function openTaskDefinitionModal(taskId = null) {
+            const modal = new bootstrap.Modal(document.getElementById('taskDefinitionModal'));
+            const title = document.getElementById('taskDefinitionModalTitle');
+            
+            if (taskId) {
+                title.textContent = 'Editar Tarea';
+                await loadTaskDefinitionData(taskId);
+            } else {
+                title.textContent = 'Nueva Tarea';
+                clearTaskDefinitionForm();
+                await loadTagsForTaskDefinitionSelect();
+            }
+            
+            await loadUsersForTaskSelect();
+            modal.show();
+        }
+
+        // Función para abrir modal de etiquetas desde el modal de tareas
+        function openTagModalFromTask() {
+            // Cerrar temporalmente el modal de tareas
+            const taskModal = bootstrap.Modal.getInstance(document.getElementById('taskDefinitionModal'));
+            if (taskModal) {
+                taskModal.hide();
+            }
+            
+            // Abrir modal de etiquetas
+            const tagModal = new bootstrap.Modal(document.getElementById('tagModal'));
+            tagModal.show();
+            
+            // Cuando se cierre el modal de etiquetas, volver a abrir el de tareas
+            document.getElementById('tagModal').addEventListener('hidden.bs.modal', function() {
+                if (taskModal) {
+                    taskModal.show();
+                }
+            }, { once: true });
+        }
+
+        function clearTaskDefinitionForm() {
+            document.getElementById('task_definition_id').value = '';
+            document.getElementById('task_definition_title').value = '';
+            document.getElementById('task_definition_description').value = '';
+            document.getElementById('task_definition_periodicity').value = '';
+            document.getElementById('task_definition_mode').value = '';
+            document.getElementById('task_definition_target_per_period').value = '1';
+            document.getElementById('task_definition_sla_time').value = '';
+            document.getElementById('task_definition_requires_evidence').checked = false;
+            
+            // Reset tags
+            const tagSelect = document.getElementById('task_definition_tags_select');
+            if (tagSelect) {
+                tagSelect.selectedIndex = -1;
+            }
+            
+            // Reset assignment
+            document.getElementById('assignment_anyone').checked = true;
+            document.getElementById('assignment_specific').checked = false;
+            document.getElementById('specific_user_section').style.display = 'none';
+            document.getElementById('task_definition_specific_user').value = '';
+            
+            // Reset frequency and days
+            updateTargetField();
+            updateSelectedTagsDefinitionDisplay();
+        }
+
+        // Funciones para manejar la frecuencia
+        console.log('🔧 Funciones de frecuencia cargadas');
+        // Funciones de periodicidad
+        function updateFrequencyOptions() {
+            console.log('🔄 updateFrequencyOptions llamada');
+            const periodicitySelect = document.getElementById('task_definition_periodicity');
+            const frequencySelect = document.getElementById('task_definition_frequency');
+            
+            if (!periodicitySelect || !frequencySelect) {
+                console.log('❌ Elementos no encontrados');
+                return;
+            }
+            
+            const periodicity = periodicitySelect.value;
+            console.log('📅 Periodicidad seleccionada:', periodicity);
+            
+            // Limpiar opciones existentes
+            frequencySelect.innerHTML = '<option value="">Seleccionar frecuencia...</option>';
+            
+            if (periodicity === 'weekly') {
+                // Opciones para semanal: 1 a 7 veces por semana
+                for (let i = 1; i <= 7; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por semana`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1'; // Seleccionar por defecto
+            } else if (periodicity === 'monthly') {
+                // Opciones para mensual: 1 a 31 veces por mes
+                for (let i = 1; i <= 31; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por mes`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1'; // Seleccionar por defecto
+            } else if (periodicity === 'biweekly') {
+                // Opciones para quincenal: 1 a 15 veces por quincena
+                for (let i = 1; i <= 15; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por quincena`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1'; // Seleccionar por defecto
+            }
+            
+            // Actualizar días específicos
+            updateDaysOptions();
+        }
+
+        function updateDaysOptions() {
+            console.log('📅 updateDaysOptions llamada');
+            const periodicity = document.getElementById('task_definition_periodicity').value;
+            const frequency = parseInt(document.getElementById('task_definition_frequency').value);
+            const specificDaysSection = document.getElementById('specific_days_section');
+            const daysContainer = document.getElementById('days_selection_container');
+            
+            if (!specificDaysSection || !daysContainer) {
+                console.log('❌ Elementos de días no encontrados');
+                return;
+            }
+            
+            console.log('📊 Periodicidad:', periodicity, 'Frecuencia:', frequency);
+            
+            // Limpiar contenedor
+            daysContainer.innerHTML = '';
+            
+            if (periodicity === 'weekly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días de la semana');
+                specificDaysSection.style.display = 'block';
+                
+                const daysOfWeek = [
+                    { value: 'monday', label: 'Lunes' },
+                    { value: 'tuesday', label: 'Martes' },
+                    { value: 'wednesday', label: 'Miércoles' },
+                    { value: 'thursday', label: 'Jueves' },
+                    { value: 'friday', label: 'Viernes' },
+                    { value: 'saturday', label: 'Sábado' },
+                    { value: 'sunday', label: 'Domingo' }
+                ];
+                
+                daysOfWeek.forEach(day => {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="day_${day.value}" value="${day.value}">
+                        <label class="form-check-label" for="day_${day.value}">${day.label}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                });
+                
+            } else if (periodicity === 'monthly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días del mes');
+                specificDaysSection.style.display = 'block';
+                
+                // Días del mes (1-31)
+                for (let day = 1; day <= 31; day++) {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="day_${day}" value="${day}">
+                        <label class="form-check-label" for="day_${day}">${day}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                }
+                
+            } else if (periodicity === 'biweekly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días quincenales');
+                specificDaysSection.style.display = 'block';
+                
+                // Días de la quincena (1-15)
+                for (let day = 1; day <= 15; day++) {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="day_${day}" value="${day}">
+                        <label class="form-check-label" for="day_${day}">${day}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                }
+                
+            } else {
+                console.log('📅 Ocultando sección de días específicos');
+                specificDaysSection.style.display = 'none';
+            }
+        }
+
+        // Funciones para manejar el tipo de tarea
+        function updateTargetField() {
+            const mode = document.getElementById('task_definition_mode').value;
+            const targetField = document.getElementById('task_definition_target_per_period');
+            const targetLabel = document.getElementById('target_label');
+            const targetHelp = document.getElementById('target_help');
+            
+            if (mode === '') {
+                targetField.disabled = true;
+                targetLabel.textContent = 'Meta por período';
+                targetHelp.textContent = 'Selecciona el tipo de tarea primero';
+                return;
+            }
+            
+            targetField.disabled = false;
+            
+            if (mode === 'binary') {
+                targetLabel.textContent = 'Meta por período';
+                targetHelp.textContent = 'Número de veces que se debe completar en el período';
+            } else if (mode === 'counter') {
+                targetLabel.textContent = 'Veces por día';
+                targetHelp.textContent = 'Número de veces que se debe completar por día';
+            }
+        }
+
+        // Funciones para manejar la asignación
+        function toggleSpecificUser() {
+            const specificRadio = document.getElementById('assignment_specific');
+            const specificSection = document.getElementById('specific_user_section');
+            
+            if (specificRadio.checked) {
+                specificSection.style.display = 'block';
+            } else {
+                specificSection.style.display = 'none';
+            }
+        }
+
+        // Cargar usuarios para el select
+        async function loadUsersForTaskSelect() {
+            try {
+                const response = await fetch('/agendatce/api/config/users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('task_definition_specific_user');
+                    select.innerHTML = '<option value="">Seleccionar usuario...</option>';
+                    
+                    data.data.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user._id;
+                        option.textContent = user.name;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar usuarios:', error);
+            }
+        }
+
+        async function loadTaskDefinitionDataFromAPI(task) {
+            try {
+                console.log('🔍 loadTaskDefinitionDataFromAPI llamada con tarea:', task);
+                
+                // Limpiar formulario primero
+                clearTaskDefinitionForm();
+                
+                // Llenar campos básicos
+                document.getElementById('task_definition_id').value = task._id;
+                document.getElementById('task_definition_title').value = task.title;
+                document.getElementById('task_definition_description').value = task.description || '';
+                document.getElementById('task_definition_periodicity').value = task.periodicity;
+                document.getElementById('task_definition_mode').value = task.mode;
+                document.getElementById('task_definition_target_per_period').value = task.target_per_period || 1;
+                document.getElementById('task_definition_sla_time').value = task.sla_time || '';
+                document.getElementById('task_definition_requires_evidence').checked = task.requires_evidence || false;
+                
+                // Actualizar campos dependientes
+                updateFrequencyOptions();
+                updateTargetField();
+                
+                // Configurar frecuencia si existe
+                if (task.frequency) {
+                    console.log('🔢 Frecuencia encontrada:', task.frequency);
+                    document.getElementById('task_definition_frequency').value = task.frequency;
+                    updateDaysOptions();
+                }
+                
+                // Cargar días específicos si existen
+                if (task.specific_days && task.specific_days.length > 0) {
+                    console.log('📅 Días específicos encontrados:', task.specific_days);
+                    // Esperar a que se actualicen las opciones de días
+                    setTimeout(() => {
+                        task.specific_days.forEach(day => {
+                            const checkbox = document.querySelector(`#days_selection_container input[value="${day}"]`);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                                console.log('✅ Día seleccionado:', day);
+                            } else {
+                                console.log('❌ Checkbox no encontrado para día:', day);
+                            }
+                        });
+                    }, 300);
+                }
+                
+                // Configurar asignación
+                if (task.assignment_type === 'specific' && task.specific_user) {
+                    document.getElementById('assignment_specific').checked = true;
+                    document.getElementById('task_definition_specific_user').value = task.specific_user;
+                    document.getElementById('specific_user_section').style.display = 'block';
+                } else {
+                    document.getElementById('assignment_anyone').checked = true;
+                    document.getElementById('specific_user_section').style.display = 'none';
+                }
+                
+                // Cargar etiquetas y luego seleccionarlas
+                await loadTagsForTaskDefinitionSelect();
+                
+                // Esperar a que se carguen las etiquetas y luego seleccionarlas
+                setTimeout(() => {
+                    const tagSelect = document.getElementById('task_definition_tags_select');
+                    if (tagSelect && task.tags && task.tags.length > 0) {
+                        console.log('🏷️ Seleccionando etiquetas:', task.tags);
+                        Array.from(tagSelect.options).forEach(option => {
+                            option.selected = task.tags.some(tag => tag._id === option.value);
+                        });
+                        updateSelectedTagsDefinitionDisplay();
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error al cargar datos de la tarea desde API:', error);
+            }
+        }
+
+        async function loadTaskDefinitionData(taskId) {
+            try {
+                console.log('🔍 loadTaskDefinitionData llamada con ID:', taskId);
+                console.log('🔍 taskDefinitions disponible:', typeof window.taskDefinitions, window.taskDefinitions ? window.taskDefinitions.length : 'undefined');
+                
+                const task = window.taskDefinitions.find(t => t._id === taskId);
+                if (task) {
+                    console.log('🔍 Tarea encontrada:', task);
+                    
+                    // Limpiar formulario primero
+                    clearTaskDefinitionForm();
+                    
+                    // Llenar campos básicos
+                    document.getElementById('task_definition_id').value = task._id;
+                    document.getElementById('task_definition_title').value = task.title;
+                    document.getElementById('task_definition_description').value = task.description || '';
+                    document.getElementById('task_definition_periodicity').value = task.periodicity;
+                    document.getElementById('task_definition_mode').value = task.mode;
+                    document.getElementById('task_definition_target_per_period').value = task.target_per_period || 1;
+                    document.getElementById('task_definition_sla_time').value = task.sla_time || '';
+                    document.getElementById('task_definition_requires_evidence').checked = task.requires_evidence || false;
+                    
+                    // Actualizar campos dependientes
+                    updateFrequencyOptions();
+                    updateTargetField();
+                    
+                    // Configurar frecuencia si existe
+                    if (task.frequency) {
+                        document.getElementById('task_definition_frequency').value = task.frequency;
+                        updateDaysOptions();
+                    }
+                    
+                    // Cargar días específicos si existen
+                    if (task.specific_days && task.specific_days.length > 0) {
+                        // Esperar a que se actualicen las opciones de días
+                        setTimeout(() => {
+                            task.specific_days.forEach(day => {
+                                const checkbox = document.querySelector(`#days_selection_container input[value="${day}"]`);
+                                if (checkbox) {
+                                    checkbox.checked = true;
+                                }
+                            });
+                        }, 200);
+                    }
+                    
+                    // Configurar asignación
+                    if (task.assignment_type === 'specific' && task.specific_user) {
+                        document.getElementById('assignment_specific').checked = true;
+                        document.getElementById('task_definition_specific_user').value = task.specific_user;
+                        document.getElementById('specific_user_section').style.display = 'block';
+                    } else {
+                        document.getElementById('assignment_anyone').checked = true;
+                        document.getElementById('specific_user_section').style.display = 'none';
+                    }
+                    
+                    // Cargar etiquetas y luego seleccionarlas
+                    await loadTagsForTaskDefinitionSelect();
+                    
+                    // Esperar a que se carguen las etiquetas y luego seleccionarlas
+                    setTimeout(() => {
+                        const tagSelect = document.getElementById('task_definition_tags_select');
+                        if (tagSelect && task.tags && task.tags.length > 0) {
+                            console.log('🏷️ Seleccionando etiquetas:', task.tags);
+                            Array.from(tagSelect.options).forEach(option => {
+                                option.selected = task.tags.some(tag => tag._id === option.value);
+                            });
+                            updateSelectedTagsDefinitionDisplay();
+                        }
+                    }, 500);
+                }
+            } catch (error) {
+                console.error('Error al cargar datos de la tarea:', error);
+            }
+        }
+
+        async function loadTagsForTaskDefinitionSelect() {
+            try {
+                const response = await fetch('/agendatce/api/config/tags');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('task_definition_tags_select');
+                    select.innerHTML = '<option value="">Seleccionar etiquetas...</option>';
+                    
+                    // Incluir todas las etiquetas activas
+                    const activeTags = data.data.filter(tag => tag.active);
+                    
+                    activeTags.forEach(tag => {
+                        const option = document.createElement('option');
+                        option.value = tag._id;
+                        option.textContent = tag.display_name;
+                        select.appendChild(option);
+                    });
+                    
+                    // Agregar event listener para mostrar etiquetas seleccionadas
+                    select.addEventListener('change', updateSelectedTagsDefinitionDisplay);
+                }
+            } catch (error) {
+                console.error('Error al cargar etiquetas:', error);
+            }
+        }
+
+        function updateSelectedTagsDefinitionDisplay() {
+            const select = document.getElementById('task_definition_tags_select');
+            const container = document.getElementById('selected-tags-definition');
+            const selectedOptions = Array.from(select.selectedOptions);
+            
+            if (selectedOptions.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const html = selectedOptions.map(option => {
+                const tag = tags.find(t => t._id === option.value);
+                if (tag) {
+                    return `
+                        <span class="badge me-1" style="background-color: ${tag.color}; color: white; font-size: 0.8em;">
+                            ${tag.display_name}
+                            <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6em;" onclick="removeTagFromDefinitionSelection('${tag._id}')"></button>
+                        </span>
+                    `;
+                }
+                return '';
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function removeTagFromDefinitionSelection(tagId) {
+            const select = document.getElementById('task_definition_tags_select');
+            const option = select.querySelector(`option[value="${tagId}"]`);
+            if (option) {
+                option.selected = false;
+                updateSelectedTagsDefinitionDisplay();
+            }
+        }
+
+        function updateSelectedTagsDisplay() {
+            const select = document.getElementById('task_tags_select');
+            const container = document.getElementById('selected-tags');
+            const selectedOptions = Array.from(select.selectedOptions);
+            
+            if (selectedOptions.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const html = selectedOptions.map(option => {
+                const tag = tags.find(t => t._id === option.value);
+                if (tag) {
+                    return `
+                        <span class="badge me-1" style="background-color: ${tag.color}; color: white; font-size: 0.8em;">
+                            ${tag.display_name}
+                            <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6em;" onclick="removeTagFromSelection('${tag._id}')"></button>
+                        </span>
+                    `;
+                }
+                return '';
+            }).join('');
+            
+            container.innerHTML = html;
+        }
+
+        function removeTagFromSelection(tagId) {
+            const select = document.getElementById('task_tags_select');
+            const option = select.querySelector(`option[value="${tagId}"]`);
+            if (option) {
+                option.selected = false;
+                updateSelectedTagsDisplay();
+            }
+        }
+
+        async function saveTaskDefinition() {
+            const taskId = document.getElementById('task_definition_id').value;
+            const title = document.getElementById('task_definition_title').value.trim();
+            const description = document.getElementById('task_definition_description').value.trim();
+            const periodicity = document.getElementById('task_definition_periodicity').value;
+            const frequency = parseInt(document.getElementById('task_definition_frequency').value) || 1;
+            const mode = document.getElementById('task_definition_mode').value;
+            const target_per_period = parseInt(document.getElementById('task_definition_target_per_period').value) || 1;
+            const sla_time = document.getElementById('task_definition_sla_time').value;
+            const requires_evidence = document.getElementById('task_definition_requires_evidence').checked;
+            
+            // Asignación
+            const assignmentType = document.querySelector('input[name="task_assignment"]:checked').value;
+            const specificUserId = document.getElementById('task_definition_specific_user').value;
+            
+            // Etiquetas
+            const select = document.getElementById('task_definition_tags_select');
+            const selectedTagIds = Array.from(select.selectedOptions).map(option => option.value).filter(id => id);
+
+            // Días específicos
+            const specificDays = [];
+            const checkboxes = document.querySelectorAll('#days_selection_container input[type="checkbox"]:checked');
+            checkboxes.forEach(checkbox => {
+                specificDays.push(parseInt(checkbox.value));
+            });
+
+            // Logging para debug
+            console.log('💾 Datos a guardar:');
+            console.log('   Título:', title);
+            console.log('   Periodicidad:', periodicity);
+            console.log('   Frecuencia:', frequency);
+            console.log('   Días específicos:', specificDays);
+            console.log('   Tipo de asignación:', assignmentType);
+            console.log('   Usuario específico:', specificUserId);
+
+            if (!title || !periodicity || !mode) {
+                alert('Por favor completa todos los campos obligatorios');
+                return;
+            }
+
+            if (assignmentType === 'specific' && !specificUserId) {
+                alert('Por favor selecciona un usuario específico');
+                return;
+            }
+
+            // Validar días específicos si es necesario
+            if (frequency > 1 && specificDays.length !== frequency) {
+                alert(`Debes seleccionar exactamente ${frequency} día${frequency > 1 ? 's' : ''}`);
+                return;
+            }
+
+            try {
+                const taskData = {
+                    title,
+                    description,
+                    periodicity,
+                    frequency,
+                    mode,
+                    target_per_period,
+                    sla_time: sla_time || null,
+                    requires_evidence,
+                    tags: selectedTagIds,
+                    assignment_type: assignmentType,
+                    specific_user: assignmentType === 'specific' ? specificUserId : null,
+                    specific_days: specificDays.length > 0 ? specificDays : null
+                };
+
+                console.log('📤 Objeto taskData a enviar:', taskData);
+
+                const url = taskId ? `/agendatce/api/config/tasks/${taskId}` : '/agendatce/api/config/tasks';
+                const method = taskId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(taskData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('taskDefinitionModal')).hide();
+                    alert(taskId ? 'Tarea actualizada exitosamente' : 'Tarea creada exitosamente');
+                    loadTasksList();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                console.error('Error al guardar tarea:', error);
+                alert('Error al guardar tarea');
+            }
+        }
+
+        async function editTaskDefinition(taskId) {
+            console.log('🔧 editTaskDefinition llamada con ID:', taskId);
+            
+            // Cargar datos de la tarea directamente desde la API
+            try {
+                const response = await fetch(`/agendatce/api/config/tasks`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const task = data.data.find(t => t._id === taskId);
+                    if (task) {
+                        console.log('🔍 Tarea encontrada en API:', task);
+                        
+                        // Abrir modal primero
+                        const modal = new bootstrap.Modal(document.getElementById('taskDefinitionModal'));
+                        document.getElementById('taskDefinitionModalTitle').textContent = 'Editar Tarea';
+                        
+                        // Cargar datos de la tarea
+                        await loadTaskDefinitionDataFromAPI(task);
+                        
+                        // Cargar usuarios y etiquetas
+                        await loadUsersForTaskSelect();
+                        
+                        // Mostrar modal
+                        modal.show();
+                    } else {
+                        console.error('❌ Tarea no encontrada en API');
+                        alert('Tarea no encontrada');
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error al cargar tarea desde API:', error);
+                alert('Error al cargar la tarea');
+            }
+        }
+
+        async function deleteTaskDefinition(taskId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+                try {
+                    const response = await fetch(`/agendatce/api/config/tasks/${taskId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert('Tarea eliminada exitosamente');
+                        loadTasksList();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error al eliminar tarea:', error);
+                    alert('Error al eliminar tarea');
+                }
+            }
+        }
+
+        function openAssignmentModal() {
+            alert('Modal de asignación en desarrollo');
+        }
+
+        function deleteAssignment(assignmentId) {
+            if (confirm('¿Estás seguro de que quieres eliminar esta asignación?')) {
+                alert('Eliminación de asignación en desarrollo');
+            }
+        }
+
+        // ===== FUNCIONES DE CONFIGURACIÓN =====
+        
+        // Variables globales para configuración
+        let employeesData = [];
+        let tasksData = [];
+        let departmentsData = [];
+        let tagsData = [];
+
+        // Función para cargar datos de configuración
+        function loadConfigurationData() {
+            console.log('⚙️ loadConfigurationData() INICIANDO...');
+            
+            try {
+                // Verificar inmediatamente que los elementos existan
+                const employeesContainer = document.getElementById('employees-container');
+                const configTabs = document.getElementById('configTabs');
+                
+                console.log('📦 Elementos encontrados:');
+                console.log('   - employees-container:', !!employeesContainer);
+                console.log('   - configTabs:', !!configTabs);
+                
+                if (!employeesContainer) {
+                    console.error('❌ employees-container NO ENCONTRADO - Reintentando en 300ms...');
+                    setTimeout(() => {
+                        loadConfigurationData();
+                    }, 300);
+                    return;
+                }
+                
+                if (!configTabs) {
+                    console.error('❌ configTabs NO ENCONTRADO - Reintentando en 300ms...');
+                    setTimeout(() => {
+                        loadConfigurationData();
+                    }, 300);
+                    return;
+                }
+                
+                console.log('✅ Todos los elementos encontrados, iniciando carga...');
+                
+                // Configurar event listeners para tabs PRIMERO
+                console.log('📋 Configurando tabs...');
+                setupConfigurationTabs();
+                
+                // Cargar departamentos para el select SEGUNDO
+                console.log('🏢 Cargando departamentos para select...');
+                loadDepartmentsForSelect();
+                
+                // Cargar empleados AL FINAL
+                console.log('👥 Cargando empleados...');
+                loadEmployees();
+                
+                // Cargar tareas
+                console.log('📋 Cargando tareas...');
+                loadTasks();
+                
+                console.log('✅ loadConfigurationData COMPLETADO');
+                
+            } catch (error) {
+                console.error('❌ ERROR CRÍTICO en loadConfigurationData:', error);
+                console.error('Stack trace:', error.stack);
+                
+                // Mostrar error en la interfaz
+                const container = document.getElementById('employees-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Error crítico al cargar configuración: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function setupConfigurationTabs() {
+            const tabs = document.querySelectorAll('#configTabs button[data-bs-toggle="tab"]');
+            tabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(event) {
+                    const target = event.target.getAttribute('data-bs-target');
+                    console.log('📋 Tab activado:', target);
+                    
+                    switch(target) {
+                        case '#employees':
+                            loadEmployees();
+                            break;
+                        case '#tasks':
+                            loadTasks();
+                            break;
+                        case '#departments':
+                            loadDepartments();
+                            break;
+                        case '#tags':
+                            loadTags();
+                            break;
+                    }
+                });
+            });
+        }
+
+        // Funciones para cargar datos
+        function loadEmployees() {
+            console.log('👥 loadEmployees() INICIANDO...');
+            
+            const container = document.getElementById('employees-container');
+            if (!container) {
+                console.error('❌ employees-container NO ENCONTRADO en loadEmployees');
+                return;
+            }
+            
+            // Mostrar loading en el contenedor
+            container.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando empleados...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Cargando lista de empleados...</p>
+                </div>
+            `;
+            
+            console.log('📡 Haciendo fetch a /agendatce/api/configuration/employees');
+            
+            fetch('/agendatce/api/configuration/employees', {
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('📡 Respuesta recibida:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('📊 Datos empleados recibidos:', data);
+                console.log('📊 Tipo de data:', typeof data);
+                console.log('📊 data.success:', data.success);
+                console.log('📊 data.data existe:', !!data.data);
+                console.log('📊 data.data es array:', Array.isArray(data.data));
+                
+                if (data.success && data.data) {
+                    employeesData = data.data;
+                    console.log('👥 Empleados cargados exitosamente:', employeesData.length);
+                    renderEmployees();
+                } else {
+                    console.error('❌ Error en la respuesta:', data.message || 'Datos no válidos');
+                    showConfigurationError('employees', data.message || 'Datos no válidos');
+                }
+            })
+            .catch(error => {
+                console.error('❌ ERROR CRÍTICO cargando empleados:', error);
+                console.error('Stack trace:', error.stack);
+                showConfigurationError('employees', 'Error crítico: ' + error.message);
+            });
+        }
+
+        function loadTasks() {
+            fetch('/agendatce/api/configuration/tasks', {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tasksData = data.data;
+                    renderTasks();
+                } else {
+                    showConfigurationError('tasks', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando tareas:', error);
+                showConfigurationError('tasks', 'Error al cargar tareas');
+            });
+        }
+
+        function loadDepartments() {
+            fetch('/agendatce/api/configuration/departments', {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    departmentsData = data.data;
+                    renderDepartments();
+                } else {
+                    showConfigurationError('departments', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando departamentos:', error);
+                showConfigurationError('departments', 'Error al cargar departamentos');
+            });
+        }
+
+        function loadTags() {
+            fetch('/agendatce/api/configuration/tags', {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    tagsData = data.data;
+                    renderTags();
+                } else {
+                    showConfigurationError('tags', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando etiquetas:', error);
+                showConfigurationError('tags', 'Error al cargar etiquetas');
+            });
+        }
+
+        // Función para cargar departamentos en el select del modal
+        function loadDepartmentsForSelect() {
+            fetch('/agendatce/api/configuration/departments', {
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Actualizar select del modal de agregar empleado
+                    const addSelect = document.getElementById('employeeDepartment');
+                    if (addSelect) {
+                        addSelect.innerHTML = '<option value="">Seleccionar departamento</option>';
+                        data.data.forEach(dept => {
+                            const option = document.createElement('option');
+                            option.value = dept._id;
+                            option.textContent = dept.name;
+                            addSelect.appendChild(option);
+                        });
+                    }
+                    
+                    // Actualizar select del modal de editar empleado
+                    const editSelect = document.getElementById('editEmployeeDepartment');
+                    if (editSelect) {
+                        editSelect.innerHTML = '<option value="">Seleccionar departamento</option>';
+                        data.data.forEach(dept => {
+                            const option = document.createElement('option');
+                            option.value = dept._id;
+                            option.textContent = dept.name;
+                            editSelect.appendChild(option);
+                        });
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error cargando departamentos para select:', error);
+            });
+        }
+
+        // Funciones de renderizado
+        function renderEmployees() {
+            console.log('🎨 renderEmployees() INICIANDO...');
+            console.log('🎨 employeesData:', employeesData);
+            console.log('🎨 employeesData.length:', employeesData.length);
+            console.log('🎨 employeesData es array:', Array.isArray(employeesData));
+            
+            const container = document.getElementById('employees-container');
+            console.log('📦 Container encontrado:', !!container);
+            
+            if (!container) {
+                console.error('❌ employees-container no encontrado en renderEmployees');
+                return;
+            }
+            
+            if (!Array.isArray(employeesData)) {
+                console.error('❌ employeesData no es un array:', typeof employeesData);
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error: Los datos de empleados no son válidos
+                    </div>
+                `;
+                return;
+            }
+            
+            if (employeesData.length === 0) {
+                console.log('👥 No hay empleados, mostrando mensaje vacío');
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No hay empleados registrados</h5>
+                        <p class="text-muted">Agrega el primer empleado para comenzar</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            console.log('🎨 Renderizando', employeesData.length, 'empleados');
+            const employeesHTML = employeesData.map(employee => `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h6 class="mb-1">${employee.name}</h6>
+                                <p class="text-muted mb-1">${employee.correo}</p>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-${getRoleColor(employee.perfil_usuario)} me-2">
+                                        ${getRoleText(employee.perfil_usuario)}
+                                    </span>
+                                    <span class="badge bg-secondary me-2">${employee.cargo || 'Sin cargo'}</span>
+                                    <span class="badge bg-info">${employee.departamento_name || 'Sin departamento'}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="editEmployee('${employee._id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteEmployee('${employee._id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = employeesHTML;
+            console.log('✅ renderEmployees completado');
+        }
+
+        function renderTasks() {
+            console.log('📋 renderTasks llamada con datos:', tasksData);
+            if (tasksData && tasksData.length > 0) {
+                displayTasksList(tasksData);
+            } else {
+                const container = document.getElementById('tasksContainer');
+                if (container) {
+                    container.innerHTML = '<p class="text-muted">No hay tareas definidas</p>';
+                }
+            }
+        }
+
+        function renderDepartments() {
+            const container = document.getElementById('departments-container');
+            container.innerHTML = '<p class="text-muted">Gestión de departamentos en desarrollo...</p>';
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tags-container');
+            container.innerHTML = '<p class="text-muted">Gestión de etiquetas en desarrollo...</p>';
+        }
+
+        // Funciones de utilidad
+        function getRoleColor(roleId) {
+            switch(roleId) {
+                case 1: return 'danger';
+                case 2: return 'warning';
+                case 3: return 'primary';
+                default: return 'secondary';
+            }
+        }
+
+        function getRoleText(roleId) {
+            switch(roleId) {
+                case 1: return 'Admin';
+                case 2: return 'Supervisor';
+                case 3: return 'Empleado';
+                default: return 'Sin rol';
+            }
+        }
+
+        function showConfigurationError(section, message) {
+            const container = document.getElementById(`${section}-container`);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    ${message}
+                </div>
+            `;
+        }
+
+        function showAlert(type, message) {
+            // Crear alerta temporal
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Remover después de 5 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 5000);
+        }
+
+        // Funciones de modales
+        async function showAddEmployeeModal() {
+            // Cargar usuarios del sistema principal
+            await loadSystemUsers();
+            console.log('🔄 yorman yorman yorman');
+            const modal = new bootstrap.Modal(document.getElementById('addEmployeeModal'));
+            modal.show();
+        }
+
+        async function loadSystemUsers() {
+            console.log('🔄 yorman loadSystemUsers yorman 1');
+            try {
+                const response = await fetch('/agendatce/auth/available-users', {
+                    credentials: 'include'
+                });
+                console.log('🔄 yorman loadSystemUsers yorman - Response:', response);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const systemUsersSelect = document.getElementById('employeeSystemUser');
+                    
+                    // Limpiar opciones existentes
+                    systemUsersSelect.innerHTML = '<option value="">Sin enlace (usuario independiente)</option>';
+                    
+                    if (result.success && result.data) {
+                        // Filtrar usuarios que no tengan enlace con agenda
+                        const availableUsers = result.data.filter(user => !user.has_agenda_link);
+                        
+                        availableUsers.forEach(user => {
+                            const option = document.createElement('option');
+                            option.value = user._id;
+                            option.textContent = `${user.name} (${user.correo}) - ${user.role_name}`;
+                            systemUsersSelect.appendChild(option);
+                        });
+                        
+                        if (availableUsers.length === 0) {
+                            const option = document.createElement('option');
+                            option.value = '';
+                            option.textContent = 'No hay usuarios disponibles para enlace';
+                            option.disabled = true;
+                            systemUsersSelect.appendChild(option);
+                        }
+                    }
+                } else {
+                    console.error('Error cargando usuarios del sistema:', response.status);
+                }
+            } catch (error) {
+                console.error('Error cargando usuarios del sistema:', error);
+            }
+        }
+
+        function saveEmployee() {
+            const employeeData = {
+                name: document.getElementById('employeeName').value,
+                correo: document.getElementById('employeeEmail').value,
+                perfil_usuario: parseInt(document.getElementById('employeeRole').value),
+                cargo: document.getElementById('employeePosition').value,
+                departamento: document.getElementById('employeeDepartment').value,
+                system_user_id: document.getElementById('employeeSystemUser').value,
+                activo: true
+            };
+            
+            // Validar datos requeridos
+            if (!employeeData.name || !employeeData.correo || !employeeData.perfil_usuario || !employeeData.departamento) {
+                showAlert('danger', 'Por favor completa todos los campos requeridos');
+                return;
+            }
+            
+            console.log('Guardando empleado:', employeeData);
+            
+            fetch('/agendatce/api/configuration/employees', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(employeeData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('addEmployeeModal')).hide();
+                    
+                    // Recargar empleados
+                    loadEmployees();
+                    
+                    // Mostrar mensaje de éxito
+                    showAlert('success', 'Empleado agregado exitosamente');
+                } else {
+                    showAlert('danger', data.message || 'Error al agregar empleado');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Error al agregar empleado');
+            });
+        }
+
+        function editEmployee(employeeId) {
+            console.log('Editar empleado:', employeeId);
+            
+            // Buscar el empleado en los datos actuales
+            const employee = employeesData.find(emp => emp._id === employeeId);
+            if (!employee) {
+                showAlert('danger', 'Empleado no encontrado');
+                return;
+            }
+            
+            // Llenar el formulario con los datos del empleado
+            document.getElementById('editEmployeeName').value = employee.name;
+            document.getElementById('editEmployeeEmail').value = employee.correo;
+            document.getElementById('editEmployeeRole').value = employee.perfil_usuario;
+            document.getElementById('editEmployeePosition').value = employee.cargo || '';
+            document.getElementById('editEmployeeDepartment').value = employee.departamento || '';
+            document.getElementById('editEmployeeActive').checked = employee.activo !== false;
+            
+            // Mostrar el modal de edición
+            const editModal = new bootstrap.Modal(document.getElementById('editEmployeeModal'));
+            editModal.show();
+            
+            // Guardar el ID del empleado para la actualización
+            document.getElementById('editEmployeeModal').setAttribute('data-employee-id', employeeId);
+        }
+
+        function deleteEmployee(employeeId) {
+            if (confirm('¿Estás seguro de que quieres eliminar este empleado?')) {
+                console.log('Eliminar empleado:', employeeId);
+                
+                fetch(`/agendatce/api/configuration/employees/${employeeId}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recargar empleados
+                        loadEmployees();
+                        showAlert('success', data.message || 'Empleado eliminado exitosamente');
+                    } else {
+                        showAlert('danger', data.message || 'Error al eliminar empleado');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Error al eliminar empleado');
+                });
+            }
+        }
+
+        function updateEmployee() {
+            const employeeId = document.getElementById('editEmployeeModal').getAttribute('data-employee-id');
+            if (!employeeId) {
+                showAlert('danger', 'Error: ID de empleado no encontrado');
+                return;
+            }
+            
+            const employeeData = {
+                name: document.getElementById('editEmployeeName').value,
+                correo: document.getElementById('editEmployeeEmail').value,
+                perfil_usuario: parseInt(document.getElementById('editEmployeeRole').value),
+                cargo: document.getElementById('editEmployeePosition').value,
+                departamento: document.getElementById('editEmployeeDepartment').value,
+                activo: document.getElementById('editEmployeeActive').checked
+            };
+            
+            // Validar datos requeridos
+            if (!employeeData.name || !employeeData.correo || !employeeData.perfil_usuario || !employeeData.departamento) {
+                showAlert('danger', 'Por favor completa todos los campos requeridos');
+                return;
+            }
+            
+            console.log('Actualizando empleado:', employeeId, employeeData);
+            
+            fetch(`/agendatce/api/configuration/employees/${employeeId}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(employeeData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Cerrar modal
+                    bootstrap.Modal.getInstance(document.getElementById('editEmployeeModal')).hide();
+                    
+                    // Recargar empleados
+                    loadEmployees();
+                    
+                    // Mostrar mensaje de éxito
+                    showAlert('success', data.message || 'Empleado actualizado exitosamente');
+                } else {
+                    showAlert('danger', data.message || 'Error al actualizar empleado');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Error al actualizar empleado');
+            });
+        }
+
+        // Funciones placeholder para otros modales
+        function showAddTaskModal() {
+            console.log('Mostrar modal de tarea');
+            // TODO: Implementar modal de tarea
+        }
+
+        function showAddDepartmentModal() {
+            console.log('Mostrar modal de departamento');
+            // TODO: Implementar modal de departamento
+        }
+
+        function showAddTagModal() {
+            console.log('Mostrar modal de etiqueta');
+            // TODO: Implementar modal de etiqueta
+        }
+    </script>
+    
+    <!-- Script de prueba de periodicidad -->
+    <script>
+        console.log('🔧 Script de prueba de periodicidad cargado');
+        
+        // Función simple para probar periodicidad
+        function testPeriodicity() {
+            console.log('🧪 Probando funcionalidad de periodicidad...');
+            
+            const periodicitySelect = document.getElementById('task_definition_periodicity');
+            const frequencySelect = document.getElementById('task_definition_frequency');
+            
+            if (periodicitySelect && frequencySelect) {
+                console.log('✅ Elementos encontrados');
+                
+                // Agregar evento de cambio
+                periodicitySelect.addEventListener('change', function() {
+                    console.log('📅 Periodicidad cambiada a:', this.value);
+                    updateFrequencyOptions();
+                });
+                
+            } else {
+                console.log('❌ Elementos no encontrados');
+            }
+        }
+
+        function updateFrequencyOptions() {
+            console.log('🔄 updateFrequencyOptions llamada');
+            const periodicitySelect = document.getElementById('task_definition_periodicity');
+            const frequencySelect = document.getElementById('task_definition_frequency');
+            
+            if (!periodicitySelect || !frequencySelect) {
+                console.log('❌ Elementos no encontrados');
+                return;
+            }
+            
+            const periodicity = periodicitySelect.value;
+            console.log('📅 Periodicidad seleccionada:', periodicity);
+            
+            // Limpiar opciones existentes
+            frequencySelect.innerHTML = '<option value="">Seleccionar frecuencia...</option>';
+            
+            if (periodicity === 'weekly') {
+                console.log('📅 Configurando opciones semanales');
+                for (let i = 1; i <= 7; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por semana`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1';
+            } else if (periodicity === 'monthly') {
+                console.log('📅 Configurando opciones mensuales');
+                for (let i = 1; i <= 31; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por mes`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1';
+            } else if (periodicity === 'biweekly') {
+                console.log('📅 Configurando opciones quincenales');
+                for (let i = 1; i <= 15; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `${i} vez${i > 1 ? 'es' : ''} por quincena`;
+                    frequencySelect.appendChild(option);
+                }
+                frequencySelect.value = '1';
+            }
+            
+            // Actualizar días específicos
+            updateDaysOptions();
+        }
+
+        function updateDaysOptions() {
+            console.log('📅 updateDaysOptions llamada');
+            const periodicity = document.getElementById('task_definition_periodicity').value;
+            const frequency = parseInt(document.getElementById('task_definition_frequency').value);
+            const specificDaysSection = document.getElementById('specific_days_section');
+            const daysContainer = document.getElementById('days_selection_container');
+            
+            if (!specificDaysSection || !daysContainer) {
+                console.log('❌ Elementos de días no encontrados');
+                return;
+            }
+            
+            console.log('📊 Periodicidad:', periodicity, 'Frecuencia:', frequency);
+            
+            // Limpiar contenedor
+            daysContainer.innerHTML = '';
+            
+            if (periodicity === 'weekly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días de la semana');
+                specificDaysSection.style.display = 'block';
+                
+                const daysOfWeek = [
+                    { value: 'monday', label: 'Lunes' },
+                    { value: 'tuesday', label: 'Martes' },
+                    { value: 'wednesday', label: 'Miércoles' },
+                    { value: 'thursday', label: 'Jueves' },
+                    { value: 'friday', label: 'Viernes' },
+                    { value: 'saturday', label: 'Sábado' },
+                    { value: 'sunday', label: 'Domingo' }
+                ];
+                
+                daysOfWeek.forEach(day => {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="day_${day.value}" value="${day.value}">
+                        <label class="form-check-label" for="day_${day.value}">${day.label}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                });
+                
+            } else if (periodicity === 'monthly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días del mes');
+                specificDaysSection.style.display = 'block';
+                
+                for (let day = 1; day <= 31; day++) {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="day_${day}" value="${day}">
+                        <label class="form-check-label" for="day_${day}">${day}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                }
+                
+            } else if (periodicity === 'biweekly' && frequency > 0) {
+                console.log('📅 Generando checkboxes para días quincenales');
+                specificDaysSection.style.display = 'block';
+                
+                for (let day = 1; day <= 15; day++) {
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-inline';
+                    div.innerHTML = `
+                        <input class="form-check-input" type="checkbox" id="day_${day}" value="${day}">
+                        <label class="form-check-label" for="day_${day}">${day}</label>
+                    `;
+                    daysContainer.appendChild(div);
+                }
+                
+            } else {
+                console.log('📅 Ocultando sección de días específicos');
+                specificDaysSection.style.display = 'none';
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM cargado, inicializando periodicidad...');
+            
+            // Esperar un poco para que se cargue el modal
+            setTimeout(() => {
+                testPeriodicity();
+            }, 1000);
+        });
+
+        console.log('✅ Script de periodicidad cargado correctamente');
+    </script>
+</body>
+</html>

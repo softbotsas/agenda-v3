@@ -1,0 +1,884 @@
+<!-- Sección de Tareas de Hoy -->
+<div class="row">
+  <div class="col-12">
+    <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+      <div class="card-header border-0" style="background: transparent;">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <h4 class="mb-1 text-dark">
+              <i class="fas fa-calendar-day text-dark me-2"></i>
+              Mis Tareas de Hoy
+            </h4>
+            <p class="text-dark mb-0">
+              <span id="today-date-info">Cargando fecha...</span>
+            </p>
+          </div>
+          <div class="col-md-4 text-end">
+            <div class="btn-group me-2" role="group">
+              <button type="button" class="btn btn-outline-primary btn-sm" onclick="refreshTodayTasks()">
+                <i class="fas fa-sync-alt me-1"></i>
+                Actualizar
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="showTodayFilters()">
+                <i class="fas fa-filter me-1"></i>
+                Filtrar
+              </button>
+            </div>
+            <!-- Botones para tareas atrasadas -->
+            <div class="btn-group" id="overdueActionsBtn" style="display: none;">
+              <button type="button" class="btn btn-warning btn-sm" id="completeAllOverdueBtn" onclick="showCompleteAllOverdueModal()">
+                <i class="fas fa-clock me-1"></i>
+                Completar Atrasadas
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="skipAllOverdueBtn" onclick="showSkipAllOverdueModal()">
+                <i class="fas fa-forward me-1"></i>
+                Saltar Atrasadas
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Filtros -->
+        <div id="today-filters" class="row mb-4" style="display: none;">
+          <div class="col-md-3">
+            <label class="form-label">Estado</label>
+            <select class="form-select form-select-sm" id="status-filter-today">
+              <option value="">Todos</option>
+              <option value="pending">Pendientes</option>
+              <option value="completed">Completadas</option>
+              <option value="overdue">Atrasadas</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Tipo</label>
+            <select class="form-select form-select-sm" id="type-filter-today">
+              <option value="">Todos</option>
+              <option value="binary">Binarias</option>
+              <option value="counter">Contables</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">SLA</label>
+            <select class="form-select form-select-sm" id="sla-filter-today">
+              <option value="">Todos</option>
+              <option value="urgent">Urgente</option>
+              <option value="normal">Normal</option>
+              <option value="completed">Completado</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">&nbsp;</label>
+            <div class="d-grid">
+              <button type="button" class="btn btn-primary btn-sm" onclick="applyTodayFilters()">
+                <i class="fas fa-search me-1"></i>
+                Filtrar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información de fecha -->
+        <div class="row mb-3">
+          <div class="col-12">
+            <div class="alert alert-info" role="alert">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <i class="fas fa-calendar me-2"></i>
+                  <strong>Fecha:</strong> <span id="current-date"></span>
+                </div>
+                <div class="col-md-6 text-end">
+                  <strong>Tareas mostradas:</strong> <span id="tasks-count">0</span> de <span id="total-tasks">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de tareas -->
+        <div id="today-tasks-container">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 text-muted">Cargando tareas de hoy...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Variables para las tareas de hoy (disponibles globalmente)
+window.todayTasksData = [];
+window.filteredTodayTasks = [];
+
+window.loadTodayData = function() {
+  console.log('📅 Cargando tareas de hoy...');
+  
+  // Actualizar fecha
+  updateTodayDate();
+  
+  // Cargar tareas
+  fetch('/agendatce/api/tasks/today', {
+    credentials: 'include'
+  })
+    .then(response => {
+      console.log('📡 Respuesta tasks/today:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('📊 Datos tasks/today:', data);
+      if (data.success) {
+        window.todayTasksData = data.data || [];
+        window.filteredTodayTasks = [...window.todayTasksData];
+        
+        console.log('📋 Tareas encontradas:', window.todayTasksData.length);
+        console.log('📋 Tareas:', window.todayTasksData);
+        
+        // Debug: Verificar estructura de las tareas
+        if (window.todayTasksData.length > 0) {
+          console.log('🔍 Primera tarea completa:', window.todayTasksData[0]);
+          console.log('🔍 Campos de la primera tarea:', Object.keys(window.todayTasksData[0]));
+          console.log('🔍 _id de la primera tarea:', window.todayTasksData[0]._id);
+          
+          // Debug: Verificar todas las tareas y sus IDs
+          console.log('🔍 IDs de todas las tareas:');
+          window.todayTasksData.forEach((task, index) => {
+            console.log(`  Tarea ${index}: ${task.title} - ID: ${task._id}`);
+          });
+        }
+        
+        updateTodayTasksDisplay();
+        updateTodayTasksCount();
+        updateTodayDateInfo(data.data.dateInfo);
+      } else {
+        showTodayTasksError(data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando tareas de hoy:', error);
+      showTodayTasksError('Error de conexión');
+    });
+}
+
+function updateTodayDate() {
+  const now = new Date();
+  const options = { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  };
+  document.getElementById('current-date').textContent = now.toLocaleDateString('es-ES', options);
+}
+
+function updateTodayDateInfo(dateInfo) {
+  if (dateInfo) {
+    document.getElementById('today-date-info').innerHTML = `
+      <strong>${dateInfo.dayName}</strong> ${dateInfo.dayOfMonth} de ${dateInfo.monthName} - 
+      Zona: ${dateInfo.timezone} - 
+      <span class="badge bg-primary">${dateInfo.tasksShowingToday} tareas</span>
+    `;
+  }
+}
+
+function updateTodayTasksDisplay() {
+  const container = document.getElementById('today-tasks-container');
+  
+  if (window.filteredTodayTasks.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-5">
+        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+        <h5 class="text-muted">¡Excelente!</h5>
+        <p class="text-muted">No tienes tareas pendientes para hoy.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = window.filteredTodayTasks.map(task => createTodayTaskCard(task)).join('');
+  
+  // Actualizar botón de completar todas las atrasadas
+  if (typeof window.updateCompleteAllOverdueButton === 'function') {
+    window.updateCompleteAllOverdueButton();
+  }
+}
+
+function createTodayTaskCard(task) {
+  const slaStatus = getSLAStatus(task.sla_time);
+  const progress = calculateTaskProgress(task);
+  const isOverdueTask = task.assignment_type === 'overdue';
+  
+  // Generar etiqueta de atraso si es una tarea atrasada
+  const overdueBadge = isOverdueTask ? `
+    <div class="mb-2">
+      <span class="badge bg-danger">
+        <i class="fas fa-exclamation-triangle me-1"></i>
+        ATRASADA
+      </span>
+    </div>
+  ` : '';
+  
+  // Información de días atrasados
+  const overdueInfo = isOverdueTask && task.overdue_info ? `
+    <div class="mb-2">
+      <small class="text-danger">
+        <i class="fas fa-calendar-times me-1"></i>
+        Atrasos: ${task.overdue_info.map(day => day.dateStr).join(', ')}
+      </small>
+    </div>
+  ` : '';
+  
+  // Clase CSS para tareas atrasadas
+  const cardClass = isOverdueTask ? 'border-danger' : 'border-0';
+  const cardStyle = isOverdueTask ? 'border-left: 4px solid #dc3545 !important;' : '';
+  
+  return `
+    <div class="card mb-3 shadow-sm ${cardClass}" style="${cardStyle}">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            ${overdueBadge}
+            <h6 class="mb-1">${task.title}</h6>
+            <p class="text-muted mb-2">${task.description}</p>
+            ${overdueInfo}
+            <div class="d-flex align-items-center flex-wrap">
+              <span class="badge bg-${getModeColor(task.mode)} me-2">${getModeText(task.mode)}</span>
+              <span class="badge bg-${getPeriodicityColor(task.periodicity)} me-2">${getPeriodicityText(task.periodicity)}</span>
+              <span class="badge bg-${isOverdueTask ? 'danger' : slaStatus.color}">${isOverdueTask ? 'Atrasada' : slaStatus.text}</span>
+            </div>
+            ${task.tags && task.tags.length > 0 ? `
+              <div class="mt-2">
+                ${task.tags.map(tag => `
+                  <span class="badge me-1" style="background-color: ${tag.color}; color: white;">${tag.display_name}</span>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+          <div class="col-md-2 text-center">
+            ${progress.html}
+          </div>
+          <div class="col-md-2">
+            <div class="btn-group-vertical w-100">
+              ${isOverdueTask ? `
+                <!-- Botones especiales para tareas atrasadas -->
+                <div class="btn-group-vertical w-100 mb-2">
+                  ${task.mode === 'binary' ? `
+                    <button type="button" class="btn btn-success btn-sm mb-1" onclick="completeTask('${task._id}')">
+                      <i class="fas fa-check me-1"></i>
+                      Completar
+                    </button>
+                  ` : `
+                    <button type="button" class="btn btn-primary btn-sm mb-1" onclick="registerTaskAction('${task._id}')">
+                      <i class="fas fa-plus me-1"></i>
+                      Registrar Acción
+                    </button>
+                  `}
+                  <button type="button" class="btn btn-info btn-sm mb-1" onclick="showRetroactiveCompletion('${task._id}')">
+                    <i class="fas fa-calendar-arrow-left me-1"></i>
+                    Retroactiva
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm mb-1" onclick="showNotApplicable('${task._id}')">
+                    <i class="fas fa-ban me-1"></i>
+                    No Aplica
+                  </button>
+                </div>
+              ` : `
+                <!-- Botones normales para tareas no atrasadas -->
+                ${task.mode === 'binary' ? `
+                  <button type="button" class="btn btn-success btn-sm mb-1" onclick="completeTask('${task._id}')">
+                    <i class="fas fa-check me-1"></i>
+                    Completar
+                  </button>
+                ` : `
+                  <button type="button" class="btn btn-primary btn-sm mb-1" onclick="registerTaskAction('${task._id}')">
+                    <i class="fas fa-plus me-1"></i>
+                    Registrar Acción
+                  </button>
+                `}
+              `}
+              <button type="button" class="btn btn-outline-info btn-sm" onclick="viewTaskDetails('${task._id}')">
+                <i class="fas fa-eye me-1"></i>
+                Ver
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function getSLAStatus(slaTime) {
+  if (!slaTime) return { color: 'secondary', text: 'Sin SLA' };
+  
+  const now = new Date();
+  const [hours, minutes] = slaTime.split(':');
+  const slaDate = new Date();
+  slaDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+  
+  if (now > slaDate) {
+    return { color: 'danger', text: 'Vencido' };
+  } else if (now.getHours() >= parseInt(hours) - 1) {
+    return { color: 'warning', text: 'Próximo' };
+  } else {
+    return { color: 'success', text: 'A tiempo' };
+  }
+}
+
+function getModeColor(mode) {
+  return mode === 'binary' ? 'primary' : 'info';
+}
+
+function getModeText(mode) {
+  return mode === 'binary' ? 'Sí/No' : 'Contador';
+}
+
+function getPeriodicityColor(periodicity) {
+  const colors = {
+    'daily': 'success',
+    'weekly': 'warning',
+    'monthly': 'info',
+    'monThu': 'primary',
+    'biweekly': 'secondary'
+  };
+  return colors[periodicity] || 'secondary';
+}
+
+function getPeriodicityText(periodicity) {
+  const texts = {
+    'daily': 'Diaria',
+    'weekly': 'Semanal',
+    'monthly': 'Mensual',
+    'monThu': 'Lun/Jue',
+    'biweekly': 'Quincenal'
+  };
+  return texts[periodicity] || periodicity;
+}
+
+function calculateTaskProgress(task) {
+  if (task.mode === 'binary') {
+    return {
+      html: task.completed ? 
+        '<span class="badge bg-success"><i class="fas fa-check"></i> Completada</span>' :
+        '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pendiente</span>'
+    };
+  } else {
+    const current = task.current || 0;
+    const target = task.target_per_period || 1;
+    const percentage = Math.round((current / target) * 100);
+    
+    return {
+      html: `
+        <div class="progress mb-2" style="height: 8px;">
+          <div class="progress-bar" role="progressbar" style="width: ${percentage}%"></div>
+        </div>
+        <small class="text-muted">${current}/${target}</small>
+      `
+    };
+  }
+}
+
+function updateTodayTasksCount() {
+  document.getElementById('tasks-count').textContent = window.filteredTodayTasks.length;
+  document.getElementById('total-tasks').textContent = window.todayTasksData.length;
+  
+  // Contar tareas atrasadas
+  const overdueCount = window.filteredTodayTasks.filter(task => task.assignment_type === 'overdue').length;
+  
+  // Mostrar alerta si hay tareas atrasadas
+  if (overdueCount > 0) {
+    const existingAlert = document.querySelector('.alert-warning');
+    if (!existingAlert) {
+      const overdueInfo = document.createElement('div');
+      overdueInfo.className = 'alert alert-warning mt-3';
+      overdueInfo.innerHTML = `
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>¡Atención!</strong> Tienes ${overdueCount} tarea(s) atrasada(s) que aparecen en rojo.
+      `;
+      document.getElementById('today-tasks-container').prepend(overdueInfo);
+    }
+  }
+}
+
+function showTodayTasksError(message) {
+  const container = document.getElementById('today-tasks-container');
+  container.innerHTML = `
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      Error: ${message}
+    </div>
+  `;
+}
+
+function refreshTodayTasks() {
+  loadTodayData();
+}
+
+function showTodayFilters() {
+  const filters = document.getElementById('today-filters');
+  filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+}
+
+function applyTodayFilters() {
+  const statusFilter = document.getElementById('status-filter-today').value;
+  const typeFilter = document.getElementById('type-filter-today').value;
+  const slaFilter = document.getElementById('sla-filter-today').value;
+  
+  window.filteredTodayTasks = window.todayTasksData.filter(task => {
+    // Filtro por estado
+    if (statusFilter === 'pending' && task.completed) return false;
+    if (statusFilter === 'completed' && !task.completed) return false;
+    if (statusFilter === 'overdue') {
+      const slaStatus = getSLAStatus(task.sla_time);
+      if (slaStatus.color !== 'danger') return false;
+    }
+    
+    // Filtro por tipo
+    if (typeFilter && task.mode !== typeFilter) return false;
+    
+    // Filtro por SLA
+    if (slaFilter) {
+      const slaStatus = getSLAStatus(task.sla_time);
+      if (slaFilter === 'urgent' && slaStatus.color !== 'warning') return false;
+      if (slaFilter === 'normal' && slaStatus.color !== 'success') return false;
+      if (slaFilter === 'completed' && slaStatus.color !== 'success') return false;
+    }
+    
+    return true;
+  });
+  
+  updateTodayTasksDisplay();
+  updateTodayTasksCount();
+}
+
+// Las funciones de completar tareas ahora están en main.ejs para estar disponibles globalmente
+
+// Cargar datos cuando se carga la sección
+loadTodayData();
+</script>
+
+<!-- Modal para completar tarea -->
+<div class="modal fade" id="completeTaskModal" tabindex="-1" aria-labelledby="completeTaskModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="completeTaskModalLabel">
+          <i class="fas fa-check-circle me-2"></i>
+          Completar Tarea
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-12">
+            <div class="alert alert-info">
+              <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>
+                Tarea a completar:
+              </h6>
+              <p class="mb-0" id="completeTaskTitle"></p>
+            </div>
+          </div>
+        </div>
+        
+        <form id="completeTaskForm">
+          <input type="hidden" id="completeTaskId" value="">
+          
+          <div class="mb-3">
+            <label for="completeTaskComment" class="form-label">
+              <i class="fas fa-comment me-1"></i>
+              Comentario (opcional)
+            </label>
+            <textarea 
+              class="form-control" 
+              id="completeTaskComment" 
+              rows="3" 
+              placeholder="Agrega un comentario sobre la tarea completada..."
+              maxlength="500"
+            ></textarea>
+            <div class="form-text">Máximo 500 caracteres</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="completeTaskEvidence" class="form-label">
+              <i class="fas fa-paperclip me-1"></i>
+              Evidencia (opcional)
+            </label>
+            <input 
+              type="file" 
+              class="form-control" 
+              id="completeTaskEvidence" 
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+            >
+            <div class="form-text">
+              Formatos permitidos: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX (máx. 10MB)
+            </div>
+          </div>
+          
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Importante:</strong> Al completar esta tarea, se marcará como realizada para todos los usuarios asignados.
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-success" onclick="confirmCompleteTask()">
+          <i class="fas fa-check me-1"></i>
+          Completar Tarea
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para registrar acción (tareas contables) -->
+<div class="modal fade" id="registerActionModal" tabindex="-1" aria-labelledby="registerActionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="registerActionModalLabel">
+          <i class="fas fa-plus-circle me-2"></i>
+          Registrar Acción
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-12">
+            <div class="alert alert-info">
+              <h6 class="alert-heading">
+                <i class="fas fa-info-circle me-2"></i>
+                Tarea contable:
+              </h6>
+              <p class="mb-0" id="registerActionTitle"></p>
+            </div>
+          </div>
+        </div>
+        
+        <form id="registerActionForm">
+          <input type="hidden" id="registerActionId" value="">
+          
+          <div class="mb-3">
+            <label for="registerActionValue" class="form-label">
+              <i class="fas fa-hashtag me-1"></i>
+              Cantidad a registrar *
+            </label>
+            <input 
+              type="number" 
+              class="form-control" 
+              id="registerActionValue" 
+              min="1" 
+              value="1" 
+              required
+            >
+            <div class="form-text">Ingresa cuántas acciones quieres registrar</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="registerActionComment" class="form-label">
+              <i class="fas fa-comment me-1"></i>
+              Comentario (opcional)
+            </label>
+            <textarea 
+              class="form-control" 
+              id="registerActionComment" 
+              rows="3" 
+              placeholder="Describe qué acciones registraste..."
+              maxlength="500"
+            ></textarea>
+            <div class="form-text">Máximo 500 caracteres</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="registerActionEvidence" class="form-label">
+              <i class="fas fa-paperclip me-1"></i>
+              Evidencia (opcional)
+            </label>
+            <input 
+              type="file" 
+              class="form-control" 
+              id="registerActionEvidence" 
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+            >
+            <div class="form-text">
+              Formatos permitidos: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX (máx. 10MB)
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" onclick="confirmRegisterAction()">
+          <i class="fas fa-plus me-1"></i>
+          Registrar Acción
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para completar todas las tareas atrasadas (Opción A) -->
+<div class="modal fade" id="completeAllOverdueModal" tabindex="-1" aria-labelledby="completeAllOverdueModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title" id="completeAllOverdueModalLabel">
+          <i class="fas fa-clock me-2"></i>
+          Completar Todas las Tareas Atrasadas
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <h6 class="alert-heading">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Atención
+          </h6>
+          <p class="mb-0">Estás a punto de completar todas las tareas atrasadas. Esta acción no se puede deshacer.</p>
+        </div>
+        
+        <div id="overdueTasksList">
+          <!-- Se llenará dinámicamente -->
+        </div>
+        
+        <div class="mt-3">
+          <label for="bulkCompletionComment" class="form-label">
+            <i class="fas fa-comment me-1"></i>
+            Comentario general (opcional)
+          </label>
+          <textarea 
+            class="form-control" 
+            id="bulkCompletionComment" 
+            rows="3" 
+            placeholder="Describe el motivo de la completación masiva..."
+            maxlength="500"
+          ></textarea>
+          <div class="form-text">Máximo 500 caracteres</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-warning" onclick="confirmCompleteAllOverdue()">
+          <i class="fas fa-check-double me-1"></i>
+          Completar Todas
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para completar con fecha retroactiva (Opción C) -->
+<div class="modal fade" id="retroactiveCompletionModal" tabindex="-1" aria-labelledby="retroactiveCompletionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="retroactiveCompletionModalLabel">
+          <i class="fas fa-calendar-arrow-left me-2"></i>
+          Completar con Fecha Retroactiva
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <h6 class="alert-heading">
+            <i class="fas fa-info-circle me-2"></i>
+            Información
+          </h6>
+          <p class="mb-0">Selecciona la fecha original cuando debía completarse esta tarea.</p>
+        </div>
+        
+        <form id="retroactiveCompletionForm">
+          <input type="hidden" id="retroactiveTaskId" value="">
+          
+          <div class="mb-3">
+            <label for="retroactiveDate" class="form-label">
+              <i class="fas fa-calendar me-1"></i>
+              Fecha original de la tarea *
+            </label>
+            <input 
+              type="date" 
+              class="form-control" 
+              id="retroactiveDate" 
+              required
+            >
+            <div class="form-text">Selecciona cuándo debía completarse originalmente</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="retroactiveComment" class="form-label">
+              <i class="fas fa-comment me-1"></i>
+              Comentario (opcional)
+            </label>
+            <textarea 
+              class="form-control" 
+              id="retroactiveComment" 
+              rows="3" 
+              placeholder="Explica por qué se completó retroactivamente..."
+              maxlength="500"
+            ></textarea>
+            <div class="form-text">Máximo 500 caracteres</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="retroactiveEvidence" class="form-label">
+              <i class="fas fa-paperclip me-1"></i>
+              Evidencia (opcional)
+            </label>
+            <input 
+              type="file" 
+              class="form-control" 
+              id="retroactiveEvidence" 
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
+            >
+            <div class="form-text">
+              Formatos permitidos: PDF, JPG, PNG, DOC, DOCX, XLS, XLSX (máx. 10MB)
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-info" onclick="confirmRetroactiveCompletion()">
+          <i class="fas fa-calendar-check me-1"></i>
+          Completar Retroactivamente
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para marcar como No Aplicable (Opción D) -->
+<div class="modal fade" id="notApplicableModal" tabindex="-1" aria-labelledby="notApplicableModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white">
+        <h5 class="modal-title" id="notApplicableModalLabel">
+          <i class="fas fa-ban me-2"></i>
+          Marcar como No Aplicable
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-secondary">
+          <h6 class="alert-heading">
+            <i class="fas fa-info-circle me-2"></i>
+            Información
+          </h6>
+          <p class="mb-0">Esta tarea no aplica para el día seleccionado y no volverá a aparecer como atrasada.</p>
+        </div>
+        
+        <form id="notApplicableForm">
+          <input type="hidden" id="notApplicableTaskId" value="">
+          <input type="hidden" id="notApplicableDate" value="">
+          
+          <div class="mb-3">
+            <label class="form-label">
+              <i class="fas fa-calendar me-1"></i>
+              Fecha que no aplica
+            </label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="notApplicableDateDisplay" 
+              readonly
+            >
+          </div>
+          
+          <div class="mb-3">
+            <label for="notApplicableReason" class="form-label">
+              <i class="fas fa-comment me-1"></i>
+              Motivo (opcional)
+            </label>
+            <textarea 
+              class="form-control" 
+              id="notApplicableReason" 
+              rows="3" 
+              placeholder="Explica por qué esta tarea no aplica para esta fecha..."
+              maxlength="500"
+            ></textarea>
+            <div class="form-text">Máximo 500 caracteres</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="confirmNotApplicable()">
+          <i class="fas fa-ban me-1"></i>
+          Marcar como No Aplicable
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para saltar todas las tareas atrasadas -->
+<div class="modal fade" id="skipAllOverdueModal" tabindex="-1" aria-labelledby="skipAllOverdueModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-secondary text-white">
+        <h5 class="modal-title" id="skipAllOverdueModalLabel">
+          <i class="fas fa-forward me-2"></i>
+          Saltar Todas las Tareas Atrasadas
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-warning">
+          <h6 class="alert-heading">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Confirmación Requerida
+          </h6>
+          <p class="mb-0">Estás a punto de marcar TODAS las tareas atrasadas como "No Aplicable". Esta acción no se puede deshacer.</p>
+        </div>
+        
+        <div id="skipOverdueTasksList">
+          <!-- Se llenará dinámicamente -->
+        </div>
+        
+        <div class="mt-3">
+          <label for="bulkSkipReason" class="form-label">
+            <i class="fas fa-comment me-1"></i>
+            Razón para saltar todas las tareas *
+          </label>
+          <textarea 
+            class="form-control" 
+            id="bulkSkipReason" 
+            rows="3" 
+            placeholder="Explica por qué se saltan todas las tareas atrasadas (ej: Día no laboral, evento especial, etc.)..."
+            required
+          ></textarea>
+          <div class="form-text">Este comentario se aplicará a todas las tareas marcadas como "No Aplicable"</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>
+          Cancelar
+        </button>
+        <button type="button" class="btn btn-danger" onclick="confirmSkipAllOverdue()">
+          <i class="fas fa-forward me-1"></i>
+          Saltar Todas las Tareas
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

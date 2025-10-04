@@ -1,0 +1,411 @@
+<!-- Sección de Todas las Tareas -->
+<div class="row">
+  <div class="col-12">
+    <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+      <div class="card-header border-0" style="background: transparent;">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h4 class="mb-1 text-dark">
+              <i class="fas fa-list text-dark me-2"></i>
+              Todas Mis Tareas
+            </h4>
+            <p class="text-dark mb-0">Gestiona todas tus tareas asignadas</p>
+          </div>
+          <div class="col-md-6 text-end">
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-outline-primary btn-sm" onclick="refreshAllTasks()">
+                <i class="fas fa-sync-alt me-1"></i>
+                Actualizar
+              </button>
+              <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleTaskView()">
+                <i class="fas fa-th-large me-1"></i>
+                Vista
+              </button>
+              <button type="button" class="btn btn-outline-info btn-sm" onclick="showAdvancedFilters()">
+                <i class="fas fa-filter me-1"></i>
+                Filtrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Filtros Avanzados -->
+        <div id="advanced-filters" class="row mb-4" style="display: none;">
+          <div class="col-md-2">
+            <label class="form-label">Periodicidad</label>
+            <select class="form-select form-select-sm" id="periodicity-filter">
+              <option value="">Todas</option>
+              <option value="daily">Diarias</option>
+              <option value="weekly">Semanales</option>
+              <option value="monthly">Mensuales</option>
+              <option value="monThu">Lun/Jue</option>
+              <option value="biweekly">Quincenales</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Estado</label>
+            <select class="form-select form-select-sm" id="status-filter-all">
+              <option value="">Todos</option>
+              <option value="active">Activas</option>
+              <option value="completed">Completadas</option>
+              <option value="overdue">Atrasadas</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Tipo</label>
+            <select class="form-select form-select-sm" id="type-filter-all">
+              <option value="">Todos</option>
+              <option value="binary">Binarias</option>
+              <option value="counter">Contables</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">SLA</label>
+            <select class="form-select form-select-sm" id="sla-filter-all">
+              <option value="">Todos</option>
+              <option value="urgent">Urgente</option>
+              <option value="normal">Normal</option>
+              <option value="no-sla">Sin SLA</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Evidencia</label>
+            <select class="form-select form-select-sm" id="evidence-filter">
+              <option value="">Todos</option>
+              <option value="required">Requiere evidencia</option>
+              <option value="not-required">No requiere evidencia</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <div class="d-grid">
+              <button type="button" class="btn btn-primary btn-sm" onclick="applyAllTasksFilters()">
+                <i class="fas fa-search me-1"></i>
+                Filtrar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Información de tareas -->
+        <div class="row mb-3">
+          <div class="col-12">
+            <div class="alert alert-info" role="alert">
+              <div class="row align-items-center">
+                <div class="col-md-6">
+                  <i class="fas fa-list me-2"></i>
+                  <strong>Total de tareas:</strong> <span id="total-tasks-count">0</span>
+                </div>
+                <div class="col-md-6 text-end">
+                  <strong>Mostrando:</strong> <span id="showing-tasks-count">0</span> tareas
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de tareas -->
+        <div id="all-tasks-container">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-3 text-muted">Cargando todas las tareas...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Variables para todas las tareas
+let allTasksData = [];
+let filteredAllTasks = [];
+let currentViewMode = 'list';
+
+function loadAllTasksData() {
+  console.log('📋 Cargando todas las tareas...');
+  
+  fetch('/agendatce/api/tasks/my-tasks', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        allTasksData = data.data;
+        filteredAllTasks = [...allTasksData];
+        
+        updateAllTasksDisplay();
+        updateTasksCount();
+      } else {
+        showAllTasksError(data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando todas las tareas:', error);
+      showAllTasksError('Error de conexión');
+    });
+}
+
+function updateAllTasksDisplay() {
+  const container = document.getElementById('all-tasks-container');
+  
+  if (filteredAllTasks.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-5">
+        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+        <h5 class="text-muted">No hay tareas</h5>
+        <p class="text-muted">No se encontraron tareas con los filtros aplicados.</p>
+      </div>
+    `;
+    return;
+  }
+  
+  if (currentViewMode === 'list') {
+    container.innerHTML = filteredAllTasks.map(task => createAllTaskCard(task)).join('');
+  } else {
+    container.innerHTML = createGridView(filteredAllTasks);
+  }
+}
+
+function createAllTaskCard(task) {
+  const slaStatus = getSLAStatus(task.sla_time);
+  const progress = calculateTaskProgress(task);
+  
+  return `
+    <div class="card mb-3 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-md-1">
+            <div class="bg-primary bg-opacity-10 rounded-3 p-2 text-center">
+              <i class="fas fa-tasks text-primary"></i>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <h6 class="mb-1">${task.title}</h6>
+            <p class="text-muted mb-2 small">${task.description}</p>
+            <div class="d-flex align-items-center flex-wrap">
+              <span class="badge bg-${getModeColor(task.mode)} me-2">${getModeText(task.mode)}</span>
+              <span class="badge bg-${getPeriodicityColor(task.periodicity)} me-2">${getPeriodicityText(task.periodicity)}</span>
+              <span class="badge bg-${slaStatus.color}">${slaStatus.text}</span>
+            </div>
+            ${task.tags && task.tags.length > 0 ? `
+              <div class="mt-2">
+                ${task.tags.map(tag => `
+                  <span class="badge me-1" style="background-color: ${tag.color}; color: white;">${tag.display_name}</span>
+                `).join('')}
+              </div>
+            ` : ''}
+          </div>
+          <div class="col-md-2">
+            ${progress.html}
+          </div>
+          <div class="col-md-2">
+            <small class="text-muted">
+              <i class="fas fa-clock me-1"></i>SLA: ${task.sla_time || 'N/A'}<br>
+              <i class="fas fa-file me-1"></i>Evidencia: ${task.requires_evidence ? 'Sí' : 'No'}
+            </small>
+          </div>
+          <div class="col-md-2">
+            <div class="btn-group-vertical w-100">
+              <button type="button" class="btn btn-outline-info btn-sm" onclick="viewTaskDetails('${task._id}')">
+                <i class="fas fa-eye me-1"></i>
+                Ver Detalles
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function createGridView(tasks) {
+  return `
+    <div class="row">
+      ${tasks.map(task => `
+        <div class="col-md-4 mb-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+              <h6 class="card-title">${task.title}</h6>
+              <p class="card-text text-muted small">${task.description}</p>
+              <div class="mb-3">
+                <span class="badge bg-${getModeColor(task.mode)} me-1">${getModeText(task.mode)}</span>
+                <span class="badge bg-${getPeriodicityColor(task.periodicity)}">${getPeriodicityText(task.periodicity)}</span>
+              </div>
+              ${task.tags && task.tags.length > 0 ? `
+                <div class="mb-3">
+                  ${task.tags.map(tag => `
+                    <span class="badge me-1" style="background-color: ${tag.color}; color: white;">${tag.display_name}</span>
+                  `).join('')}
+                </div>
+              ` : ''}
+              <div class="d-grid gap-2">
+                <button type="button" class="btn btn-outline-info btn-sm" onclick="viewTaskDetails('${task._id}')">
+                  <i class="fas fa-eye me-1"></i>
+                  Ver Detalles
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function getSLAStatus(slaTime) {
+  if (!slaTime) return { color: 'secondary', text: 'Sin SLA' };
+  
+  const now = new Date();
+  const [hours, minutes] = slaTime.split(':');
+  const slaDate = new Date();
+  slaDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+  
+  if (now > slaDate) {
+    return { color: 'danger', text: 'Vencido' };
+  } else if (now.getHours() >= parseInt(hours) - 1) {
+    return { color: 'warning', text: 'Próximo' };
+  } else {
+    return { color: 'success', text: 'A tiempo' };
+  }
+}
+
+function getModeColor(mode) {
+  return mode === 'binary' ? 'primary' : 'info';
+}
+
+function getModeText(mode) {
+  return mode === 'binary' ? 'Sí/No' : 'Contador';
+}
+
+function getPeriodicityColor(periodicity) {
+  const colors = {
+    'daily': 'success',
+    'weekly': 'warning',
+    'monthly': 'info',
+    'monThu': 'primary',
+    'biweekly': 'secondary'
+  };
+  return colors[periodicity] || 'secondary';
+}
+
+function getPeriodicityText(periodicity) {
+  const texts = {
+    'daily': 'Diaria',
+    'weekly': 'Semanal',
+    'monthly': 'Mensual',
+    'monThu': 'Lun/Jue',
+    'biweekly': 'Quincenal'
+  };
+  return texts[periodicity] || periodicity;
+}
+
+function calculateTaskProgress(task) {
+  if (task.mode === 'binary') {
+    return {
+      html: task.completed ? 
+        '<span class="badge bg-success"><i class="fas fa-check"></i> Completada</span>' :
+        '<span class="badge bg-warning"><i class="fas fa-clock"></i> Pendiente</span>'
+    };
+  } else {
+    const current = task.current || 0;
+    const target = task.target_per_period || 1;
+    const percentage = Math.round((current / target) * 100);
+    
+    return {
+      html: `
+        <div class="progress mb-2" style="height: 8px;">
+          <div class="progress-bar" role="progressbar" style="width: ${percentage}%"></div>
+        </div>
+        <small class="text-muted">${current}/${target}</small>
+      `
+    };
+  }
+}
+
+function updateTasksCount() {
+  document.getElementById('total-tasks-count').textContent = allTasksData.length;
+  document.getElementById('showing-tasks-count').textContent = filteredAllTasks.length;
+}
+
+function showAllTasksError(message) {
+  const container = document.getElementById('all-tasks-container');
+  container.innerHTML = `
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      Error: ${message}
+    </div>
+  `;
+}
+
+function refreshAllTasks() {
+  loadAllTasksData();
+}
+
+function toggleTaskView() {
+  currentViewMode = currentViewMode === 'list' ? 'grid' : 'list';
+  updateAllTasksDisplay();
+}
+
+function showAdvancedFilters() {
+  const filters = document.getElementById('advanced-filters');
+  filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+}
+
+function applyAllTasksFilters() {
+  const periodicityFilter = document.getElementById('periodicity-filter').value;
+  const statusFilter = document.getElementById('status-filter-all').value;
+  const typeFilter = document.getElementById('type-filter-all').value;
+  const slaFilter = document.getElementById('sla-filter-all').value;
+  const evidenceFilter = document.getElementById('evidence-filter').value;
+  
+  filteredAllTasks = allTasksData.filter(task => {
+    // Filtro por periodicidad
+    if (periodicityFilter && task.periodicity !== periodicityFilter) return false;
+    
+    // Filtro por estado
+    if (statusFilter === 'active' && !task.active) return false;
+    if (statusFilter === 'completed' && !task.completed) return false;
+    if (statusFilter === 'overdue') {
+      const slaStatus = getSLAStatus(task.sla_time);
+      if (slaStatus.color !== 'danger') return false;
+    }
+    
+    // Filtro por tipo
+    if (typeFilter && task.mode !== typeFilter) return false;
+    
+    // Filtro por SLA
+    if (slaFilter) {
+      const slaStatus = getSLAStatus(task.sla_time);
+      if (slaFilter === 'urgent' && slaStatus.color !== 'warning') return false;
+      if (slaFilter === 'normal' && slaStatus.color !== 'success') return false;
+      if (slaFilter === 'no-sla' && slaStatus.color !== 'secondary') return false;
+    }
+    
+    // Filtro por evidencia
+    if (evidenceFilter === 'required' && !task.requires_evidence) return false;
+    if (evidenceFilter === 'not-required' && task.requires_evidence) return false;
+    
+    return true;
+  });
+  
+  updateAllTasksDisplay();
+  updateTasksCount();
+}
+
+function completeTask(taskId) {
+  console.log('Completando tarea:', taskId);
+  alert('Funcionalidad de completar tarea será implementada en el siguiente paso');
+}
+
+function viewTaskDetails(taskId) {
+  console.log('Ver detalles de tarea:', taskId);
+  alert('Funcionalidad de ver detalles será implementada en el siguiente paso');
+}
+
+// Cargar datos cuando se carga la sección
+loadAllTasksData();
+</script>
