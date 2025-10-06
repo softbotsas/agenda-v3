@@ -3097,67 +3097,41 @@
         let confirmationsData = [];
         let reconfirmationsData = [];
 
-        // Funciones para Confirmaciones
-        async function cargarRutasConfirmaciones() {
-            try {
-                const response = await fetch('/agendatce/api/confirmations/rutas');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const select = document.getElementById('confirmations-ruta');
-                    if (select) {
-                        select.innerHTML = '<option value="">Todas las rutas</option>';
-                        
-                        result.data.forEach(ruta => {
-                            const option = document.createElement('option');
-                            option.value = ruta._id;
-                            option.textContent = ruta.nombre || ruta.descripcion || `Ruta ${ruta._id}`;
-                            select.appendChild(option);
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Error cargando rutas:', error);
-            }
+      // Cargar rutas para el select
+async function cargarRutasConfirmaciones() {
+    try {
+        const response = await fetch('/confirmaciones-guia/rutas');
+        const result = await response.json();
+            console.log(result);
+        if (result.success) {
+            const select = document.getElementById('confirmations-ruta');
+            select.innerHTML = '<option value="">Todas las rutas</option>';
+            
+            result.data.forEach(ruta => {
+                const option = document.createElement('option');
+                option.value = ruta._id;
+                option.textContent = ruta.Rutas || `Ruta ${ruta._id}`;
+                select.appendChild(option);
+            });
         }
+    } catch (error) {
+        console.error('Error cargando rutas:', error);
+    }
+}
 
-        async function cargarChoferesConfirmaciones() {
-            try {
-                const response = await fetch('/agendatce/api/confirmations/choferes');
-                const result = await response.json();
-                
-                if (result.success) {
-                    const select = document.getElementById('confirmations-chofer');
-                    if (select) {
-                        select.innerHTML = '<option value="">Todos los choferes</option>';
-                        
-                        result.data.forEach(chofer => {
-                            const option = document.createElement('option');
-                            option.value = chofer._id;
-                            option.textContent = chofer.nombre || chofer.name || `Chofer ${chofer._id}`;
-                            select.appendChild(option);
-                        });
-                    }
-                }
-            } catch (error) {
-                console.error('Error cargando choferes:', error);
-            }
-        }
-
+    
         async function filtrarConfirmaciones() {
             console.log('🔍 Filtrando confirmaciones...');
             
             const fecha = document.getElementById('confirmations-fecha')?.value || '';
             const ruta = document.getElementById('confirmations-ruta')?.value || '';
-            const chofer = document.getElementById('confirmations-chofer')?.value || '';
             
             try {
-                let url = '/agendatce/api/confirmations/filtrar?';
+                let url = '/confirmaciones-guia/obtener?';
                 const params = new URLSearchParams();
                 
                 if (fecha) params.append('fecha', fecha);
                 if (ruta) params.append('ruta', ruta);
-                if (chofer) params.append('chofer', chofer);
                 
                 url += params.toString();
                 
@@ -3165,7 +3139,7 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    confirmationsData = result.data;
+                    confirmationsData = result.confirmaciones;
                     mostrarConfirmaciones(confirmationsData);
                 } else {
                     console.error('Error filtrando confirmaciones:', result.message);
@@ -3184,7 +3158,7 @@
             if (!data || data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="7" class="text-center text-muted py-4">
                             <i class="fas fa-inbox fa-2x mb-3"></i>
                             <br>No se encontraron confirmaciones con los filtros seleccionados
                         </td>
@@ -3195,16 +3169,11 @@
             
             tbody.innerHTML = data.map(item => `
                 <tr>
-                    <td>${item.nroGuia || 'N/A'}</td>
-                    <td>${item.remitente || 'N/A'}</td>
-                    <td>
-                        <span class="badge ${getStatusBadgeClass(item.status)}">
-                            ${item.status || 'Pendiente'}
-                        </span>
-                    </td>
-                    <td>${item.comentario || 'Sin comentarios'}</td>
-                    <td>$${item.monto ? item.monto.toFixed(2) : '0.00'}</td>
-                    <td>${item.registradoPor || 'N/A'}</td>
+                    <td>${item.nro_guia || 'N/A'}</td>
+                    <td>${item.nombreRemitente || 'N/A'}</td>
+                    <td>${item.celula_remitente || 'N/A'}</td>
+                    <td>${item.nota || 'Sin nota'}</td>
+                     <td>${item.usuario?.name || 'N/A'}</td>
                 </tr>
             `).join('');
         }
@@ -3212,7 +3181,7 @@
         // Funciones para Reconfirmaciones
         async function cargarRutasReconfirmaciones() {
             try {
-                const response = await fetch('/agendatce/api/reconfirmations/rutas');
+                const response = await fetch('/confirmaciones-guia/rutas');
                 const result = await response.json();
                 
                 if (result.success) {
@@ -3223,7 +3192,7 @@
                         result.data.forEach(ruta => {
                             const option = document.createElement('option');
                             option.value = ruta._id;
-                            option.textContent = ruta.nombre || ruta.descripcion || `Ruta ${ruta._id}`;
+                            option.textContent = ruta.Rutas || `Ruta ${ruta._id}`;
                             select.appendChild(option);
                         });
                     }
@@ -3235,7 +3204,7 @@
 
         async function cargarChoferesReconfirmaciones() {
             try {
-                const response = await fetch('/agendatce/api/reconfirmations/choferes');
+                const response = await fetch('/confirmaciones-guia/conductores');
                 const result = await response.json();
                 
                 if (result.success) {
@@ -3264,7 +3233,7 @@
             const chofer = document.getElementById('reconfirmations-chofer')?.value || '';
             
             try {
-                let url = '/agendatce/api/reconfirmations/filtrar?';
+                let url = '/confirmaciones-guia/reconfirmacion/obtener?';
                 const params = new URLSearchParams();
                 
                 if (fecha) params.append('fecha', fecha);
@@ -3277,7 +3246,7 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    reconfirmationsData = result.data;
+                    reconfirmationsData = result.reconfirmaciones;
                     mostrarReconfirmaciones(reconfirmationsData);
                 } else {
                     console.error('Error filtrando reconfirmaciones:', result.message);
@@ -3296,7 +3265,7 @@
             if (!data || data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="9" class="text-center text-muted py-4">
                             <i class="fas fa-inbox fa-2x mb-3"></i>
                             <br>No se encontraron reconfirmaciones con los filtros seleccionados
                         </td>
@@ -3307,16 +3276,19 @@
             
             tbody.innerHTML = data.map(item => `
                 <tr>
-                    <td>${item.nroGuia || 'N/A'}</td>
-                    <td>${item.remitente || 'N/A'}</td>
+                    <td>${item.nro_guia || 'N/A'}</td>
+                    <td>${item.nombreRemitente || 'N/A'}</td>
+                    <td>${item.celula_remitente || 'N/A'}</td>
+                    <td>${item.nota || 'Sin nota'}</td>
+                    <td>$${item.monto ? item.monto.toFixed(2) : '0.00'}</td>
                     <td>
-                        <span class="badge ${getStatusBadgeClass(item.status)}">
-                            ${item.status || 'Pendiente'}
+                        <span class="badge ${getStatusBadgeClass(item.statusReconfirmacion)}">
+                            ${item.statusReconfirmacion || 'Pendiente'}
                         </span>
                     </td>
-                    <td>${item.comentario || 'Sin comentarios'}</td>
-                    <td>$${item.monto ? item.monto.toFixed(2) : '0.00'}</td>
-                    <td>${item.registradoPor || 'N/A'}</td>
+                    <td>${item.chofer?.length > 0 ? 'Asignado' : 'Sin asignar'}</td>
+                    <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    <td>${item.usuario?.name || 'N/A'}</td>
                 </tr>
             `).join('');
         }
@@ -3349,15 +3321,574 @@
         function cargarDatosSeccion(sectionName) {
             if (sectionName === 'confirmations') {
                 setTimeout(() => {
-                    cargarRutasConfirmaciones();
-                    cargarChoferesConfirmaciones();
+                    try {
+                        cargarRutasConfirmaciones();
+                        console.log('✅ Rutas cargadas para confirmaciones');
+                    } catch (error) {
+                        console.error('❌ Error cargando rutas:', error);
+                    }
+                    
+                    // Habilitar botones de exportación para testing
+                    setTimeout(() => {
+                        console.log('🔧 Modo testing: habilitando botones de exportación');
+                        console.log('🔧 Buscando botones en el DOM...');
+                        
+                        // Buscar botones directamente
+                        const btnPDF = document.getElementById('btn-export-pdf');
+                        const btnExcel = document.getElementById('btn-export-excel');
+                        
+                        console.log('🔧 btnPDF encontrado:', !!btnPDF);
+                        console.log('🔧 btnExcel encontrado:', !!btnExcel);
+                        
+                        if (btnPDF && btnExcel) {
+                            console.log('🔧 Habilitando botones manualmente...');
+                            btnPDF.disabled = false;
+                            btnExcel.disabled = false;
+                            console.log('🔧 Botones habilitados - PDF disabled:', btnPDF.disabled, 'Excel disabled:', btnExcel.disabled);
+                        } else {
+                            console.log('🔧 ERROR: No se encontraron los botones');
+                        }
+                        
+                        try {
+                            toggleExportButtons(true);
+                        } catch (error) {
+                            console.error('❌ Error en toggleExportButtons:', error);
+                        }
+                        
+                        // Crear datos de prueba
+                        confirmationsData = [
+                            {
+                                nro_guia: 'TEST001',
+                                nombreRemitente: 'Juan Pérez',
+                                celula_remitente: '3001234567',
+                                nota: 'Prueba de exportación',
+                                monto: 15000,
+                                createdAt: new Date().toISOString(),
+                                usuario: { name: 'Usuario Test' }
+                            }
+                        ];
+                        console.log('🔧 Datos de prueba creados:', confirmationsData);
+                    }, 1000);
                 }, 100);
             } else if (sectionName === 'reconfirmations') {
                 setTimeout(() => {
-                    cargarRutasReconfirmaciones();
-                    cargarChoferesReconfirmaciones();
+                    try {
+                        cargarRutasReconfirmaciones();
+                        cargarChoferesReconfirmaciones();
+                        console.log('✅ Rutas y choferes cargados para reconfirmaciones');
+                    } catch (error) {
+                        console.error('❌ Error cargando datos:', error);
+                    }
+                    
+                    // Habilitar botones de exportación para testing
+                    setTimeout(() => {
+                        console.log('🔧 Modo testing: habilitando botones de exportación');
+                        console.log('🔧 Buscando botones en el DOM...');
+                        
+                        // Buscar botones directamente
+                        const btnPDF = document.getElementById('btn-export-pdf-reconfirmaciones');
+                        const btnExcel = document.getElementById('btn-export-excel-reconfirmaciones');
+                        
+                        console.log('🔧 btnPDF encontrado:', !!btnPDF);
+                        console.log('🔧 btnExcel encontrado:', !!btnExcel);
+                        
+                        if (btnPDF && btnExcel) {
+                            console.log('🔧 Habilitando botones manualmente...');
+                            btnPDF.disabled = false;
+                            btnExcel.disabled = false;
+                            console.log('🔧 Botones habilitados - PDF disabled:', btnPDF.disabled, 'Excel disabled:', btnExcel.disabled);
+                        } else {
+                            console.log('🔧 ERROR: No se encontraron los botones');
+                        }
+                        
+                        toggleExportButtonsReconfirmaciones(true);
+                        
+                        // Crear datos de prueba
+                        reconfirmationsData = [
+                            {
+                                nro_guia: 'TEST002',
+                                nombreRemitente: 'María García',
+                                celula_remitente: '3007654321',
+                                nota: 'Prueba de reconfirmación',
+                                monto: 25000,
+                                statusReconfirmacion: 'Delivery Realizado',
+                                chofer: ['conductor123'],
+                                createdAt: new Date().toISOString(),
+                                usuario: { name: 'Usuario Test' }
+                            }
+                        ];
+                        console.log('🔧 Datos de prueba creados:', reconfirmationsData);
+                    }, 1000);
                 }, 100);
             }
+        }
+
+        // Habilitar/deshabilitar botones de exportación
+        function toggleExportButtons(hasData) {
+            console.log('🔴 toggleExportButtons llamada con hasData:', hasData);
+            const btnPDF = document.getElementById('btn-export-pdf');
+            const btnExcel = document.getElementById('btn-export-excel');
+            
+            console.log('🔴 btnPDF encontrado:', !!btnPDF);
+            console.log('🔴 btnExcel encontrado:', !!btnExcel);
+            
+            if (btnPDF && btnExcel) {
+                btnPDF.disabled = !hasData;
+                btnExcel.disabled = !hasData;
+                console.log('🔴 Botones actualizados - PDF disabled:', btnPDF.disabled, 'Excel disabled:', btnExcel.disabled);
+            } else {
+                console.log('🔴 ERROR: No se encontraron los botones');
+            }
+        }
+
+        function toggleExportButtonsReconfirmaciones(hasData) {
+            console.log('🔴 toggleExportButtonsReconfirmaciones llamada con hasData:', hasData);
+            const btnPDF = document.getElementById('btn-export-pdf-reconfirmaciones');
+            const btnExcel = document.getElementById('btn-export-excel-reconfirmaciones');
+            
+            console.log('🔴 btnPDF encontrado:', !!btnPDF);
+            console.log('🔴 btnExcel encontrado:', !!btnExcel);
+            
+            if (btnPDF && btnExcel) {
+                btnPDF.disabled = !hasData;
+                btnExcel.disabled = !hasData;
+                console.log('🔴 Botones actualizados - PDF disabled:', btnPDF.disabled, 'Excel disabled:', btnExcel.disabled);
+            } else {
+                console.log('🔴 ERROR: No se encontraron los botones');
+            }
+        }
+
+        // Obtener texto del filtro seleccionado
+        function obtenerTextoFiltro(selectId) {
+            const select = document.getElementById(selectId);
+            if (select && select.value) {
+                return select.options[select.selectedIndex].textContent;
+            }
+            return 'Todos';
+        }
+
+        function obtenerTextoFiltroReconfirmaciones(selectId) {
+            const select = document.getElementById(selectId);
+            if (select && select.value) {
+                return select.options[select.selectedIndex].textContent;
+            }
+            return 'Todos';
+        }
+
+        // Exportar a PDF
+        function exportarPDF() {
+            console.log('🔴 Función exportarPDF() llamada');
+            console.log('🔴 confirmationsData:', confirmationsData);
+            
+            if (!confirmationsData || confirmationsData.length === 0) {
+                console.log('🔴 No hay datos para exportar');
+                mostrarMensaje('No hay datos para exportar', 'warning');
+                return;
+            }
+
+            try {
+                console.log('📊 Exportando confirmaciones a PDF:', confirmationsData.length, 'registros');
+                
+                const fecha = document.getElementById('confirmations-fecha').value;
+                const rutaTexto = obtenerTextoFiltro('confirmations-ruta');
+                
+                // Crear contenido HTML para el PDF
+                const fechaActual = new Date().toLocaleDateString('es-ES');
+                const fechaReporte = fecha ? `Fecha: ${fecha}` : 'Todas las fechas';
+                
+                const contenidoPDF = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Reporte de Confirmaciones</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            .header { text-align: center; margin-bottom: 30px; }
+                            .filters { margin-bottom: 20px; }
+                            .filters p { margin: 5px 0; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; font-weight: bold; }
+                            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>Reporte de Confirmaciones</h1>
+                            <p>Generado el: ${fechaActual}</p>
+                        </div>
+                        
+                        <div class="filters">
+                            <h3>Filtros Aplicados:</h3>
+                            <p><strong>Fecha:</strong> ${fechaReporte}</p>
+                            <p><strong>Ruta:</strong> ${rutaTexto}</p>
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nro Guía</th>
+                                    <th>Nombre Remitente</th>
+                                    <th>Celular Remitente</th>
+                                    <th>Nota</th>
+                                    <th>Monto</th>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${confirmationsData.map(item => `
+                                    <tr>
+                                        <td>${item.nro_guia || 'N/A'}</td>
+                                        <td>${item.nombreRemitente || 'N/A'}</td>
+                                        <td>${item.celula_remitente || 'N/A'}</td>
+                                        <td>${item.nota || 'Sin nota'}</td>
+                                        <td>$${item.monto ? item.monto.toFixed(2) : '0.00'}</td>
+                                        <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                        <td>${item.usuario?.name || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div class="footer">
+                            <p>Reporte generado automáticamente por el Sistema de Agenda</p>
+                            <p>Total de confirmaciones: ${confirmationsData.length}</p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                // Crear ventana nueva para el PDF
+                const ventanaPDF = window.open('', '_blank');
+                ventanaPDF.document.write(contenidoPDF);
+                ventanaPDF.document.close();
+                
+                // Esperar a que se cargue el contenido y luego imprimir
+                ventanaPDF.onload = function() {
+                    setTimeout(() => {
+                        ventanaPDF.print();
+                    }, 500);
+                };
+                
+                console.log('✅ PDF generado exitosamente');
+                
+            } catch (error) {
+                console.error('❌ Error exportando a PDF:', error);
+                mostrarMensaje('Error al exportar PDF', 'error');
+            }
+        }
+
+        // Exportar a Excel
+        function exportarExcel() {
+            console.log('🔴 Función exportarExcel() llamada');
+            console.log('🔴 confirmationsData:', confirmationsData);
+            
+            if (!confirmationsData || confirmationsData.length === 0) {
+                console.log('🔴 No hay datos para exportar');
+                mostrarMensaje('No hay datos para exportar', 'warning');
+                return;
+            }
+
+            try {
+                console.log('📊 Exportando confirmaciones a Excel:', confirmationsData.length, 'registros');
+                
+                const fecha = document.getElementById('confirmations-fecha').value;
+                const rutaTexto = obtenerTextoFiltro('confirmations-ruta');
+                
+                // Crear datos para Excel
+                const datosExcel = [
+                    // Encabezados
+                    ['Nro Guía', 'Nombre Remitente', 'Celular Remitente', 'Nota', 'Monto', 'Fecha', 'Usuario'],
+                    // Datos
+                    ...confirmationsData.map(item => [
+                        item.nro_guia || 'N/A',
+                        item.nombreRemitente || 'N/A',
+                        item.celula_remitente || 'N/A',
+                        item.nota || 'Sin nota',
+                        item.monto ? item.monto.toFixed(2) : '0.00',
+                        item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
+                        item.usuario?.name || 'N/A'
+                    ]),
+                    // Línea en blanco
+                    [],
+                    // Información de filtros
+                    ['Filtros aplicados:', '', '', '', '', '', ''],
+                    ['Fecha:', fecha || 'Todas las fechas', '', '', '', '', ''],
+                    ['Ruta:', rutaTexto, '', '', '', '', ''],
+                    ['Total registros:', confirmationsData.length, '', '', '', '', '']
+                ];
+                
+                // Crear CSV
+                const csvContent = datosExcel.map(row => 
+                    row.map(cell => `"${cell}"`).join(',')
+                ).join('\n');
+                
+                // Crear archivo
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `confirmaciones_${new Date().toISOString().split('T')[0]}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+                
+                console.log('✅ Excel generado exitosamente');
+                
+            } catch (error) {
+                console.error('❌ Error exportando a Excel:', error);
+                mostrarMensaje('Error al exportar Excel', 'error');
+            }
+        }
+
+        // Exportar a PDF Reconfirmaciones
+        function exportarPDFReconfirmaciones() {
+            console.log('🔴 Función exportarPDFReconfirmaciones() llamada');
+            console.log('🔴 reconfirmationsData:', reconfirmationsData);
+            
+            if (!reconfirmationsData || reconfirmationsData.length === 0) {
+                console.log('🔴 No hay datos para exportar');
+                mostrarMensaje('No hay datos para exportar', 'warning');
+                return;
+            }
+
+            try {
+                console.log('📊 Exportando reconfirmaciones a PDF:', reconfirmationsData.length, 'registros');
+                
+                const fecha = document.getElementById('reconfirmations-fecha').value;
+                const rutaTexto = obtenerTextoFiltroReconfirmaciones('reconfirmations-ruta');
+                const choferTexto = obtenerTextoFiltroReconfirmaciones('reconfirmations-chofer');
+                
+                // Crear contenido HTML para el PDF
+                const fechaActual = new Date().toLocaleDateString('es-ES');
+                const fechaReporte = fecha ? `Fecha: ${fecha}` : 'Todas las fechas';
+                
+                const contenidoPDF = `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Reporte de Reconfirmaciones</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            .header { text-align: center; margin-bottom: 30px; }
+                            .filters { margin-bottom: 20px; }
+                            .filters p { margin: 5px 0; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                            th { background-color: #f2f2f2; font-weight: bold; }
+                            .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h1>Reporte de Reconfirmaciones</h1>
+                            <p>Generado el: ${fechaActual}</p>
+                        </div>
+                        
+                        <div class="filters">
+                            <h3>Filtros Aplicados:</h3>
+                            <p><strong>Fecha:</strong> ${fechaReporte}</p>
+                            <p><strong>Ruta:</strong> ${rutaTexto}</p>
+                            <p><strong>Chofer:</strong> ${choferTexto}</p>
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Nro Guía</th>
+                                    <th>Nombre Remitente</th>
+                                    <th>Celular Remitente</th>
+                                    <th>Nota</th>
+                                    <th>Monto</th>
+                                    <th>Status</th>
+                                    <th>Chofer</th>
+                                    <th>Fecha</th>
+                                    <th>Usuario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${reconfirmationsData.map(item => `
+                                    <tr>
+                                        <td>${item.nro_guia || 'N/A'}</td>
+                                        <td>${item.nombreRemitente || 'N/A'}</td>
+                                        <td>${item.celula_remitente || 'N/A'}</td>
+                                        <td>${item.nota || 'Sin nota'}</td>
+                                        <td>$${item.monto ? item.monto.toFixed(2) : '0.00'}</td>
+                                        <td>${item.statusReconfirmacion || 'Pendiente'}</td>
+                                        <td>${item.chofer?.length > 0 ? 'Asignado' : 'Sin asignar'}</td>
+                                        <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}</td>
+                                        <td>${item.usuario?.name || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div class="footer">
+                            <p>Reporte generado automáticamente por el Sistema de Agenda</p>
+                            <p>Total de reconfirmaciones: ${reconfirmationsData.length}</p>
+                        </div>
+                    </body>
+                    </html>
+                `;
+                
+                // Crear ventana nueva para el PDF
+                const ventanaPDF = window.open('', '_blank');
+                ventanaPDF.document.write(contenidoPDF);
+                ventanaPDF.document.close();
+                
+                // Esperar a que se cargue el contenido y luego imprimir
+                ventanaPDF.onload = function() {
+                    setTimeout(() => {
+                        ventanaPDF.print();
+                    }, 500);
+                };
+                
+                console.log('✅ PDF generado exitosamente');
+                
+            } catch (error) {
+                console.error('❌ Error exportando a PDF:', error);
+                mostrarMensaje('Error al exportar PDF', 'error');
+            }
+        }
+
+        // Exportar a Excel Reconfirmaciones
+        function exportarExcelReconfirmaciones() {
+            console.log('🔴 Función exportarExcelReconfirmaciones() llamada');
+            console.log('🔴 reconfirmationsData:', reconfirmationsData);
+            
+            if (!reconfirmationsData || reconfirmationsData.length === 0) {
+                console.log('🔴 No hay datos para exportar');
+                mostrarMensaje('No hay datos para exportar', 'warning');
+                return;
+            }
+
+            try {
+                console.log('📊 Exportando reconfirmaciones a Excel:', reconfirmationsData.length, 'registros');
+                
+                const fecha = document.getElementById('reconfirmations-fecha').value;
+                const rutaTexto = obtenerTextoFiltroReconfirmaciones('reconfirmations-ruta');
+                const choferTexto = obtenerTextoFiltroReconfirmaciones('reconfirmations-chofer');
+                
+                // Crear datos para Excel
+                const datosExcel = [
+                    // Encabezados
+                    ['Nro Guía', 'Nombre Remitente', 'Celular Remitente', 'Nota', 'Monto', 'Status', 'Chofer', 'Fecha', 'Usuario'],
+                    // Datos
+                    ...reconfirmationsData.map(item => [
+                        item.nro_guia || 'N/A',
+                        item.nombreRemitente || 'N/A',
+                        item.celula_remitente || 'N/A',
+                        item.nota || 'Sin nota',
+                        item.monto ? item.monto.toFixed(2) : '0.00',
+                        item.statusReconfirmacion || 'Pendiente',
+                        item.chofer?.length > 0 ? 'Asignado' : 'Sin asignar',
+                        item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A',
+                        item.usuario?.name || 'N/A'
+                    ]),
+                    // Línea en blanco
+                    [],
+                    // Información de filtros
+                    ['Filtros aplicados:', '', '', '', '', '', '', '', ''],
+                    ['Fecha:', fecha || 'Todas las fechas', '', '', '', '', '', '', ''],
+                    ['Ruta:', rutaTexto, '', '', '', '', '', '', ''],
+                    ['Chofer:', choferTexto, '', '', '', '', '', '', ''],
+                    ['Total registros:', reconfirmationsData.length, '', '', '', '', '', '', '']
+                ];
+                
+                // Crear CSV
+                const csvContent = datosExcel.map(row => 
+                    row.map(cell => `"${cell}"`).join(',')
+                ).join('\n');
+                
+                // Crear archivo
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', `reconfirmaciones_${new Date().toISOString().split('T')[0]}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+                
+                console.log('✅ Excel generado exitosamente');
+                
+            } catch (error) {
+                console.error('❌ Error exportando a Excel:', error);
+                mostrarMensaje('Error al exportar Excel', 'error');
+            }
+        }
+
+        // Funciones de test
+        function testFunctionConfirmations() {
+            console.log('🔴 TEST FUNCTION CONFIRMACIONES LLAMADA!');
+            alert('¡Test funcionando! Los onclick están bien.');
+        }
+
+        function testFunction() {
+            console.log('🔴 TEST FUNCTION RECONFIRMACIONES LLAMADA!');
+            alert('¡Test funcionando! Los onclick están bien.');
+        }
+
+        // Función de test global para habilitar botones manualmente
+        function habilitarBotonesTest() {
+            console.log('🔧 HABILITANDO BOTONES MANUALMENTE...');
+            
+            // Confirmaciones
+            const btnPDF1 = document.getElementById('btn-export-pdf');
+            const btnExcel1 = document.getElementById('btn-export-excel');
+            
+            if (btnPDF1 && btnExcel1) {
+                btnPDF1.disabled = false;
+                btnExcel1.disabled = false;
+                console.log('✅ Botones de confirmaciones habilitados');
+            }
+            
+            // Reconfirmaciones
+            const btnPDF2 = document.getElementById('btn-export-pdf-reconfirmaciones');
+            const btnExcel2 = document.getElementById('btn-export-excel-reconfirmaciones');
+            
+            if (btnPDF2 && btnExcel2) {
+                btnPDF2.disabled = false;
+                btnExcel2.disabled = false;
+                console.log('✅ Botones de reconfirmaciones habilitados');
+            }
+            
+            // Crear datos de prueba
+            confirmationsData = [{
+                nro_guia: 'TEST001',
+                nombreRemitente: 'Juan Pérez',
+                celula_remitente: '3001234567',
+                nota: 'Prueba de exportación',
+                monto: 15000,
+                createdAt: new Date().toISOString(),
+                usuario: { name: 'Usuario Test' }
+            }];
+            
+            reconfirmationsData = [{
+                nro_guia: 'TEST002',
+                nombreRemitente: 'María García',
+                celula_remitente: '3007654321',
+                nota: 'Prueba de reconfirmación',
+                monto: 25000,
+                statusReconfirmacion: 'Delivery Realizado',
+                chofer: ['conductor123'],
+                createdAt: new Date().toISOString(),
+                usuario: { name: 'Usuario Test' }
+            }];
+            
+            console.log('✅ Datos de prueba creados');
+            alert('¡Botones habilitados! Ahora puedes probar PDF y Excel.');
         }
     </script>
 

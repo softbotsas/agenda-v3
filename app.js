@@ -179,7 +179,7 @@ app.get('/session-info', (req, res) => {
 
 // Cargar solo las rutas del módulo de agenda
 app.use('/agendatce', require('./agendatce-main/src/router/agenda.router'));
-
+app.use('/confirmaciones-guia', require('./router/confirmacionGuia.routes'));
 // Manejo de errores 404
 app.use((req, res) => {
   res.status(404).render('agenda/error', {

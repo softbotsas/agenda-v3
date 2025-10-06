@@ -71,10 +71,7 @@ const getCurrentUser = async (req, res) => {
 
 
   try {
-    console.log('🔍 getCurrentUser - req.session:', !!req.session);
-    console.log('🔍 getCurrentUser - req.session.userId:', req.session?.userId);
-    console.log('🔍 getCurrentUser - req.sessionID:', req.sessionID);
-    console.log('🔍 getCurrentUser - req.headers:', req.headers);
+    console.log('🔍 getCurrentUser - req.session:', req.session);
     
     // El sistema principal ya estableció req.session.userId
     if (!req.session || !req.session.userId) {
