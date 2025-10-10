@@ -14,9 +14,7 @@
                     <button type="button" class="btn btn-warning" onclick="exportarExcelReconfirmaciones()" id="btn-export-excel-reconfirmaciones" disabled>
                         <i class="fas fa-file-excel me-2"></i>Exportar Excel
                     </button>
-                    <button type="button" class="btn btn-danger" onclick="testFunction()" id="btn-test">
-                        <i class="fas fa-bug me-2"></i>TEST
-                    </button>
+                    
                 </div>
             </div>
 
@@ -29,21 +27,34 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="reconfirmations-fecha" class="form-label">Fecha</label>
                             <input type="date" class="form-control" id="reconfirmations-fecha" name="fecha">
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="reconfirmations-ruta" class="form-label">Ruta</label>
                             <select class="form-select" id="reconfirmations-ruta" name="ruta">
                                 <option value="">Todas las rutas</option>
                             </select>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label for="reconfirmations-chofer" class="form-label">Chofer</label>
                             <select class="form-select" id="reconfirmations-chofer" name="chofer">
                                 <option value="">Todos los choferes</option>
                             </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="reconfirmations-usuario" class="form-label">Usuario</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="reconfirmations-usuario" placeholder="Seleccionar usuario..." readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="console.log('🔍 Botón clicado'); abrirModalUsuariosReconfirmaciones();" title="Buscar usuario">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" type="button" onclick="limpiarFiltroUsuarioReconfirmaciones()" title="Limpiar filtro">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" id="reconfirmations-usuario-id" name="usuario">
                         </div>
                         <div class="col-md-3 d-flex align-items-end">
                             <button type="button" class="btn btn-primary w-100" onclick="filtrarReconfirmaciones()">
@@ -88,6 +99,58 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para selección de usuarios en reconfirmaciones -->
+<div class="modal fade" id="modalUsuariosReconfirmaciones" tabindex="-1" aria-labelledby="modalUsuariosReconfirmacionesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalUsuariosReconfirmacionesLabel">
+                    <i class="fas fa-users me-2"></i>Seleccionar Usuario - Reconfirmaciones
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Barra de búsqueda -->
+                <div class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="buscarUsuarioReconfirmaciones" placeholder="Buscar por nombre o correo..." onkeypress="if(event.key==='Enter') buscarUsuariosReconfirmaciones()">
+                        <button class="btn btn-outline-primary" type="button" onclick="buscarUsuariosReconfirmaciones()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="cargarUsuariosReconfirmaciones()" title="Cargar todos">
+                            <i class="fas fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lista de usuarios -->
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Cargo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaUsuariosReconfirmaciones">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Cargando usuarios...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
             </div>
         </div>
     </div>

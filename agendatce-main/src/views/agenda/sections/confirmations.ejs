@@ -14,9 +14,7 @@
                     <button type="button" class="btn btn-success" onclick="exportarExcel()" id="btn-export-excel" disabled>
                         <i class="fas fa-file-excel me-2"></i>Exportar Excel
                     </button>
-                    <button type="button" class="btn btn-danger" onclick="testFunctionConfirmations()" id="btn-test-confirmations">
-                        <i class="fas fa-bug me-2"></i>TEST
-                    </button>
+                   
                 </div>
             </div>
 
@@ -33,13 +31,26 @@
                             <label for="confirmations-fecha" class="form-label">Fecha</label>
                             <input type="date" class="form-control" id="confirmations-fecha" name="fecha">
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label for="confirmations-ruta" class="form-label">Ruta</label>
                             <select class="form-select" id="confirmations-ruta" name="ruta">
                                 <option value="">Todas las rutas</option>
                             </select>
                         </div>
-                        <div class="col-md-4 d-flex align-items-end">
+                        <div class="col-md-3">
+                            <label for="confirmations-usuario" class="form-label">Usuario</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="confirmations-usuario" placeholder="Seleccionar usuario..." readonly>
+                                <button class="btn btn-outline-secondary" type="button" onclick="abrirModalUsuarios()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" type="button" onclick="limpiarFiltroUsuario()" title="Limpiar filtro">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <input type="hidden" id="confirmations-usuario-id" name="usuario">
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
                             <button type="button" class="btn btn-primary w-100" onclick="filtrarConfirmaciones()">
                                 <i class="fas fa-search me-2"></i>Filtrar
                             </button>
@@ -64,14 +75,13 @@
                                     <th>Nombre Remitente</th>
                                     <th>Celular Remitente</th>
                                     <th>Nota</th>
-                                    <th>Monto</th>
                                     <th>Fecha</th>
                                     <th>Usuario</th>
                                 </tr>
                             </thead>
                             <tbody id="confirmations-tbody">
                                 <tr>
-                                    <td colspan="7" class="text-center text-muted py-4">
+                                    <td colspan="6" class="text-center text-muted py-4">
                                         <i class="fas fa-search fa-2x mb-3"></i>
                                         <br>Seleccione filtros y haga clic en "Filtrar" para ver los resultados
                                     </td>
@@ -80,6 +90,58 @@
                         </table>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para selección de usuarios -->
+<div class="modal fade" id="modalUsuarios" tabindex="-1" aria-labelledby="modalUsuariosLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalUsuariosLabel">
+                    <i class="fas fa-users me-2"></i>Seleccionar Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Barra de búsqueda -->
+                <div class="mb-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="buscarUsuario" placeholder="Buscar por nombre o correo..." onkeypress="if(event.key==='Enter') buscarUsuarios()">
+                        <button class="btn btn-outline-primary" type="button" onclick="buscarUsuarios()">
+                            <i class="fas fa-search"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button" onclick="cargarUsuarios()" title="Cargar todos">
+                            <i class="fas fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Lista de usuarios -->
+                <div class="table-responsive" style="max-height: 400px;">
+                    <table class="table table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Correo</th>
+                                <th>Cargo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaUsuarios">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Cargando usuarios...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
             </div>
         </div>
     </div>

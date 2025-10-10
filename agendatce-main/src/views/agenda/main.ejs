@@ -3125,6 +3125,7 @@ async function cargarRutasConfirmaciones() {
             
             const fecha = document.getElementById('confirmations-fecha')?.value || '';
             const ruta = document.getElementById('confirmations-ruta')?.value || '';
+            const usuario = document.getElementById('confirmations-usuario-id')?.value || '';
             
             try {
                 let url = '/confirmaciones-guia/obtener?';
@@ -3132,6 +3133,7 @@ async function cargarRutasConfirmaciones() {
                 
                 if (fecha) params.append('fecha', fecha);
                 if (ruta) params.append('ruta', ruta);
+                if (usuario) params.append('usuario', usuario);
                 
                 url += params.toString();
                 
@@ -3158,7 +3160,7 @@ async function cargarRutasConfirmaciones() {
             if (!data || data.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             <i class="fas fa-inbox fa-2x mb-3"></i>
                             <br>No se encontraron confirmaciones con los filtros seleccionados
                         </td>
@@ -3173,9 +3175,288 @@ async function cargarRutasConfirmaciones() {
                     <td>${item.nombreRemitente || 'N/A'}</td>
                     <td>${item.celula_remitente || 'N/A'}</td>
                     <td>${item.nota || 'Sin nota'}</td>
-                     <td>${item.usuario?.name || 'N/A'}</td>
+                    <td>${item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}</td>
+                    <td>${item.usuario?.name || 'N/A'}</td>
                 </tr>
             `).join('');
+        }
+
+        // Funciones para filtro de usuarios
+        async function abrirModalUsuarios() {
+            console.log('🔍 Abriendo modal de usuarios...');
+            
+            // Mostrar el modal
+            const modal = new bootstrap.Modal(document.getElementById('modalUsuarios'));
+            modal.show();
+            
+            // Cargar usuarios al abrir el modal
+            await cargarUsuarios();
+        }
+
+        async function cargarUsuarios() {
+            try {
+                console.log('🔍 Cargando usuarios...');
+                
+                const response = await fetch('/api/usuarios');
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarUsuarios(result.data);
+                } else {
+                    console.error('Error cargando usuarios:', result.message);
+                    mostrarUsuarios([]);
+                }
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+                mostrarUsuarios([]);
+            }
+        }
+
+        function mostrarUsuarios(usuarios) {
+            const tbody = document.getElementById('listaUsuarios');
+            if (!tbody) return;
+            
+            if (!usuarios || usuarios.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-3">
+                            <i class="fas fa-user-slash fa-2x mb-2"></i>
+                            <br>No se encontraron usuarios
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = usuarios.map(usuario => `
+                <tr>
+                    <td>${usuario.name || 'Sin nombre'}</td>
+                    <td>${usuario.correo || 'Sin correo'}</td>
+                    <td>${usuario.cargo || 'Sin cargo'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="seleccionarUsuario('${usuario._id}', '${usuario.name || 'Sin nombre'}')">
+                            <i class="fas fa-check me-1"></i>Seleccionar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function seleccionarUsuario(usuarioId, usuarioNombre) {
+            console.log('✅ Usuario seleccionado:', usuarioId, usuarioNombre);
+            
+            // Actualizar los campos del filtro
+            document.getElementById('confirmations-usuario').value = usuarioNombre;
+            document.getElementById('confirmations-usuario-id').value = usuarioId;
+            
+            // Cerrar el modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalUsuarios'));
+            modal.hide();
+            
+            mostrarMensaje(`Usuario "${usuarioNombre}" seleccionado`, 'success');
+        }
+
+        function limpiarFiltroUsuario() {
+            console.log('🧹 Limpiando filtro de usuario...');
+            
+            document.getElementById('confirmations-usuario').value = '';
+            document.getElementById('confirmations-usuario-id').value = '';
+            
+            mostrarMensaje('Filtro de usuario limpiado', 'info');
+        }
+
+        async function buscarUsuarios() {
+            const termino = document.getElementById('buscarUsuario').value.trim();
+            console.log('🔍 Buscando usuarios con término:', termino);
+            
+            // Mostrar indicador de carga
+            const tbody = document.getElementById('listaUsuarios');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-3">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Buscando usuarios...
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            try {
+                let url = '/api/usuarios';
+                if (termino) {
+                    url += `?search=${encodeURIComponent(termino)}`;
+                }
+                
+                console.log('🔍 URL de búsqueda:', url);
+                
+                const response = await fetch(url);
+                console.log('🔍 Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('🔍 Resultado de búsqueda:', result);
+                
+                if (result.success) {
+                    mostrarUsuarios(result.data);
+                    console.log('✅ Usuarios encontrados:', result.data.length);
+                } else {
+                    console.error('❌ Error buscando usuarios:', result.message);
+                    mostrarUsuarios([]);
+                }
+            } catch (error) {
+                console.error('❌ Error buscando usuarios:', error);
+                mostrarUsuarios([]);
+            }
+        }
+
+        // Funciones para filtro de usuarios en reconfirmaciones
+        async function abrirModalUsuariosReconfirmaciones() {
+            console.log('🔍 Abriendo modal de usuarios para reconfirmaciones...');
+            console.log('🔍 Bootstrap disponible:', typeof bootstrap !== 'undefined');
+            console.log('🔍 Elemento modal:', document.getElementById('modalUsuariosReconfirmaciones'));
+            
+            try {
+                // Mostrar el modal
+                const modalElement = document.getElementById('modalUsuariosReconfirmaciones');
+                if (!modalElement) {
+                    console.error('❌ Modal no encontrado: modalUsuariosReconfirmaciones');
+                    alert('Modal no encontrado. Verifica que el HTML esté cargado correctamente.');
+                    return;
+                }
+                
+                console.log('🔍 Elemento modal encontrado:', modalElement);
+                
+                // Verificar si Bootstrap está disponible
+                if (typeof bootstrap === 'undefined') {
+                    console.error('❌ Bootstrap no está disponible');
+                    alert('Bootstrap no está cargado. El modal no puede abrirse.');
+                    return;
+                }
+                
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+                console.log('✅ Modal abierto correctamente');
+                
+                // Cargar usuarios al abrir el modal
+                await cargarUsuariosReconfirmaciones();
+            } catch (error) {
+                console.error('❌ Error abriendo modal:', error);
+                alert('Error abriendo modal: ' + error.message);
+            }
+        }
+
+        async function cargarUsuariosReconfirmaciones() {
+            try {
+                console.log('🔍 Cargando usuarios para reconfirmaciones...');
+                
+                const response = await fetch('/api/usuarios');
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarUsuariosReconfirmaciones(result.data);
+                } else {
+                    console.error('Error cargando usuarios:', result.message);
+                    mostrarUsuariosReconfirmaciones([]);
+                }
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+                mostrarUsuariosReconfirmaciones([]);
+            }
+        }
+
+        function mostrarUsuariosReconfirmaciones(usuarios) {
+            const tbody = document.getElementById('listaUsuariosReconfirmaciones');
+            if (!tbody) return;
+            
+            if (!usuarios || usuarios.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-3">
+                            <i class="fas fa-user-slash fa-2x mb-2"></i>
+                            <br>No se encontraron usuarios
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = usuarios.map(usuario => `
+                <tr>
+                    <td>${usuario.name || 'Sin nombre'}</td>
+                    <td>${usuario.correo || 'Sin correo'}</td>
+                    <td>${usuario.cargo || 'Sin cargo'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="seleccionarUsuarioReconfirmaciones('${usuario._id}', '${usuario.name || 'Sin nombre'}')">
+                            <i class="fas fa-check me-1"></i>Seleccionar
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function seleccionarUsuarioReconfirmaciones(usuarioId, usuarioNombre) {
+            console.log('✅ Usuario seleccionado para reconfirmaciones:', usuarioId, usuarioNombre);
+            
+            // Actualizar los campos del filtro
+            document.getElementById('reconfirmations-usuario').value = usuarioNombre;
+            document.getElementById('reconfirmations-usuario-id').value = usuarioId;
+            
+            // Cerrar el modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalUsuariosReconfirmaciones'));
+            modal.hide();
+            
+            mostrarMensaje(`Usuario "${usuarioNombre}" seleccionado para reconfirmaciones`, 'success');
+        }
+
+        function limpiarFiltroUsuarioReconfirmaciones() {
+            console.log('🧹 Limpiando filtro de usuario en reconfirmaciones...');
+            
+            document.getElementById('reconfirmations-usuario').value = '';
+            document.getElementById('reconfirmations-usuario-id').value = '';
+            
+            mostrarMensaje('Filtro de usuario limpiado en reconfirmaciones', 'info');
+        }
+
+        async function buscarUsuariosReconfirmaciones() {
+            const termino = document.getElementById('buscarUsuarioReconfirmaciones').value.trim();
+            console.log('🔍 Buscando usuarios para reconfirmaciones con término:', termino);
+            
+            // Mostrar indicador de carga
+            const tbody = document.getElementById('listaUsuariosReconfirmaciones');
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-3">
+                            <i class="fas fa-spinner fa-spin me-2"></i>Buscando usuarios...
+                        </td>
+                    </tr>
+                `;
+            }
+            
+            try {
+                let url = '/api/usuarios';
+                if (termino) {
+                    url += `?search=${encodeURIComponent(termino)}`;
+                }
+                
+                console.log('🔍 URL de búsqueda:', url);
+                
+                const response = await fetch(url);
+                console.log('🔍 Response status:', response.status);
+                
+                const result = await response.json();
+                console.log('🔍 Resultado de búsqueda:', result);
+                
+                if (result.success) {
+                    mostrarUsuariosReconfirmaciones(result.data);
+                    console.log('✅ Usuarios encontrados:', result.data.length);
+                } else {
+                    console.error('❌ Error buscando usuarios:', result.message);
+                    mostrarUsuariosReconfirmaciones([]);
+                }
+            } catch (error) {
+                console.error('❌ Error buscando usuarios:', error);
+                mostrarUsuariosReconfirmaciones([]);
+            }
         }
 
         // Funciones para Reconfirmaciones
@@ -3231,6 +3512,7 @@ async function cargarRutasConfirmaciones() {
             const fecha = document.getElementById('reconfirmations-fecha')?.value || '';
             const ruta = document.getElementById('reconfirmations-ruta')?.value || '';
             const chofer = document.getElementById('reconfirmations-chofer')?.value || '';
+            const usuario = document.getElementById('reconfirmations-usuario-id')?.value || '';
             
             try {
                 let url = '/confirmaciones-guia/reconfirmacion/obtener?';
@@ -3239,6 +3521,7 @@ async function cargarRutasConfirmaciones() {
                 if (fecha) params.append('fecha', fecha);
                 if (ruta) params.append('ruta', ruta);
                 if (chofer) params.append('chofer', chofer);
+                if (usuario) params.append('usuario', usuario);
                 
                 url += params.toString();
                 

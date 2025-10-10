@@ -32,6 +32,120 @@
     padding: 20px;
     background-color: #fff;
 }
+
+/* Estilos para tarjetas de asignación */
+.assignment-type-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #dee2e6 !important;
+}
+
+.assignment-type-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.assignment-type-card.border-primary {
+    border-color: #007bff !important;
+    background-color: rgba(0, 123, 255, 0.05) !important;
+}
+
+.assignment-type-card.border-success {
+    border-color: #28a745 !important;
+    background-color: rgba(40, 167, 69, 0.05) !important;
+}
+
+/* Estilos para el buscador de usuarios */
+.user-item {
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 8px !important;
+}
+
+.user-item:hover {
+    background-color: #f8f9fa;
+}
+
+.user-item input[type="checkbox"]:checked + label {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+/* Estilos para tareas temporales */
+.temporary-task-card {
+    border-left: 4px solid #ffc107 !important;
+    background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+    transition: all 0.3s ease;
+}
+
+.temporary-task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 193, 7, 0.3);
+}
+
+.temporary-task-urgent {
+    border-left-color: #dc3545 !important;
+    background: linear-gradient(135deg, #ffe6e6 0%, #ffffff 100%);
+}
+
+.temporary-task-high {
+    border-left-color: #fd7e14 !important;
+    background: linear-gradient(135deg, #fff3e0 0%, #ffffff 100%);
+}
+
+.temporary-task-normal {
+    border-left-color: #28a745 !important;
+    background: linear-gradient(135deg, #e8f5e8 0%, #ffffff 100%);
+}
+
+/* Estilos para botones de días */
+.day-btn {
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.day-btn.active {
+    background-color: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+    transform: scale(1.05);
+}
+
+.day-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+}
+
+/* Estilos para vista previa */
+#tempTaskPreview {
+    min-height: 100px;
+    transition: all 0.3s ease;
+}
+
+.temp-preview-card {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.temp-preview-card.active {
+    border-color: #007bff;
+    background: #e3f2fd;
+}
+
+/* Animaciones */
+@keyframes pulse-warning {
+    0% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 193, 7, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0); }
+}
+
+.temporary-task-pulse {
+    animation: pulse-warning 2s infinite;
+}
 </style>
 
 <div class="row">
@@ -97,9 +211,14 @@
           <div class="tab-pane fade" id="tasks" role="tabpanel">
             <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
               <h5 class="mb-0">Gestión de Tareas</h5>
+              <div class="btn-group" role="group">
               <button class="btn btn-primary" onclick="showAddTaskModal()">
                 <i class="fas fa-plus me-1"></i>Agregar Tarea
               </button>
+                <button class="btn btn-warning" onclick="showAddTemporaryTaskModal()">
+                  <i class="fas fa-clock me-1"></i>Tarea Temporal
+              </button>
+              </div>
             </div>
             
             <div id="tasksContainer">
@@ -331,6 +450,213 @@
   </div>
 </div>
 
+<!-- Modal Agregar Tarea Temporal -->
+<div class="modal fade" id="addTemporaryTaskModal" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-dark">
+        <h5 class="modal-title">
+          <i class="fas fa-clock me-2"></i>Crear Tarea Temporal
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addTemporaryTaskForm">
+          <!-- Información básica -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <div class="alert alert-info d-flex align-items-center">
+                <i class="fas fa-info-circle me-2"></i>
+                <div>
+                  <strong>💡 Tarea Temporal:</strong> Se crea para un día específico o rango de fechas y se elimina automáticamente al completarse o expirar.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label for="tempTaskTitle" class="form-label">Título de la Tarea *</label>
+                <input type="text" class="form-control" id="tempTaskTitle" required placeholder="Ej: Ir al banco a consultar sobre préstamo">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="tempTaskPriority" class="form-label">Prioridad</label>
+                <select class="form-select" id="tempTaskPriority">
+                  <option value="normal">🟢 Normal</option>
+                  <option value="high">🟡 Alta</option>
+                  <option value="urgent">🔴 Urgente</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-12">
+              <div class="mb-3">
+                <label for="tempTaskDescription" class="form-label">Descripción</label>
+                <textarea class="form-control" id="tempTaskDescription" rows="3" placeholder="Detalles específicos de la tarea..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Configuración de tiempo -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="text-primary mb-3">
+                <i class="fas fa-calendar-alt me-2"></i>Configuración de Tiempo
+              </h6>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="tempTaskType" class="form-label">Tipo de Tarea *</label>
+                <select class="form-select" id="tempTaskType" onchange="updateTemporaryTaskType()">
+                  <option value="single">📅 Un solo día</option>
+                  <option value="range">📆 Rango de fechas</option>
+                  <option value="recurring">🔄 Días específicos</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-4" id="tempSingleDateContainer">
+              <div class="mb-3">
+                <label for="tempTaskSingleDate" class="form-label">Fecha *</label>
+                <input type="date" class="form-control" id="tempTaskSingleDate" required>
+              </div>
+            </div>
+            <div class="col-md-4" id="tempTimeContainer">
+              <div class="mb-3">
+                <label for="tempTaskTime" class="form-label">Hora límite (opcional)</label>
+                <input type="time" class="form-control" id="tempTaskTime" placeholder="Ej: 17:00">
+                <div class="form-text">Se ocultará después de esta hora</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rango de fechas (oculto por defecto) -->
+          <div class="row mb-4" id="tempDateRangeContainer" style="display: none;">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="tempTaskStartDate" class="form-label">Fecha de inicio *</label>
+                <input type="date" class="form-control" id="tempTaskStartDate">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="tempTaskEndDate" class="form-label">Fecha de fin *</label>
+                <input type="date" class="form-control" id="tempTaskEndDate">
+              </div>
+            </div>
+          </div>
+
+          <!-- Días específicos del mes (oculto por defecto) -->
+          <div class="row mb-4" id="tempSpecificDaysContainer" style="display: none;">
+            <div class="col-12">
+              <div class="mb-3">
+                <label class="form-label">Días específicos del mes</label>
+                <div id="tempDaysSelectionContainer" class="border rounded p-3">
+                  <!-- Los días se generarán dinámicamente -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asignación -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="text-primary mb-3">
+                <i class="fas fa-users me-2"></i>Asignación
+              </h6>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="tempTaskAssignmentType" class="form-label">¿A quién asignar? *</label>
+                <select class="form-select" id="tempTaskAssignmentType" onchange="updateTemporaryAssignmentType()">
+                  <option value="user">👤 Usuario específico</option>
+                  <option value="department">🏢 Departamento completo</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6" id="tempUserContainer" style="display: none;">
+              <div class="mb-3">
+                <label for="tempTaskUser" class="form-label">Usuario</label>
+                <select class="form-select" id="tempTaskUser">
+                  <option value="">Seleccionar usuario...</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6" id="tempDeptContainer" style="display: none;">
+              <div class="mb-3">
+                <label for="tempTaskDepartment" class="form-label">Departamento</label>
+                <select class="form-select" id="tempTaskDepartment">
+                  <option value="">Seleccionar departamento...</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Características especiales -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="text-primary mb-3">
+                <i class="fas fa-star me-2"></i>Características Especiales
+              </h6>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Evidencia</label>
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-outline-success" id="tempTaskEvidenceBtn" onclick="toggleTemporaryEvidenceRequirement()">
+                    <i class="fas fa-camera me-1"></i>Requiere Evidencia
+                  </button>
+                  <button type="button" class="btn btn-secondary" id="tempTaskNoEvidenceBtn" onclick="toggleTemporaryEvidenceRequirement()">
+                    <i class="fas fa-times me-1"></i>No Requiere
+                  </button>
+                </div>
+                <input type="hidden" id="tempTaskEvidence" value="false">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Etiquetas</label>
+                <div id="tempTaskTags" class="border rounded p-3" style="min-height: 100px;">
+                  <div class="text-center text-muted">Cargando etiquetas...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+          <!-- Vista previa -->
+          <div class="row">
+            <div class="col-12">
+              <div class="card bg-light">
+                <div class="card-header">
+                  <h6 class="mb-0">
+                    <i class="fas fa-eye me-2"></i>Vista Previa
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <div id="tempTaskPreview">
+                    <p class="text-muted">Completa los campos para ver la vista previa...</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-warning" onclick="saveTemporaryTask()">
+          <i class="fas fa-save me-1"></i>Crear Tarea Temporal
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Agregar Tarea -->
 <div class="modal fade" id="addTaskModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
@@ -404,53 +730,119 @@
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label for="addTaskSLA" class="form-label">SLA (Hora límite)</label>
-                <input type="time" class="form-control" id="addTaskSLA">
+                <label class="form-label">Evidencia</label>
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-outline-success" id="addTaskEvidenceBtn" onclick="toggleEvidenceRequirement('add')">
+                    <i class="fas fa-camera me-1"></i>Requiere Evidencia
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" id="addTaskNoEvidenceBtn" onclick="toggleEvidenceRequirement('add')">
+                    <i class="fas fa-times me-1"></i>No Requiere
+                  </button>
+                </div>
+                <input type="hidden" id="addTaskEvidence" value="false">
               </div>
             </div>
           </div>
           
+          <!-- NUEVA SECCIÓN: Tipo de Asignación -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <label class="form-label">¿Cómo asignar esta tarea? *</label>
           <div class="row">
             <div class="col-md-6">
+                  <div class="card border-2 assignment-type-card" onclick="selectAssignmentType('user')" id="userAssignmentCard">
+                    <div class="card-body text-center">
+                      <i class="fas fa-user fa-2x text-primary mb-2"></i>
+                      <h6>Usuarios Específicos</h6>
+                      <p class="text-muted small mb-0">Cada usuario seleccionado debe completar individualmente</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+                  <div class="card border-2 assignment-type-card" onclick="selectAssignmentType('department')" id="departmentAssignmentCard">
+                    <div class="card-body text-center">
+                      <i class="fas fa-building fa-2x text-success mb-2"></i>
+                      <h6>Departamento Completo</h6>
+                      <p class="text-muted small mb-0">Todos los empleados del departamento reciben la tarea</p>
+                </div>
+              </div>
+                </div>
+              </div>
+              <input type="hidden" id="addTaskAssignmentType" required>
+            </div>
+          </div>
+          
+          <!-- Contenedor para Asignación por Usuarios -->
+          <div id="userAssignmentContainer" style="display: none;">
+          <div class="row">
+              <div class="col-12">
+                <label class="form-label">Seleccionar Usuarios *</label>
+                
+                <!-- Buscador de Usuarios -->
               <div class="mb-3">
-                <label for="addTaskDepartment" class="form-label">Departamento</label>
-                <select class="form-select" id="addTaskDepartment" onchange="filterUsersByDepartment('add')">
-                  <option value="">Sin departamento</option>
-                  <option value="dept_gt">Guatemala</option>
-                  <option value="dept_usa">Estados Unidos</option>
-                  <option value="dept_co">Colombia</option>
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="userSearchInput" 
+                           placeholder="Buscar usuarios por nombre, cargo o departamento..."
+                           onkeyup="filterUsers()">
+                    <button class="btn btn-outline-secondary" type="button" onclick="clearUserSearch()">
+                      <i class="fas fa-times"></i>
+                    </button>
+                </div>
+              </div>
+                
+                <!-- Contador de usuarios seleccionados -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <small class="text-muted">
+                    <span id="selectedUsersCount">0</span> usuarios seleccionados
+                  </small>
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary" onclick="selectAllUsers()">
+                      <i class="fas fa-check-double me-1"></i>Todos
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearAllUsers()">
+                      <i class="fas fa-times me-1"></i>Ninguno
+                    </button>
+            </div>
+                </div>
+                
+                <!-- Lista de usuarios con scroll -->
+                <div id="addTaskUsers" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                  <div class="text-center text-muted py-3">
+                    Selecciona un tipo de asignación primero
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contenedor para Asignación por Departamento -->
+          <div id="departmentAssignmentContainer" style="display: none;">
+            <div class="row">
+              <div class="col-12">
+                <label for="addTaskDepartmentSelect" class="form-label">Seleccionar Departamento *</label>
+                <select class="form-select" id="addTaskDepartmentSelect">
+                  <option value="">Seleccionar departamento...</option>
                 </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <div class="form-check mt-4">
-                  <input class="form-check-input" type="checkbox" id="addTaskEvidence">
-                  <label class="form-check-label" for="addTaskEvidence">
-                    Requiere evidencia *
-                  </label>
+                <div class="alert alert-success mt-2">
+                  <i class="fas fa-building me-2"></i>
+                  <strong>Asignación automática:</strong> Todos los empleados del departamento recibirán esta tarea.
                 </div>
               </div>
             </div>
           </div>
-          
+
+          <!-- Etiquetas -->
           <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Usuarios Asignados *</label>
-                <div id="addTaskUsers" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
-                  <div class="text-center text-muted">Cargando usuarios...</div>
-                </div>
-                <div class="form-text">Selecciona uno o más usuarios para asignar esta tarea. Si uno completa la tarea, se marcará como completada para ambos.</div>
-              </div>
-            </div>
-            <div class="col-md-6">
+            <div class="col-12">
               <div class="mb-3">
                 <label class="form-label">Etiquetas</label>
                 <div id="addTaskTags" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
                   <div class="text-center text-muted">Cargando etiquetas...</div>
                 </div>
-                <div class="form-text">Selecciona las etiquetas para esta tarea.</div>
+                <div class="form-text">Las etiquetas ayudan a categorizar y filtrar las tareas</div>
               </div>
             </div>
           </div>
@@ -539,51 +931,119 @@
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label for="editTaskSLA" class="form-label">SLA (Hora límite)</label>
-                <input type="time" class="form-control" id="editTaskSLA">
+                <label class="form-label">Evidencia</label>
+                <div class="d-flex gap-2">
+                  <button type="button" class="btn btn-outline-success" id="editTaskEvidenceBtn" onclick="toggleEvidenceRequirement('edit')">
+                    <i class="fas fa-camera me-1"></i>Requiere Evidencia
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary" id="editTaskNoEvidenceBtn" onclick="toggleEvidenceRequirement('edit')">
+                    <i class="fas fa-times me-1"></i>No Requiere
+                  </button>
+                </div>
+                <input type="hidden" id="editTaskEvidence" value="false">
               </div>
             </div>
           </div>
           
+          <!-- NUEVA SECCIÓN: Tipo de Asignación para Edición -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <label class="form-label">¿Cómo asignar esta tarea? *</label>
           <div class="row">
             <div class="col-md-6">
+                  <div class="card border-2 assignment-type-card" onclick="selectEditAssignmentType('user')" id="editUserAssignmentCard">
+                    <div class="card-body text-center">
+                      <i class="fas fa-user fa-2x text-primary mb-2"></i>
+                      <h6>Usuarios Específicos</h6>
+                      <p class="text-muted small mb-0">Cada usuario seleccionado debe completar individualmente</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+                  <div class="card border-2 assignment-type-card" onclick="selectEditAssignmentType('department')" id="editDepartmentAssignmentCard">
+                    <div class="card-body text-center">
+                      <i class="fas fa-building fa-2x text-success mb-2"></i>
+                      <h6>Departamento Completo</h6>
+                      <p class="text-muted small mb-0">Todos los empleados del departamento reciben la tarea</p>
+                </div>
+              </div>
+                </div>
+              </div>
+              <input type="hidden" id="editTaskAssignmentType" required>
+            </div>
+          </div>
+          
+          <!-- Contenedor para Asignación por Usuarios en Edición -->
+          <div id="editUserAssignmentContainer" style="display: none;">
+          <div class="row">
+              <div class="col-12">
+                <label class="form-label">Seleccionar Usuarios *</label>
+                
+                <!-- Buscador de Usuarios para Edición -->
               <div class="mb-3">
-                <label for="editTaskDepartment" class="form-label">Departamento</label>
-                <select class="form-select" id="editTaskDepartment" onchange="filterUsersByDepartment('edit')">
-                  <option value="">Sin departamento</option>
-                  <!-- Se llenará dinámicamente -->
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" id="editUserSearchInput" 
+                           placeholder="Buscar usuarios por nombre, cargo o departamento..."
+                           onkeyup="filterEditUsers()">
+                    <button class="btn btn-outline-secondary" type="button" onclick="clearEditUserSearch()">
+                      <i class="fas fa-times"></i>
+                    </button>
+                </div>
+              </div>
+                
+                <!-- Contador de usuarios seleccionados para edición -->
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <small class="text-muted">
+                    <span id="editSelectedUsersCount">0</span> usuarios seleccionados
+                  </small>
+                  <div class="btn-group btn-group-sm">
+                    <button type="button" class="btn btn-outline-primary" onclick="selectAllEditUsers()">
+                      <i class="fas fa-check-double me-1"></i>Todos
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearAllEditUsers()">
+                      <i class="fas fa-times me-1"></i>Ninguno
+                    </button>
+            </div>
+                </div>
+                
+                <!-- Lista de usuarios con scroll para edición -->
+                <div id="editTaskUsers" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                  <div class="text-center text-muted py-3">
+                    Selecciona un tipo de asignación primero
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contenedor para Asignación por Departamento en Edición -->
+          <div id="editDepartmentAssignmentContainer" style="display: none;">
+            <div class="row">
+              <div class="col-12">
+                <label for="editTaskDepartmentSelect" class="form-label">Seleccionar Departamento *</label>
+                <select class="form-select" id="editTaskDepartmentSelect">
+                  <option value="">Seleccionar departamento...</option>
                 </select>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="mb-3">
-                <div class="form-check mt-4">
-                  <input class="form-check-input" type="checkbox" id="editTaskEvidence">
-                  <label class="form-check-label" for="editTaskEvidence">
-                    Requiere evidencia *
-                  </label>
+                <div class="alert alert-success mt-2">
+                  <i class="fas fa-building me-2"></i>
+                  <strong>Asignación automática:</strong> Todos los empleados del departamento recibirán esta tarea.
                 </div>
               </div>
             </div>
           </div>
-          
+
+          <!-- Etiquetas para Edición -->
           <div class="row">
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Usuarios Asignados *</label>
-                <div id="editTaskUsers" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
-                  <div class="text-center text-muted">Cargando usuarios...</div>
-                </div>
-                <div class="form-text">Selecciona uno o más usuarios para asignar esta tarea. Si uno completa la tarea, se marcará como completada para ambos.</div>
-              </div>
-            </div>
-            <div class="col-md-6">
+            <div class="col-12">
               <div class="mb-3">
                 <label class="form-label">Etiquetas</label>
                 <div id="editTaskTags" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
                   <div class="text-center text-muted">Cargando etiquetas...</div>
                 </div>
-                <div class="form-text">Selecciona las etiquetas para esta tarea.</div>
+                <div class="form-text">Las etiquetas ayudan a categorizar y filtrar las tareas</div>
               </div>
             </div>
           </div>
@@ -1006,15 +1466,949 @@ async function showAddEmployeeModal() {
     modal.show();
 }
 
-console.log('✅ Funciones de periodicidad cargadas en configuration.ejs:', {
+// NUEVAS FUNCIONES PARA ASIGNACIÓN POR DEPARTAMENTOS
+window.selectAssignmentType = function(type) {
+    console.log('🎯 Tipo de asignación seleccionado:', type);
+    
+    // Actualizar campo hidden
+    document.getElementById('addTaskAssignmentType').value = type;
+    
+    // Actualizar estilos de las tarjetas
+    const userCard = document.getElementById('userAssignmentCard');
+    const deptCard = document.getElementById('departmentAssignmentCard');
+    
+    // Remover clases activas
+    userCard.classList.remove('border-primary', 'bg-light');
+    deptCard.classList.remove('border-success', 'bg-light');
+    
+    // Ocultar ambos contenedores
+    document.getElementById('userAssignmentContainer').style.display = 'none';
+    document.getElementById('departmentAssignmentContainer').style.display = 'none';
+    
+    if (type === 'user') {
+        // Activar tarjeta de usuarios
+        userCard.classList.add('border-primary', 'bg-light');
+        document.getElementById('userAssignmentContainer').style.display = 'block';
+        
+        // Cargar usuarios si no están cargados
+        loadUsersForAssignment();
+        
+    } else if (type === 'department') {
+        // Activar tarjeta de departamento
+        deptCard.classList.add('border-success', 'bg-light');
+        document.getElementById('departmentAssignmentContainer').style.display = 'block';
+        
+        // Cargar departamentos si no están cargados
+        loadDepartmentsForAssignment();
+    }
+};
+
+// Variable global para almacenar todos los usuarios
+let allUsersForAssignment = [];
+
+window.loadUsersForAssignment = async function() {
+    try {
+        console.log('👥 Cargando usuarios para asignación...');
+        const response = await fetch('/agendatce/api/configuration/employees');
+        
+        if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.length > 0) {
+                // Guardar usuarios en variable global para filtrado
+                allUsersForAssignment = result.data;
+                
+                // Renderizar todos los usuarios inicialmente
+                renderUsersList(allUsersForAssignment);
+                
+                // Limpiar buscador
+                document.getElementById('userSearchInput').value = '';
+                updateSelectedUsersCount();
+                
+            } else {
+                document.getElementById('addTaskUsers').innerHTML = '<div class="text-center text-muted py-3">No hay usuarios disponibles</div>';
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error cargando usuarios:', error);
+        document.getElementById('addTaskUsers').innerHTML = '<div class="text-center text-danger py-3">Error cargando usuarios</div>';
+    }
+};
+
+// Función para renderizar la lista de usuarios
+window.renderUsersList = function(users) {
+    const usersContainer = document.getElementById('addTaskUsers');
+    usersContainer.innerHTML = '';
+    
+    if (users.length === 0) {
+        usersContainer.innerHTML = '<div class="text-center text-muted py-3">No se encontraron usuarios</div>';
+        return;
+    }
+    
+    users.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'form-check mb-2 user-item';
+        
+        div.innerHTML = `
+            <input class="form-check-input" type="checkbox" id="user_${user._id}" value="${user._id}" onchange="updateSelectedUsersCount()">
+            <label class="form-check-label" for="user_${user._id}">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <strong>${user.name || user.nombre}</strong>
+                        <br><small class="text-muted">
+                            <i class="fas fa-briefcase me-1"></i>${user.cargo || 'Sin cargo'}
+                            <i class="fas fa-building ms-2 me-1"></i>${user.departamento_name || 'Sin departamento'}
+                        </small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="badge bg-secondary">${user.role_name || 'Empleado'}</span>
+                    </div>
+                </div>
+            </label>
+        `;
+        usersContainer.appendChild(div);
+    });
+};
+
+// Función para filtrar usuarios
+window.filterUsers = function() {
+    const searchTerm = document.getElementById('userSearchInput').value.toLowerCase();
+    
+    if (!searchTerm) {
+        // Si no hay término de búsqueda, mostrar todos
+        renderUsersList(allUsersForAssignment);
+        return;
+    }
+    
+    // Filtrar usuarios por nombre, cargo o departamento
+    const filteredUsers = allUsersForAssignment.filter(user => {
+        const name = (user.name || user.nombre || '').toLowerCase();
+        const cargo = (user.cargo || '').toLowerCase();
+        const dept = (user.departamento_name || '').toLowerCase();
+        
+        return name.includes(searchTerm) || 
+               cargo.includes(searchTerm) || 
+               dept.includes(searchTerm);
+    });
+    
+    renderUsersList(filteredUsers);
+    console.log(`🔍 Filtro aplicado: "${searchTerm}" - ${filteredUsers.length} usuarios encontrados`);
+};
+
+// Función para limpiar búsqueda
+window.clearUserSearch = function() {
+    document.getElementById('userSearchInput').value = '';
+    renderUsersList(allUsersForAssignment);
+    console.log('🧹 Búsqueda limpiada - mostrando todos los usuarios');
+};
+
+// Función para seleccionar todos los usuarios visibles
+window.selectAllUsers = function() {
+    const checkboxes = document.querySelectorAll('#addTaskUsers input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateSelectedUsersCount();
+    console.log('✅ Todos los usuarios visibles seleccionados');
+};
+
+// Función para deseleccionar todos los usuarios
+window.clearAllUsers = function() {
+    const checkboxes = document.querySelectorAll('#addTaskUsers input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateSelectedUsersCount();
+    console.log('❌ Todos los usuarios deseleccionados');
+};
+
+// Función para actualizar contador de usuarios seleccionados
+window.updateSelectedUsersCount = function() {
+    const checkedBoxes = document.querySelectorAll('#addTaskUsers input[type="checkbox"]:checked');
+    const count = checkedBoxes.length;
+    document.getElementById('selectedUsersCount').textContent = count;
+    
+    // Cambiar color del contador según la cantidad
+    const countElement = document.getElementById('selectedUsersCount');
+    if (count === 0) {
+        countElement.className = 'text-muted';
+    } else if (count <= 3) {
+        countElement.className = 'text-primary fw-bold';
+    } else {
+        countElement.className = 'text-success fw-bold';
+    }
+};
+
+window.loadDepartmentsForAssignment = async function() {
+    try {
+        console.log('🏢 Cargando departamentos para asignación...');
+        const response = await fetch('/agendatce/api/configuration/departments');
+        
+        if (response.ok) {
+            const result = await response.json();
+            const deptSelect = document.getElementById('addTaskDepartmentSelect');
+            
+            if (result.success && result.data && result.data.length > 0) {
+                deptSelect.innerHTML = '<option value="">Seleccionar departamento...</option>';
+                
+                result.data.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept._id;
+                    option.textContent = `${dept.name} (${dept.code || 'Sin código'})`;
+                    deptSelect.appendChild(option);
+                });
+            } else {
+                deptSelect.innerHTML = '<option value="">No hay departamentos disponibles</option>';
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error cargando departamentos:', error);
+        document.getElementById('addTaskDepartmentSelect').innerHTML = '<option value="">Error cargando departamentos</option>';
+    }
+};
+
+// FUNCIONES PARA MODAL DE EDICIÓN
+window.selectEditAssignmentType = function(type) {
+    console.log('🎯 Tipo de asignación para edición seleccionado:', type);
+    
+    // Actualizar campo hidden
+    document.getElementById('editTaskAssignmentType').value = type;
+    
+    // Actualizar estilos de las tarjetas
+    const userCard = document.getElementById('editUserAssignmentCard');
+    const deptCard = document.getElementById('editDepartmentAssignmentCard');
+    
+    // Remover clases activas
+    userCard.classList.remove('border-primary', 'bg-light');
+    deptCard.classList.remove('border-success', 'bg-light');
+    
+    // Ocultar ambos contenedores
+    document.getElementById('editUserAssignmentContainer').style.display = 'none';
+    document.getElementById('editDepartmentAssignmentContainer').style.display = 'none';
+    
+    if (type === 'user') {
+        // Activar tarjeta de usuarios
+        userCard.classList.add('border-primary', 'bg-light');
+        document.getElementById('editUserAssignmentContainer').style.display = 'block';
+        
+        // Cargar usuarios si no están cargados
+        loadUsersForEditAssignment();
+        
+    } else if (type === 'department') {
+        // Activar tarjeta de departamento
+        deptCard.classList.add('border-success', 'bg-light');
+        document.getElementById('editDepartmentAssignmentContainer').style.display = 'block';
+        
+        // Cargar departamentos si no están cargados
+        loadDepartmentsForEditAssignment();
+    }
+};
+
+// Variable global para almacenar todos los usuarios para edición
+let allUsersForEditAssignment = [];
+
+window.loadUsersForEditAssignment = async function() {
+    try {
+        console.log('👥 Cargando usuarios para edición...');
+        const response = await fetch('/agendatce/api/configuration/employees');
+        
+        if (response.ok) {
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.length > 0) {
+                // Guardar usuarios en variable global para filtrado
+                allUsersForEditAssignment = result.data;
+                
+                // Renderizar todos los usuarios inicialmente
+                renderEditUsersList(allUsersForEditAssignment);
+                
+                // Limpiar buscador
+                document.getElementById('editUserSearchInput').value = '';
+                updateEditSelectedUsersCount();
+                
+            } else {
+                document.getElementById('editTaskUsers').innerHTML = '<div class="text-center text-muted py-3">No hay usuarios disponibles</div>';
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error cargando usuarios para edición:', error);
+        document.getElementById('editTaskUsers').innerHTML = '<div class="text-center text-danger py-3">Error cargando usuarios</div>';
+    }
+};
+
+// Función para renderizar la lista de usuarios en edición
+window.renderEditUsersList = function(users) {
+    const usersContainer = document.getElementById('editTaskUsers');
+    usersContainer.innerHTML = '';
+    
+    if (users.length === 0) {
+        usersContainer.innerHTML = '<div class="text-center text-muted py-3">No se encontraron usuarios</div>';
+        return;
+    }
+    
+    users.forEach(user => {
+        const div = document.createElement('div');
+        div.className = 'form-check mb-2 user-item';
+        
+        div.innerHTML = `
+            <input class="form-check-input" type="checkbox" id="edit_user_${user._id}" value="${user._id}" onchange="updateEditSelectedUsersCount()">
+            <label class="form-check-label" for="edit_user_${user._id}">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <strong>${user.name || user.nombre}</strong>
+                        <br><small class="text-muted">
+                            <i class="fas fa-briefcase me-1"></i>${user.cargo || 'Sin cargo'}
+                            <i class="fas fa-building ms-2 me-1"></i>${user.departamento_name || 'Sin departamento'}
+                        </small>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="badge bg-secondary">${user.role_name || 'Empleado'}</span>
+                    </div>
+                </div>
+            </label>
+        `;
+        usersContainer.appendChild(div);
+    });
+};
+
+// Función para filtrar usuarios en edición
+window.filterEditUsers = function() {
+    const searchTerm = document.getElementById('editUserSearchInput').value.toLowerCase();
+    
+    if (!searchTerm) {
+        // Si no hay término de búsqueda, mostrar todos
+        renderEditUsersList(allUsersForEditAssignment);
+        return;
+    }
+    
+    // Filtrar usuarios por nombre, cargo o departamento
+    const filteredUsers = allUsersForEditAssignment.filter(user => {
+        const name = (user.name || user.nombre || '').toLowerCase();
+        const cargo = (user.cargo || '').toLowerCase();
+        const dept = (user.departamento_name || '').toLowerCase();
+        
+        return name.includes(searchTerm) || 
+               cargo.includes(searchTerm) || 
+               dept.includes(searchTerm);
+    });
+    
+    renderEditUsersList(filteredUsers);
+    console.log(`🔍 Filtro de edición aplicado: "${searchTerm}" - ${filteredUsers.length} usuarios encontrados`);
+};
+
+// Función para limpiar búsqueda en edición
+window.clearEditUserSearch = function() {
+    document.getElementById('editUserSearchInput').value = '';
+    renderEditUsersList(allUsersForEditAssignment);
+    console.log('🧹 Búsqueda de edición limpiada - mostrando todos los usuarios');
+};
+
+// Función para seleccionar todos los usuarios visibles en edición
+window.selectAllEditUsers = function() {
+    const checkboxes = document.querySelectorAll('#editTaskUsers input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    updateEditSelectedUsersCount();
+    console.log('✅ Todos los usuarios visibles seleccionados en edición');
+};
+
+// Función para deseleccionar todos los usuarios en edición
+window.clearAllEditUsers = function() {
+    const checkboxes = document.querySelectorAll('#editTaskUsers input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateEditSelectedUsersCount();
+    console.log('❌ Todos los usuarios deseleccionados en edición');
+};
+
+// Función para actualizar contador de usuarios seleccionados en edición
+window.updateEditSelectedUsersCount = function() {
+    const checkedBoxes = document.querySelectorAll('#editTaskUsers input[type="checkbox"]:checked');
+    const count = checkedBoxes.length;
+    document.getElementById('editSelectedUsersCount').textContent = count;
+    
+    // Cambiar color del contador según la cantidad
+    const countElement = document.getElementById('editSelectedUsersCount');
+    if (count === 0) {
+        countElement.className = 'text-muted';
+    } else if (count <= 3) {
+        countElement.className = 'text-primary fw-bold';
+    } else {
+        countElement.className = 'text-success fw-bold';
+    }
+};
+
+window.loadDepartmentsForEditAssignment = async function() {
+    try {
+        console.log('🏢 Cargando departamentos para edición...');
+        const response = await fetch('/agendatce/api/configuration/departments');
+        
+        if (response.ok) {
+            const result = await response.json();
+            const deptSelect = document.getElementById('editTaskDepartmentSelect');
+            
+            if (result.success && result.data && result.data.length > 0) {
+                deptSelect.innerHTML = '<option value="">Seleccionar departamento...</option>';
+                
+                result.data.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept._id;
+                    option.textContent = `${dept.name} (${dept.code || 'Sin código'})`;
+                    deptSelect.appendChild(option);
+                });
+            } else {
+                deptSelect.innerHTML = '<option value="">No hay departamentos disponibles</option>';
+            }
+        }
+    } catch (error) {
+        console.error('❌ Error cargando departamentos para edición:', error);
+        document.getElementById('editTaskDepartmentSelect').innerHTML = '<option value="">Error cargando departamentos</option>';
+    }
+};
+
+// Función para alternar el requerimiento de evidencia
+window.toggleEvidenceRequirement = function(modalType) {
+    const evidenceBtn = document.getElementById(`${modalType}TaskEvidenceBtn`);
+    const noEvidenceBtn = document.getElementById(`${modalType}TaskNoEvidenceBtn`);
+    const evidenceInput = document.getElementById(`${modalType}TaskEvidence`);
+    
+    // Cambiar estado
+    const currentState = evidenceInput.value === 'true';
+    const newState = !currentState;
+    
+    // Actualizar input hidden
+    evidenceInput.value = newState.toString();
+    
+    // Actualizar botones
+    if (newState) {
+        evidenceBtn.className = 'btn btn-success';
+        noEvidenceBtn.className = 'btn btn-outline-secondary';
+    } else {
+        evidenceBtn.className = 'btn btn-outline-success';
+        noEvidenceBtn.className = 'btn btn-secondary';
+    }
+    
+    console.log(`📸 Evidencia ${newState ? 'requerida' : 'no requerida'} para modal ${modalType}`);
+};
+
+
+// ===== FUNCIONES PARA TAREAS TEMPORALES =====
+
+// Mostrar modal de tarea temporal
+window.showAddTemporaryTaskModal = function() {
+    console.log('⏰ Mostrando modal para tarea temporal');
+    
+    // Establecer fecha de hoy por defecto
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tempTaskSingleDate').value = today;
+    
+    // Limpiar formulario
+    document.getElementById('tempTaskTitle').value = '';
+    document.getElementById('tempTaskDescription').value = '';
+    document.getElementById('tempTaskPriority').value = 'normal';
+    document.getElementById('tempTaskType').value = 'single';
+    document.getElementById('tempTaskAssignmentType').value = 'user';
+    document.getElementById('tempTaskEvidence').value = 'false';
+    
+    // Resetear botones de evidencia
+    document.getElementById('tempTaskEvidenceBtn').className = 'btn btn-outline-success';
+    document.getElementById('tempTaskNoEvidenceBtn').className = 'btn btn-secondary';
+    
+    // Mostrar modal primero
+    const modal = new bootstrap.Modal(document.getElementById('addTemporaryTaskModal'));
+    modal.show();
+    
+    // Después de mostrar el modal, configurar los elementos
+    setTimeout(() => {
+        // Mostrar/ocultar contenedores según tipo
+        updateTemporaryTaskType();
+        updateTemporaryAssignmentType();
+        
+        // Cargar datos necesarios
+        loadTemporaryTaskData();
+        
+        // Cargar etiquetas
+        loadTemporaryTaskTags();
+    }, 300);
+};
+
+// Actualizar tipo de tarea temporal
+window.updateTemporaryTaskType = function() {
+    const taskType = document.getElementById('tempTaskType').value;
+    const singleContainer = document.getElementById('tempSingleDateContainer');
+    const rangeContainer = document.getElementById('tempDateRangeContainer');
+    const specificContainer = document.getElementById('tempSpecificDaysContainer');
+    
+    // Ocultar todos
+    singleContainer.style.display = 'none';
+    rangeContainer.style.display = 'none';
+    specificContainer.style.display = 'none';
+    
+    // Mostrar el correspondiente
+    if (taskType === 'single') {
+        singleContainer.style.display = 'block';
+    } else if (taskType === 'range') {
+        rangeContainer.style.display = 'block';
+    } else if (taskType === 'recurring') {
+        specificContainer.style.display = 'block';
+        // Generar días del mes
+        generateTemporaryTaskDays();
+    }
+    
+    // Actualizar vista previa solo si los elementos están disponibles
+    setTimeout(() => {
+        updateTemporaryTaskPreview();
+    }, 100);
+};
+
+// Actualizar tipo de asignación temporal
+window.updateTemporaryAssignmentType = function() {
+    const assignmentType = document.getElementById('tempTaskAssignmentType').value;
+    const userContainer = document.getElementById('tempUserContainer');
+    const deptContainer = document.getElementById('tempDeptContainer');
+    
+    // Ocultar todos
+    userContainer.style.display = 'none';
+    deptContainer.style.display = 'none';
+    
+    // Mostrar el correspondiente
+    if (assignmentType === 'user') {
+        userContainer.style.display = 'block';
+    } else if (assignmentType === 'department') {
+        deptContainer.style.display = 'block';
+    }
+    
+    // Actualizar vista previa solo si los elementos están disponibles
+    setTimeout(() => {
+        updateTemporaryTaskPreview();
+    }, 100);
+};
+
+// Alternar requerimiento de evidencia temporal
+window.toggleTemporaryEvidenceRequirement = function() {
+    const evidenceBtn = document.getElementById('tempTaskEvidenceBtn');
+    const noEvidenceBtn = document.getElementById('tempTaskNoEvidenceBtn');
+    const evidenceInput = document.getElementById('tempTaskEvidence');
+    
+    const currentState = evidenceInput.value === 'true';
+    const newState = !currentState;
+    
+    evidenceInput.value = newState.toString();
+    
+    if (newState) {
+        evidenceBtn.className = 'btn btn-success';
+        noEvidenceBtn.className = 'btn btn-outline-secondary';
+    } else {
+        evidenceBtn.className = 'btn btn-outline-success';
+        noEvidenceBtn.className = 'btn btn-secondary';
+    }
+    
+    // Actualizar vista previa solo si los elementos están disponibles
+    setTimeout(() => {
+        updateTemporaryTaskPreview();
+    }, 100);
+};
+
+// Cargar datos para tareas temporales
+window.loadTemporaryTaskData = async function() {
+    try {
+        console.log('📊 Cargando datos para tarea temporal...');
+        console.log('📊 window.allEmployees:', window.allEmployees?.length || 'undefined');
+        console.log('📊 window.allDepartments:', window.allDepartments?.length || 'undefined');
+        
+        // Cargar usuarios si no están disponibles o están vacíos
+        if (!window.allEmployees || window.allEmployees.length === 0) {
+            console.log('📥 Cargando empleados desde API...');
+            const response = await fetch('/agendatce/api/configuration/employees');
+            const data = await response.json();
+            if (data.success) {
+                window.allEmployees = data.data;
+                console.log('✅ Empleados cargados:', window.allEmployees.length);
+            }
+        }
+        
+        // Cargar departamentos si no están disponibles o están vacíos
+        if (!window.allDepartments || window.allDepartments.length === 0) {
+            console.log('📥 Cargando departamentos desde API...');
+            const response = await fetch('/agendatce/api/configuration/departments');
+            const data = await response.json();
+            if (data.success) {
+                window.allDepartments = data.data;
+                console.log('✅ Departamentos cargados:', window.allDepartments.length);
+            }
+        }
+        
+        // Llenar select de usuarios
+        const userSelect = document.getElementById('tempTaskUser');
+        if (userSelect) {
+            userSelect.innerHTML = '<option value="">Seleccionar usuario...</option>';
+            if (window.allEmployees && window.allEmployees.length > 0) {
+                window.allEmployees.forEach(emp => {
+                    const option = document.createElement('option');
+                    option.value = emp._id;
+                    option.textContent = emp.name;
+                    userSelect.appendChild(option);
+                });
+                console.log('✅ Select de usuarios llenado:', window.allEmployees.length, 'opciones');
+            } else {
+                console.log('⚠️ No hay empleados para llenar el select');
+            }
+        }
+        
+        // Llenar select de departamentos
+        const deptSelect = document.getElementById('tempTaskDepartment');
+        if (deptSelect) {
+            deptSelect.innerHTML = '<option value="">Seleccionar departamento...</option>';
+            if (window.allDepartments && window.allDepartments.length > 0) {
+                window.allDepartments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept._id;
+                    option.textContent = `${dept.name} (${dept.code || 'Sin código'})`;
+                    deptSelect.appendChild(option);
+                });
+                console.log('✅ Select de departamentos llenado:', window.allDepartments.length, 'opciones');
+            } else {
+                console.log('⚠️ No hay departamentos para llenar el select');
+            }
+        }
+        
+    } catch (error) {
+        console.error('❌ Error cargando datos para tarea temporal:', error);
+    }
+};
+
+// Actualizar vista previa de tarea temporal
+window.updateTemporaryTaskPreview = function() {
+    const titleElement = document.getElementById('tempTaskTitle');
+    const descriptionElement = document.getElementById('tempTaskDescription');
+    const priorityElement = document.getElementById('tempTaskPriority');
+    const taskTypeElement = document.getElementById('tempTaskType');
+    const assignmentTypeElement = document.getElementById('tempTaskAssignmentType');
+    const evidenceElement = document.getElementById('tempTaskEvidence');
+    
+    // Verificar que los elementos existan antes de acceder a sus valores
+    if (!titleElement || !descriptionElement || !priorityElement || !taskTypeElement || !assignmentTypeElement || !evidenceElement) {
+        console.log('⚠️ Algunos elementos del modal temporal no están disponibles aún');
+        return;
+    }
+    
+    const title = titleElement.value;
+    const description = descriptionElement.value;
+    const priority = priorityElement.value;
+    const taskType = taskTypeElement.value;
+    const assignmentType = assignmentTypeElement.value;
+    const requiresEvidence = evidenceElement.value === 'true';
+    
+    if (!title) {
+        document.getElementById('tempTaskPreview').innerHTML = '<p class="text-muted">Completa los campos para ver la vista previa...</p>';
+        return;
+    }
+    
+    let previewHTML = `
+        <div class="temp-preview-card active">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="mb-0">${title}</h6>
+                <span class="badge bg-${priority === 'urgent' ? 'danger' : priority === 'high' ? 'warning' : 'success'}">${priority.toUpperCase()}</span>
+            </div>
+    `;
+    
+    if (description) {
+        previewHTML += `<p class="text-muted small mb-2">${description}</p>`;
+    }
+    
+    // Información de tiempo
+    if (taskType === 'single') {
+        const date = document.getElementById('tempTaskSingleDate').value;
+        const time = document.getElementById('tempTaskTime').value;
+        previewHTML += `<p class="small mb-1"><i class="fas fa-calendar me-1"></i>Fecha: ${date || 'No seleccionada'}`;
+        if (time) previewHTML += ` a las ${time}`;
+        previewHTML += `</p>`;
+    } else if (taskType === 'range') {
+        const startDate = document.getElementById('tempTaskStartDate').value;
+        const endDate = document.getElementById('tempTaskEndDate').value;
+        previewHTML += `<p class="small mb-1"><i class="fas fa-calendar-range me-1"></i>Del ${startDate || 'No seleccionada'} al ${endDate || 'No seleccionada'}</p>`;
+    }
+    
+    // Información de asignación
+    if (assignmentType === 'user') {
+        const userId = document.getElementById('tempTaskUser').value;
+        const user = window.allEmployees ? window.allEmployees.find(e => e._id === userId) : null;
+        previewHTML += `<p class="small mb-1"><i class="fas fa-user me-1"></i>Asignada a: ${user ? user.name : 'Usuario no seleccionado'}</p>`;
+    } else if (assignmentType === 'department') {
+        const deptId = document.getElementById('tempTaskDepartment').value;
+        const dept = window.allDepartments ? window.allDepartments.find(d => d._id === deptId) : null;
+        previewHTML += `<p class="small mb-1"><i class="fas fa-building me-1"></i>Asignada a: ${dept ? dept.name : 'Departamento no seleccionado'}</p>`;
+    }
+    
+    // Características especiales
+    previewHTML += `<div class="d-flex flex-wrap gap-1 mt-2">`;
+    if (requiresEvidence) {
+        previewHTML += `<span class="badge bg-info"><i class="fas fa-camera me-1"></i>Requiere evidencia</span>`;
+    }
+    previewHTML += `</div>`;
+    
+    previewHTML += `</div>`;
+    
+    document.getElementById('tempTaskPreview').innerHTML = previewHTML;
+};
+
+// Guardar tarea temporal
+window.saveTemporaryTask = async function() {
+    try {
+        console.log('💾 Guardando tarea temporal');
+        
+        // Validar campos requeridos
+        const title = document.getElementById('tempTaskTitle').value;
+        if (!title) {
+            showAlert('El título es requerido', 'warning');
+            return;
+        }
+        
+        const taskType = document.getElementById('tempTaskType').value;
+        const assignmentType = document.getElementById('tempTaskAssignmentType').value;
+        
+        // Validar fechas según el tipo
+        if (taskType === 'single') {
+            const date = document.getElementById('tempTaskSingleDate').value;
+            if (!date) {
+                showAlert('La fecha es requerida', 'warning');
+                return;
+            }
+        } else if (taskType === 'range') {
+            const startDate = document.getElementById('tempTaskStartDate').value;
+            const endDate = document.getElementById('tempTaskEndDate').value;
+            if (!startDate || !endDate) {
+                showAlert('Las fechas de inicio y fin son requeridas', 'warning');
+                return;
+            }
+        }
+        
+        // Validar asignación
+        if (assignmentType === 'user') {
+            const userId = document.getElementById('tempTaskUser').value;
+            if (!userId) {
+                showAlert('Debes seleccionar un usuario', 'warning');
+                return;
+            }
+        } else if (assignmentType === 'department') {
+            const deptId = document.getElementById('tempTaskDepartment').value;
+            if (!deptId) {
+                showAlert('Debes seleccionar un departamento', 'warning');
+                return;
+            }
+        }
+        
+        // Obtener etiquetas seleccionadas
+        const selectedTags = getSelectedTemporaryTags();
+        
+        // Preparar datos de la tarea temporal
+        const taskData = {
+            title: title,
+            description: document.getElementById('tempTaskDescription').value,
+            priority: document.getElementById('tempTaskPriority').value,
+            requires_evidence: document.getElementById('tempTaskEvidence').value === 'true',
+            task_type: 'temporary',
+            temporary_config: {
+                type: taskType,
+                single_date: taskType === 'single' ? document.getElementById('tempTaskSingleDate').value : null,
+                start_date: taskType === 'range' ? document.getElementById('tempTaskStartDate').value : null,
+                end_date: taskType === 'range' ? document.getElementById('tempTaskEndDate').value : null,
+                specific_days: taskType === 'recurring' ? getSelectedTemporaryDays() : [],
+                time_limit: document.getElementById('tempTaskTime').value || null
+            },
+            assignment_type: assignmentType,
+            assigned_users: assignmentType === 'user' ? [document.getElementById('tempTaskUser').value] : [],
+            assigned_department: assignmentType === 'department' ? document.getElementById('tempTaskDepartment').value : null,
+            mode: 'binary',
+            periodicity: 'daily',
+            target_per_period: 1,
+            tags: selectedTags
+        };
+        
+        console.log('📝 Datos de tarea temporal:', taskData);
+        
+        // Enviar al servidor
+        const response = await fetch('/agendatce/api/configuration/tasks', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify(taskData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('✅ Tarea temporal creada exitosamente', 'success');
+            
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addTemporaryTaskModal'));
+            modal.hide();
+            
+            // Recargar lista de tareas
+            if (typeof loadTasks === 'function') {
+                await loadTasks();
+            }
+        } else {
+            showAlert(`❌ Error: ${result.message}`, 'danger');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error guardando tarea temporal:', error);
+        showAlert('❌ Error al crear la tarea temporal', 'danger');
+    }
+};
+
+// Generar días del mes para tareas temporales
+window.generateTemporaryTaskDays = function() {
+    const container = document.getElementById('tempDaysSelectionContainer');
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    let html = '<div class="row">';
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dayOfWeek = new Date(year, month, day).getDay();
+        const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        
+        html += `
+            <div class="col-2 col-md-1 mb-2">
+                <button type="button" class="btn btn-outline-primary btn-sm day-btn w-100" 
+                        data-day="${day}" 
+                        title="${dayNames[dayOfWeek]} ${day}">
+                    ${day}
+                </button>
+            </div>
+        `;
+    }
+    html += '</div>';
+    
+    container.innerHTML = html;
+    
+    // Agregar event listeners
+    container.querySelectorAll('.day-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            // Actualizar vista previa solo si los elementos están disponibles
+            setTimeout(() => {
+                updateTemporaryTaskPreview();
+            }, 100);
+        });
+    });
+};
+
+// Cargar etiquetas para tareas temporales
+window.loadTemporaryTaskTags = async function() {
+    try {
+        if (allTags.length === 0) {
+            const response = await fetch('/agendatce/api/configuration/tags');
+            const data = await response.json();
+            if (data.success) {
+                allTags = data.data;
+            }
+        }
+        
+        const container = document.getElementById('tempTaskTags');
+        container.innerHTML = '';
+        
+        allTags.forEach(tag => {
+            const tagElement = document.createElement('div');
+            tagElement.className = 'form-check form-check-inline';
+            tagElement.innerHTML = `
+                <input class="form-check-input" type="checkbox" id="tempTag_${tag._id}" value="${tag._id}">
+                <label class="form-check-label" for="tempTag_${tag._id}">
+                    <span class="badge" style="background-color: ${tag.color || '#6c757d'}">${tag.name}</span>
+                </label>
+            `;
+            container.appendChild(tagElement);
+        });
+        
+        // Agregar event listeners
+        container.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                // Actualizar vista previa solo si los elementos están disponibles
+                setTimeout(() => {
+                    updateTemporaryTaskPreview();
+                }, 100);
+            });
+        });
+        
+    } catch (error) {
+        console.error('❌ Error cargando etiquetas para tarea temporal:', error);
+        document.getElementById('tempTaskTags').innerHTML = '<div class="text-center text-muted">Error cargando etiquetas</div>';
+    }
+};
+
+// Obtener días seleccionados para tareas temporales
+function getSelectedTemporaryDays() {
+    const selectedDays = [];
+    document.querySelectorAll('#tempDaysSelectionContainer .day-btn.active').forEach(btn => {
+        selectedDays.push(parseInt(btn.dataset.day));
+    });
+    return selectedDays;
+}
+
+// Obtener etiquetas seleccionadas para tareas temporales
+function getSelectedTemporaryTags() {
+    const selectedTags = [];
+    document.querySelectorAll('#tempTaskTags input[type="checkbox"]:checked').forEach(checkbox => {
+        selectedTags.push(checkbox.value);
+    });
+    return selectedTags;
+}
+
+console.log('✅ Funciones de periodicidad y asignación cargadas en configuration.ejs:', {
     updateFrequencyOptions: typeof window.updateFrequencyOptions,
     updateDaysOptions: typeof window.updateDaysOptions,
-    updateTaskMode: typeof window.updateTaskMode
+    updateTaskMode: typeof window.updateTaskMode,
+    selectAssignmentType: typeof window.selectAssignmentType,
+    loadUsersForAssignment: typeof window.loadUsersForAssignment,
+    loadDepartmentsForAssignment: typeof window.loadDepartmentsForAssignment,
+    filterUsers: typeof window.filterUsers,
+    clearUserSearch: typeof window.clearUserSearch,
+    selectAllUsers: typeof window.selectAllUsers,
+    clearAllUsers: typeof window.clearAllUsers,
+    updateSelectedUsersCount: typeof window.updateSelectedUsersCount,
+    showAddTemporaryTaskModal: typeof window.showAddTemporaryTaskModal,
+    updateTemporaryTaskType: typeof window.updateTemporaryTaskType,
+    updateTemporaryAssignmentType: typeof window.updateTemporaryAssignmentType,
+    toggleTemporaryEvidenceRequirement: typeof window.toggleTemporaryEvidenceRequirement,
+    saveTemporaryTask: typeof window.saveTemporaryTask
 });
 
 // Inicialización del sistema de búsqueda de usuarios
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Sistema de búsqueda de usuarios inicializado');
+    
+    // Inicializar botones de días para tareas temporales
+    document.querySelectorAll('.day-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.classList.toggle('active');
+            updateTemporaryTaskPreview();
+        });
+    });
+    
+    // Agregar event listeners para actualizar vista previa
+    const inputs = ['tempTaskTitle', 'tempTaskDescription', 'tempTaskPriority', 'tempTaskType', 'tempTaskAssignmentType'];
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('input', () => {
+                setTimeout(() => {
+                    updateTemporaryTaskPreview();
+                }, 100);
+            });
+            element.addEventListener('change', () => {
+                setTimeout(() => {
+                    updateTemporaryTaskPreview();
+                }, 100);
+            });
+        }
+    });
 });
 </script>
 

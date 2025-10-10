@@ -210,6 +210,7 @@ function createTodayTaskCard(task) {
   const slaStatus = getSLAStatus(task.sla_time);
   const progress = calculateTaskProgress(task);
   const isOverdueTask = task.assignment_type === 'overdue';
+  const isTemporary = task.task_type === 'temporary';
   
   // Generar etiqueta de atraso si es una tarea atrasada
   const overdueBadge = isOverdueTask ? `
@@ -218,6 +219,30 @@ function createTodayTaskCard(task) {
         <i class="fas fa-exclamation-triangle me-1"></i>
         ATRASADA
       </span>
+    </div>
+  ` : '';
+  
+  // Generar badge de prioridad solo para tareas temporales
+  const priorityBadge = (isTemporary && task.priority) ? `
+    <div class="mb-2">
+      <span class="badge bg-${task.priority === 'urgent' ? 'danger' : task.priority === 'high' ? 'warning' : 'success'}">
+        <i class="fas fa-${task.priority === 'urgent' ? 'exclamation-triangle' : task.priority === 'high' ? 'exclamation' : 'check-circle'} me-1"></i>
+        ${task.priority === 'urgent' ? '🔴 Urgente' : task.priority === 'high' ? '🟡 Alta' : '🟢 Normal'}
+      </span>
+    </div>
+  ` : '';
+  
+  // Generar información temporal para tareas temporales
+  const temporaryInfo = (isTemporary && task.temporary_config) ? `
+    <div class="mb-2">
+      <small class="text-warning">
+        <i class="fas fa-clock me-1"></i>
+        Tarea Temporal
+        ${task.temporary_config.type === 'single' && task.temporary_config.single_date ? ` - ${task.temporary_config.single_date}` : ''}
+        ${task.temporary_config.type === 'range' && task.temporary_config.start_date && task.temporary_config.end_date ? ` - Del ${task.temporary_config.start_date} al ${task.temporary_config.end_date}` : ''}
+        ${task.temporary_config.type === 'recurring' && task.temporary_config.specific_days ? ` - Días: ${task.temporary_config.specific_days.join(', ')}` : ''}
+        ${task.temporary_config.time_limit ? ` - Hora límite: ${task.temporary_config.time_limit}` : ''}
+      </small>
     </div>
   ` : '';
   
@@ -231,9 +256,17 @@ function createTodayTaskCard(task) {
     </div>
   ` : '';
   
-  // Clase CSS para tareas atrasadas
-  const cardClass = isOverdueTask ? 'border-danger' : 'border-0';
-  const cardStyle = isOverdueTask ? 'border-left: 4px solid #dc3545 !important;' : '';
+  // Clase CSS para tareas atrasadas y temporales
+  let cardClass = 'border-0';
+  let cardStyle = '';
+  
+  if (isOverdueTask) {
+    cardClass = 'border-danger';
+    cardStyle = 'border-left: 4px solid #dc3545 !important;';
+  } else if (isTemporary) {
+    cardClass = 'border-warning';
+    cardStyle = 'border-left: 4px solid #ffc107 !important; background-color: #fff9e6;';
+  }
   
   return `
     <div class="card mb-3 shadow-sm ${cardClass}" style="${cardStyle}">
@@ -241,12 +274,17 @@ function createTodayTaskCard(task) {
         <div class="row align-items-center">
           <div class="col-md-8">
             ${overdueBadge}
+            ${priorityBadge}
             <h6 class="mb-1">${task.title}</h6>
             <p class="text-muted mb-2">${task.description}</p>
+            ${temporaryInfo}
             ${overdueInfo}
             <div class="d-flex align-items-center flex-wrap">
               <span class="badge bg-${getModeColor(task.mode)} me-2">${getModeText(task.mode)}</span>
-              <span class="badge bg-${getPeriodicityColor(task.periodicity)} me-2">${getPeriodicityText(task.periodicity)}</span>
+              ${isTemporary ? 
+                `<span class="badge bg-warning text-dark me-2"><i class="fas fa-clock me-1"></i>Temporal</span>` : 
+                `<span class="badge bg-${getPeriodicityColor(task.periodicity)} me-2">${getPeriodicityText(task.periodicity)}</span>`
+              }
               <span class="badge bg-${isOverdueTask ? 'danger' : slaStatus.color}">${isOverdueTask ? 'Atrasada' : slaStatus.text}</span>
             </div>
             ${task.tags && task.tags.length > 0 ? `
@@ -564,22 +602,7 @@ loadTodayData();
         
         <form id="registerActionForm">
           <input type="hidden" id="registerActionId" value="">
-          
-          <div class="mb-3">
-            <label for="registerActionValue" class="form-label">
-              <i class="fas fa-hashtag me-1"></i>
-              Cantidad a registrar *
-            </label>
-            <input 
-              type="number" 
-              class="form-control" 
-              id="registerActionValue" 
-              min="1" 
-              value="1" 
-              required
-            >
-            <div class="form-text">Ingresa cuántas acciones quieres registrar</div>
-          </div>
+          <input type="hidden" id="registerActionValue" value="1">
           
           <div class="mb-3">
             <label for="registerActionComment" class="form-label">

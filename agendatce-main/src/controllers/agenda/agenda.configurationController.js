@@ -415,7 +415,13 @@ const createTask = async (req, res) => {
       tags, 
       assigned_users,
       specific_days,
-      department
+      department,
+      // Nuevos campos
+      assignment_type,
+      assigned_department,
+      task_type,
+      priority,
+      temporary_config
     } = req.body;
     
     console.log('🔍 Validando campos:');
@@ -425,6 +431,10 @@ const createTask = async (req, res) => {
     console.log('  - periodicity:', periodicity, '(tipo:', typeof periodicity, ')');
     console.log('  - assigned_users:', assigned_users, '(tipo:', typeof assigned_users, ')');
     console.log('  - department:', department, '(tipo:', typeof department, ')');
+    console.log('  - assignment_type:', assignment_type, '(tipo:', typeof assignment_type, ')');
+    console.log('  - assigned_department:', assigned_department, '(tipo:', typeof assigned_department, ')');
+    console.log('  - task_type:', task_type, '(tipo:', typeof task_type, ')');
+    console.log('  - priority:', priority, '(tipo:', typeof priority, ')');
     
     // Validar datos requeridos
     if (!title || !mode || !periodicity) {
@@ -432,7 +442,6 @@ const createTask = async (req, res) => {
       console.log('  - title válido:', !!title);
       console.log('  - mode válido:', !!mode);
       console.log('  - periodicity válido:', !!periodicity);
-      console.log('  - department válido:', !!department);
       
       return res.status(400).json({
         success: false,
@@ -440,8 +449,7 @@ const createTask = async (req, res) => {
         details: {
           title: !!title,
           mode: !!mode,
-          periodicity: !!periodicity,
-          department: !!department
+          periodicity: !!periodicity
         }
       });
     }
@@ -459,6 +467,12 @@ const createTask = async (req, res) => {
       assigned_users: assigned_users || [],
       specific_days: specific_days || [],
       department,
+      // Nuevos campos
+      assignment_type: assignment_type || null,
+      assigned_department: assigned_department || null,
+      task_type: task_type || 'regular',
+      priority: priority || 'normal',
+      temporary_config: temporary_config || null,
       created_by: req.user._id
     });
     
