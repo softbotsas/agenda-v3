@@ -4,7 +4,7 @@ require('dotenv').config();
 // Configuración de la base de datos
 const config = {
   // URI de conexión
-  uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/nominatce',
+  uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/agenda_tce_local',
   
   // Opciones de conexión
   options: {

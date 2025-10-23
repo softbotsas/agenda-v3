@@ -460,73 +460,35 @@ const getUserByIdForEdit = async (userId) => {
 // Obtener usuario de agenda por ID del sistema principal
 const getUserBySystemUserId = async (systemUserId) => {
   try {
-    console.log('🔍 getUserBySystemUserId aaaaaaaaa - systemUserId:', systemUserId);
+    console.log('🔍 getUserBySystemUserId - systemUserId:', systemUserId);
     
-    // Primero buscar el usuario en el sistema principal
-    const SystemUser = require('../../../../models/Users');
-    const systemUser = await SystemUser.findById(systemUserId);
+    // Para desarrollo local, buscar directamente en usuarios de agenda
+    // Los IDs del login simulado corresponden directamente a los usuarios de agenda
+    const AgendaUser = require('../../models/agenda.User');
+    const agendaUser = await AgendaUser.findById(systemUserId);
     
-    if (!systemUser) {
-      console.log('❌ Usuario del sistema principal no encontrado:', systemUserId);
+    if (!agendaUser) {
+      console.log('❌ Usuario de agenda no encontrado:', systemUserId);
       return {
         success: false,
-        message: 'Usuario del sistema principal no encontrado'
+        message: 'Usuario de agenda no encontrado'
       };
     }
     
-   
+    console.log('✅ Usuario de agenda encontrado:', agendaUser.nombre);
     
-    // Buscar si ya existe un usuario de agenda vinculado
-    const AgendaUser = require('../../models/agenda.User');
-    let agendaUser = await AgendaUser.findOne({ user_id: systemUserId });
-    
-
-    if (!agendaUser) {
-      console.log('⚠️ Usuario de agenda no encontrado, creando automáticamente...');
-      
-
-      // Crear usuario de agenda automáticamente
-      const newAgendaUserData = {
-        nombre: systemUser.name || 'Usuario Sin Nombre',
-        email: systemUser.correo || systemUser.email || 'sin-email@tce.com',
-        user_id: new mongoose.Types.ObjectId(systemUserId),
-        perfil_usuario: systemUser.perfil_usuario, // Usar perfil del sistema principal
-        cargo: systemUser.cargo || 'Sin cargo',
-        departamento: systemUser.agencia || 'Sin departamento', // Usar agencia como departamento
-        departamento_name: systemUser.agencia || 'Sin departamento',
-        activo: systemUser.status !== false, // Usar status del sistema principal
-        color: '#007bff',
-        notificaciones: {
-          email: true,
-          whatsapp: false,
-          recordatorios_sla: true
-        }
-      };
-      
-      agendaUser = await AgendaUser.create(newAgendaUserData);
-      console.log('✅ Usuario de agenda creado automáticamente:', agendaUser.nombre);
-      
-      // Actualizar el usuario del sistema principal con el enlace
-      await SystemUser.findByIdAndUpdate(systemUserId, {
-        agenda_user: agendaUser._id
-      });
-      console.log('✅ Enlace bidireccional establecido');
-    } else {
-      console.log('✅ Usuario de agenda existente encontrado:', agendaUser.nombre);
-    }
-    
-    // Mapear a la estructura esperada
+    // Mapear datos para compatibilidad
     const mappedUser = {
       _id: agendaUser._id,
-      name: agendaUser.nombre || 'Usuario Sin Nombre',
-      nombre: agendaUser.nombre || 'Usuario Sin Nombre',
-      correo: agendaUser.email || 'sin-email@tce.com',
-      perfil_usuario: agendaUser.perfil_usuario !== undefined ? agendaUser.perfil_usuario : 3,
-      cargo: agendaUser.cargo || 'Sin cargo',
-      departamento: agendaUser.departamento || 'Sin departamento',
-      departamento_name: agendaUser.departamento_name || 'Sin departamento',
-      activo: agendaUser.activo !== undefined ? agendaUser.activo : true,
-      user_id: agendaUser.user_id,
+      name: agendaUser.nombre,
+      nombre: agendaUser.nombre,
+      email: agendaUser.email,
+      correo: agendaUser.email,
+      perfil_usuario: agendaUser.perfil_usuario,
+      cargo: agendaUser.cargo,
+      departamento: agendaUser.departamento,
+      departamento_name: agendaUser.departamento_name,
+      activo: agendaUser.activo,
       color: agendaUser.color,
       notificaciones: agendaUser.notificaciones
     };
@@ -535,6 +497,8 @@ const getUserBySystemUserId = async (systemUserId) => {
     const roleInfo = getUserRole(mappedUser.perfil_usuario);
     mappedUser.role_name = roleInfo.name;
     mappedUser.role_permissions = roleInfo.permissions;
+    
+    console.log('👤 Usuario mapeado:', mappedUser.name, '- Rol:', mappedUser.role_name);
     
     return {
       success: true,

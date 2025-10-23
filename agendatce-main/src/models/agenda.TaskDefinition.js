@@ -61,18 +61,24 @@ const TaskDefinitionSchema = new Schema({
     ref: 'agenda.User',
     required: true
   }],
-  // Mantener compatibilidad temporal
+  // Tipo de asignación: 'user' (usuarios específicos) o 'department' (departamento completo)
   assignment_type: {
     type: String,
-    enum: ['specific'],
-    default: 'specific'
+    enum: ['user', 'department', 'specific'], // 'specific' para compatibilidad
+    default: 'user'
+  },
+  // Departamento asignado (cuando assignment_type es 'department')
+  // Guardado como String porque algunos departamentos usan IDs como strings
+  assigned_department: {
+    type: String,
+    default: null
   },
   specific_user: {
     type: Schema.Types.ObjectId,
     ref: 'agenda.User',
     default: null
   },
-  // Departamento al que pertenece la tarea
+  // Departamento al que pertenece la tarea (contexto)
   department: {
     type: String, // Cambiado a String para permitir códigos como "dept_usa"
     default: null
@@ -82,6 +88,28 @@ const TaskDefinitionSchema = new Schema({
     type: String,
     enum: ['department', 'global'],
     default: 'department'
+  },
+  // Campos para tareas temporales
+  task_type: {
+    type: String,
+    enum: ['regular', 'temporary'],
+    default: 'regular'
+  },
+  priority: {
+    type: String,
+    enum: ['urgent', 'high', 'normal', 'low'],
+    default: 'normal'
+  },
+  temporary_config: {
+    type: {
+      type: String,
+      enum: ['single', 'range', 'recurring']
+    },
+    single_date: Date,
+    start_date: Date,
+    end_date: Date,
+    specific_days: [Number],
+    time_limit: String
   }
 }, {
   timestamps: true

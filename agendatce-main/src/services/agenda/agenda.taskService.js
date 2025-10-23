@@ -152,6 +152,42 @@ const shouldShowTaskToday = (taskDef, targetDate = new Date()) => {
   const is15th = dayOfMonth === 15;
   const is1st = dayOfMonth === 1;
   
+  // LÓGICA ESPECIAL PARA TAREAS TEMPORALES
+  if (taskDef.task_type === 'temporary' && taskDef.temporary_config) {
+    const today = charlotteDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const config = taskDef.temporary_config;
+    
+    switch (config.type) {
+      case 'single':
+        // Tarea de un solo día - solo aparece en esa fecha
+        if (config.single_date) {
+          const singleDate = new Date(config.single_date).toISOString().split('T')[0];
+          return singleDate === today;
+        }
+        return false;
+        
+      case 'range':
+        // Tarea de rango de fechas - aparece entre start_date y end_date
+        if (config.start_date && config.end_date) {
+          const startDate = new Date(config.start_date).toISOString().split('T')[0];
+          const endDate = new Date(config.end_date).toISOString().split('T')[0];
+          return today >= startDate && today <= endDate;
+        }
+        return false;
+        
+      case 'recurring':
+        // Tarea recurrente en días específicos - aparece en esos días del mes
+        if (config.specific_days && config.specific_days.length > 0) {
+          return config.specific_days.includes(dayOfMonth);
+        }
+        return false;
+        
+      default:
+        return false;
+    }
+  }
+  
+  // LÓGICA PARA TAREAS REGULARES (NO TEMPORALES)
   // Verificar si la tarea tiene días específicos configurados
   if (taskDef.specific_days && taskDef.specific_days.length > 0) {
     // Para tareas semanales, usar días de la semana (0-6)
@@ -367,7 +403,11 @@ const getTodayTasks = async (userId) => {
             ? `Tarea asignada a ${taskDef.assigned_users[0].name || 'usuario específico'}`
             : taskDef.specific_user
             ? `Tarea asignada a ${taskDef.specific_user.nombre || taskDef.specific_user.name || 'usuario específico'}`
-            : 'Tarea sin asignar'
+            : 'Tarea sin asignar',
+          // Campos para tareas temporales
+          task_type: taskDef.task_type || 'regular',
+          priority: taskDef.priority || 'normal',
+          temporary_config: taskDef.temporary_config || null
         };
       })
     );
@@ -636,6 +676,19 @@ const logTask = async (assignmentId, userId, actionType, options = {}) => {
     }
 
     await log.save();
+
+    // LÓGICA ESPECIAL PARA TAREAS TEMPORALES
+    // Si es una tarea temporal completada, desactivarla para que no vuelva a aparecer
+    if (finalActionType === 'completed' && assignment.task_definition && assignment.task_definition.task_type === 'temporary') {
+      console.log('🕒 Tarea temporal completada - desactivando para que no vuelva a aparecer');
+      
+      // Desactivar la tarea temporal
+      await TaskDefinition.findByIdAndUpdate(assignment.task_definition._id, {
+        active: false
+      });
+      
+      console.log('✅ Tarea temporal desactivada exitosamente');
+    }
 
     // Si es una tarea completada (binary) y tiene múltiples usuarios asignados,
     // crear logs para todos los usuarios asignados
@@ -1045,7 +1098,11 @@ const getAllUserTasks = async (userId) => {
             ? `Tarea asignada a ${taskDef.assigned_users[0].name || 'usuario específico'}`
             : taskDef.specific_user
             ? `Tarea asignada a ${taskDef.specific_user.nombre || taskDef.specific_user.name || 'usuario específico'}`
-            : 'Tarea sin asignar'
+            : 'Tarea sin asignar',
+          // Campos para tareas temporales
+          task_type: taskDef.task_type || 'regular',
+          priority: taskDef.priority || 'normal',
+          temporary_config: taskDef.temporary_config || null
         };
       })
     );
@@ -1270,6 +1327,8 @@ const getAllTasks = async () => {
   try {
     console.log('📋 getAllTasks - Obteniendo todas las tareas');
     
+    // No hacer populate de assigned_department porque puede ser un String (ID como string)
+    // En su lugar, lo haremos manualmente después
     const allTasks = await TaskDefinition.find({ active: true })
       .populate('tags', 'name display_name color category')
       .sort({ created_at: -1 });
@@ -1325,12 +1384,40 @@ const createTask = async (taskData) => {
       specific_days: taskData.specific_days,
       department: taskData.department,
       created_by: taskData.created_by,
-      active: true
+      active: true,
+      // Campos de asignación
+      assignment_type: taskData.assignment_type || 'user',
+      assigned_department: taskData.assigned_department || null,
+      // Campos para tareas temporales
+      task_type: taskData.task_type || 'regular',
+      priority: taskData.priority || 'normal',
+      temporary_config: taskData.temporary_config || null
     });
     
     await newTask.save();
-    
     console.log('✅ Tarea creada:', newTask._id);
+    console.log('📊 Tipo de asignación guardado:', newTask.assignment_type);
+    console.log('📊 Departamento asignado guardado:', newTask.assigned_department);
+    
+    // CREAR ASIGNACIONES AUTOMÁTICAMENTE
+    if (taskData.assigned_users && taskData.assigned_users.length > 0) {
+      console.log('🔗 Creando asignaciones automáticas...');
+      
+      for (const userId of taskData.assigned_users) {
+        const assignment = new TaskAssignment({
+          task_definition: newTask._id,
+          user: userId,
+          assignment_type: 'specific',
+          assigned_by: taskData.created_by,
+          status: 'active',
+          created_at: new Date()
+        });
+        
+        await assignment.save();
+        console.log(`   ✅ Asignación creada para usuario: ${userId}`);
+      }
+    }
+    
     return newTask;
   } catch (error) {
     console.error('Error en createTask:', error);

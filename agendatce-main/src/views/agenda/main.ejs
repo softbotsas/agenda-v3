@@ -34,6 +34,27 @@
             min-height: calc(100vh - 76px);
             padding: 20px 0;
         }
+        
+        /* Estilos para el modal de tareas */
+        .assignment-type-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #dee2e6 !important;
+        }
+        
+        .assignment-type-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .day-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .day-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
     </style>
 </head>
 <body>
@@ -483,20 +504,20 @@
         }
         
         // Cargar datos de configuración cuando se carga la sección
-        function loadConfigurationData() {
+        async function loadConfigurationData() {
             console.log('🔧 Cargando datos de configuración...');
             
-            // Cargar empleados
-            loadEmployees();
+            // Cargar empleados PRIMERO y esperar
+            await loadEmployees();
+            
+            // Cargar departamentos y esperar
+            await loadDepartments();
             
             // Cargar departamentos para los selects
             loadDepartmentsForSelect();
             
-            // Cargar tareas
+            // Cargar tareas DESPUÉS de que los empleados y departamentos estén cargados
             loadTasks();
-            
-            // Cargar departamentos
-            loadDepartments();
             
             // Cargar etiquetas
             loadTags();
@@ -520,7 +541,11 @@
                 if (data.success && data.data) {
                     // Asegurar que data.data sea un array
                     if (Array.isArray(data.data)) {
-                        // Los empleados de agenda se guardan en una variable local, no global
+                        // Asignar a la variable global allEmployees
+                        allEmployees = data.data;
+                        console.log('✅ allEmployees asignado:', allEmployees.length, 'empleados');
+                        
+                        // Renderizar empleados
                         renderEmployees(data.data);
                     } else {
                         console.error('❌ data.data no es un array:', typeof data.data, data.data);
@@ -755,6 +780,26 @@
                     });
                 }
             });
+        }
+
+        function loadDepartmentsForTaskSelect() {
+            console.log('🏢 Cargando departamentos para select de tarea...');
+            
+            if (Array.isArray(allDepartments) && allDepartments.length > 0) {
+                const departmentSelect = document.getElementById('addTaskDepartmentSelect');
+                if (departmentSelect) {
+                    departmentSelect.innerHTML = '<option value="">Seleccionar departamento...</option>';
+                    allDepartments.forEach(dept => {
+                        const option = document.createElement('option');
+                        option.value = dept._id;
+                        option.textContent = dept.name;
+                        departmentSelect.appendChild(option);
+                    });
+                }
+            } else {
+                console.log('⚠️ No hay departamentos cargados, cargando...');
+                loadDepartmentsForSelect();
+            }
         }
         
         // Mostrar modal de agregar empleado
@@ -1277,6 +1322,10 @@
                 console.log('📊 Respuesta de departamentos:', data);
                 
                 if (data.success && data.data) {
+                    // Asignar a la variable global allDepartments
+                    allDepartments = data.data;
+                    console.log('✅ allDepartments asignado:', allDepartments.length, 'departamentos');
+                    
                     renderDepartments(data.data);
                 } else {
                     showConfigurationError('Error al cargar departamentos: ' + (data.message || 'Error desconocido'));
@@ -1877,6 +1926,12 @@
         function filterUsersByDepartment(modalType) {
             const departmentSelect = document.getElementById(`${modalType}TaskDepartment`);
             const usersContainer = document.getElementById(`${modalType}TaskUsers`);
+            
+            if (!departmentSelect || !usersContainer) {
+                console.log('⚠️ Elementos del modal no encontrados, esperando...');
+                return;
+            }
+            
             const selectedDepartment = departmentSelect.value;
             
             console.log('🔍 Filtrando EMPLEADOS de agenda por departamento:', selectedDepartment);
@@ -1946,19 +2001,37 @@
         async function showAddTaskModal() {
             console.log('➕ Mostrando modal para agregar tarea');
             
-            // Limpiar formulario completamente
-            document.getElementById('addTaskTitle').value = '';
-            document.getElementById('addTaskDescription').value = '';
-            document.getElementById('addTaskMode').value = 'binary';
-            document.getElementById('addTaskPeriodicity').value = 'daily';
-            document.getElementById('addTaskTarget').value = '1';
-            document.getElementById('addTaskSLA').value = '';
-            document.getElementById('addTaskEvidence').checked = false;
-            document.getElementById('addTaskDepartment').value = '';
+            // Mostrar modal primero
+            const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+            modal.show();
+            
+            // Esperar un poco para que el modal se cargue completamente
+            setTimeout(async () => {
+                // Verificar que los elementos existan antes de acceder a ellos
+                const elements = {
+                    title: document.getElementById('addTaskTitle'),
+                    description: document.getElementById('addTaskDescription'),
+                    mode: document.getElementById('addTaskMode'),
+                    periodicity: document.getElementById('addTaskPeriodicity'),
+                    target: document.getElementById('addTaskTarget'),
+                    evidence: document.getElementById('addTaskEvidence'),
+                    department: document.getElementById('addTaskDepartment'),
+                    users: document.getElementById('addTaskUsers'),
+                    tags: document.getElementById('addTaskTags')
+                };
+                
+                // Limpiar formulario solo si los elementos existen
+                if (elements.title) elements.title.value = '';
+                if (elements.description) elements.description.value = '';
+                if (elements.mode) elements.mode.value = 'binary';
+                if (elements.periodicity) elements.periodicity.value = 'daily';
+                if (elements.target) elements.target.value = '1';
+                if (elements.evidence) elements.evidence.value = 'false';
+                if (elements.department) elements.department.value = '';
             
             // Limpiar contenedores de empleados y etiquetas
-            document.getElementById('addTaskUsers').innerHTML = '<div class="text-center text-muted">Cargando empleados...</div>';
-            document.getElementById('addTaskTags').innerHTML = '<div class="text-center text-muted">Cargando etiquetas...</div>';
+                if (elements.users) elements.users.innerHTML = '<div class="text-center text-muted">Cargando empleados...</div>';
+                if (elements.tags) elements.tags.innerHTML = '<div class="text-center text-muted">Cargando etiquetas...</div>';
             
             // ✅ CAMBIO PRINCIPAL: Asegurar que los EMPLEADOS DE AGENDA estén cargados
             if (allEmployees.length === 0) {
@@ -1977,10 +2050,7 @@
             
             // Cargar etiquetas
             loadTagsForTaskSelect('add');
-            
-            // Mostrar modal
-            const modal = new bootstrap.Modal(document.getElementById('addTaskModal'));
-            modal.show();
+            }, 300);
         }
         
         // Guardar nueva tarea
@@ -1988,13 +2058,47 @@
             try {
                 console.log('💾 Guardando nueva tarea');
                 
+                // Obtener tipo de asignación
+                const assignmentType = document.getElementById('addTaskAssignmentType').value;
+                console.log('🔍 Tipo de asignación:', assignmentType);
+                
+                let assignedUsers = [];
+                
+                if (assignmentType === 'user') {
                 // Obtener usuarios asignados de checkboxes
                 const userCheckboxes = document.querySelectorAll('#addTaskUsers input[type="checkbox"]:checked');
-                const assignedUsers = Array.from(userCheckboxes).map(checkbox => checkbox.value);
+                    assignedUsers = Array.from(userCheckboxes).map(checkbox => checkbox.value);
                 
                 // Validar que se hayan seleccionado usuarios
                 if (assignedUsers.length === 0) {
                     showAlert('Debes seleccionar al menos un usuario para asignar la tarea', 'warning');
+                        return;
+                    }
+                } else if (assignmentType === 'department') {
+                    // Obtener departamento seleccionado
+                    const departmentId = document.getElementById('addTaskDepartmentSelect').value;
+                    
+                    if (!departmentId) {
+                        showAlert('Debes seleccionar un departamento', 'warning');
+                        return;
+                    }
+                    
+                    // Obtener todos los usuarios del departamento
+                    if (Array.isArray(allEmployees) && allEmployees.length > 0) {
+                        assignedUsers = allEmployees
+                            .filter(emp => emp.departamento === departmentId)
+                            .map(emp => emp._id);
+                        
+                        if (assignedUsers.length === 0) {
+                            showAlert('No hay usuarios en el departamento seleccionado', 'warning');
+                            return;
+                        }
+                    } else {
+                        showAlert('Error: No se pudieron cargar los usuarios', 'danger');
+                        return;
+                    }
+                } else {
+                    showAlert('Debes seleccionar un tipo de asignación', 'warning');
                     return;
                 }
                 
@@ -2002,18 +2106,60 @@
                 const tagCheckboxes = document.querySelectorAll('#addTaskTags input[type="checkbox"]:checked');
                 const selectedTags = Array.from(tagCheckboxes).map(checkbox => checkbox.value);
                 
+                // Obtener departamento según el tipo de asignación
+                let department = null;
+                let assignedDepartment = null;
+                
+                if (assignmentType === 'department') {
+                    const departmentSelect = document.getElementById('addTaskDepartmentSelect');
+                    if (departmentSelect) {
+                        department = departmentSelect.value;
+                        assignedDepartment = departmentSelect.value; // Guardar el departamento asignado
+                    }
+                }
+
+                // Verificar que todos los elementos existan antes de acceder a ellos
+                const titleElement = document.getElementById('addTaskTitle');
+                const descriptionElement = document.getElementById('addTaskDescription');
+                const modeElement = document.getElementById('addTaskMode');
+                const periodicityElement = document.getElementById('addTaskPeriodicity');
+                const targetElement = document.getElementById('addTaskTarget');
+                const evidenceElement = document.getElementById('addTaskEvidence');
+
+                if (!titleElement || !descriptionElement || !modeElement || !periodicityElement || !evidenceElement) {
+                    const missingElements = [];
+                    if (!titleElement) missingElements.push('addTaskTitle');
+                    if (!descriptionElement) missingElements.push('addTaskDescription');
+                    if (!modeElement) missingElements.push('addTaskMode');
+                    if (!periodicityElement) missingElements.push('addTaskPeriodicity');
+                    if (!evidenceElement) missingElements.push('addTaskEvidence');
+                    
+                    showAlert(`Error: Elementos no encontrados: ${missingElements.join(', ')}. Por favor, recarga la página.`, 'danger');
+                    return;
+                }
+
+                // El targetElement puede estar oculto, usar valor por defecto si no existe
+                const targetValue = targetElement ? (parseInt(targetElement.value) || 1) : 1;
+                
                 const taskData = {
-                    title: document.getElementById('addTaskTitle').value,
-                    description: document.getElementById('addTaskDescription').value,
-                    mode: document.getElementById('addTaskMode').value,
-                    periodicity: document.getElementById('addTaskPeriodicity').value,
-                    target_per_period: parseInt(document.getElementById('addTaskTarget').value) || 1,
-                    sla_time: document.getElementById('addTaskSLA').value || null,
-                    requires_evidence: document.getElementById('addTaskEvidence').checked,
-                    department: document.getElementById('addTaskDepartment').value || null,
+                    title: titleElement.value,
+                    description: descriptionElement.value,
+                    mode: modeElement.value,
+                    periodicity: periodicityElement.value,
+                    target_per_period: targetValue,
+                    sla_time: null, // No hay campo SLA en el modal
+                    requires_evidence: evidenceElement.value === 'true',
+                    department: department,
                     assigned_users: assignedUsers,
                     specific_days: [], // Por ahora vacío, se puede expandir
-                    tags: selectedTags
+                    tags: selectedTags,
+                    // Campos de asignación
+                    assignment_type: assignmentType, // 'user' o 'department'
+                    assigned_department: assignedDepartment, // ID del departamento si es asignación por departamento
+                    // Campos para tareas regulares
+                    task_type: 'regular',
+                    priority: 'normal',
+                    temporary_config: null
                 };
                 
                 console.log('📝 Datos de la tarea:', taskData);
@@ -2065,74 +2211,147 @@
                 if (data.success && data.data) {
                     const task = data.data;
                     
-                    // Llenar el modal de edición
-                    document.getElementById('editTaskTitle').value = task.title;
-                    document.getElementById('editTaskDescription').value = task.description || '';
-                    document.getElementById('editTaskMode').value = task.mode;
-                    document.getElementById('editTaskPeriodicity').value = task.periodicity;
-                    document.getElementById('editTaskTarget').value = task.target_per_period || 1;
-                    document.getElementById('editTaskSLA').value = task.sla_time || '';
-                    document.getElementById('editTaskEvidence').checked = task.requires_evidence || false;
-                    document.getElementById('editTaskDepartment').value = task.department || '';
-                    
-                    // Limpiar contenedores primero
-                    document.getElementById('editTaskUsers').innerHTML = '<div class="text-center text-muted">Cargando empleados...</div>';
-                    document.getElementById('editTaskTags').innerHTML = '<div class="text-center text-muted">Cargando etiquetas...</div>';
-                    
-                    // ✅ CAMBIO: Asegurar que los EMPLEADOS DE AGENDA estén cargados
-                    if (allEmployees.length === 0) {
-                        console.log('👥 Cargando empleados de agenda antes de abrir modal de edición');
-                        await loadEmployeesForTaskModals();
-                    }
-                    
-                    // Asegurar que las etiquetas estén cargadas
-                    if (allTags.length === 0) {
-                        console.log('🏷️ Cargando etiquetas antes de abrir modal de edición');
-                        await loadTags();
-                    }
-                    
-                    // Cargar usuarios filtrados por departamento
-                    filterUsersByDepartment('edit');
-                    
-                    // Cargar etiquetas
-                    loadTagsForTaskSelect('edit');
-                    
-                    // Seleccionar usuarios asignados
-                    if (task.assigned_users && task.assigned_users.length > 0) {
-                        setTimeout(() => {
-                            task.assigned_users.forEach(userId => {
-                                const checkbox = document.querySelector(`#editUser_${userId}`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                }
-                            });
-                        }, 300);
-                    }
-                    
-                    // Seleccionar etiquetas asignadas
-                    if (task.tags && task.tags.length > 0) {
-                        console.log(`🏷️ Seleccionando etiquetas asignadas:`, task.tags);
-                        setTimeout(() => {
-                            task.tags.forEach(tagId => {
-                                const checkbox = document.querySelector(`#editTag_${tagId}`);
-                                if (checkbox) {
-                                    checkbox.checked = true;
-                                    console.log(`✅ Etiqueta seleccionada: ${tagId}`);
-                                } else {
-                                    console.log(`❌ Checkbox no encontrado para etiqueta: ${tagId}`);
-                                }
-                            });
-                        }, 300);
-                    } else {
-                        console.log('⚠️ No hay etiquetas asignadas a esta tarea');
-                    }
-                    
                     // Guardar el ID de la tarea para la actualización
                     window.editingTaskId = taskId;
                     
-                    // Mostrar el modal
+                    // Asegurar que los empleados y departamentos estén cargados
+                    if (allEmployees.length === 0) {
+                        console.log('👥 Cargando empleados...');
+                        await loadEmployees();
+                    }
+                    
+                    if (allDepartments.length === 0) {
+                        console.log('🏢 Cargando departamentos...');
+                        await loadDepartments();
+                    }
+                    
+                    if (allTags.length === 0) {
+                        console.log('🏷️ Cargando etiquetas...');
+                        await loadTags();
+                    }
+                    
+                    // Mostrar el modal primero
                     const modal = new bootstrap.Modal(document.getElementById('editTaskModal'));
                     modal.show();
+                    
+                    // Esperar a que el modal se muestre
+                    setTimeout(() => {
+                        // Llenar campos básicos
+                        const titleEl = document.getElementById('editTaskTitle');
+                        const descEl = document.getElementById('editTaskDescription');
+                        const modeEl = document.getElementById('editTaskMode');
+                        const periodicityEl = document.getElementById('editTaskPeriodicity');
+                        const targetEl = document.getElementById('editTaskTarget');
+                        const evidenceEl = document.getElementById('editTaskEvidence');
+                        
+                        if (titleEl) titleEl.value = task.title || '';
+                        if (descEl) descEl.value = task.description || '';
+                        if (modeEl) {
+                            modeEl.value = task.mode || 'binary';
+                            // Actualizar visibilidad del campo target
+                            updateTaskMode('edit');
+                        }
+                        if (periodicityEl) {
+                            periodicityEl.value = task.periodicity || 'daily';
+                            // Actualizar opciones de frecuencia (días específicos para mensual)
+                            updateFrequencyOptions('edit');
+                        }
+                        if (targetEl) targetEl.value = task.target_per_period || 1;
+                        if (evidenceEl) {
+                            evidenceEl.value = task.requires_evidence ? 'true' : 'false';
+                            toggleEvidenceRequirement('edit');
+                        }
+                        
+                        // Configurar tipo de asignación
+                        const assignmentType = task.assignment_type || 'user';
+                        const assignmentTypeInput = document.getElementById('editTaskAssignmentType');
+                        if (assignmentTypeInput) assignmentTypeInput.value = assignmentType;
+                        
+                        // Seleccionar el card de tipo de asignación
+                        const userCard = document.getElementById('editUserAssignmentCard');
+                        const deptCard = document.getElementById('editDepartmentAssignmentCard');
+                        
+                        if (assignmentType === 'department') {
+                            // Mostrar selección de departamento
+                            if (deptCard) {
+                                deptCard.classList.add('border-success', 'bg-success', 'text-white');
+                            }
+                            document.getElementById('editUserAssignmentContainer').style.display = 'none';
+                            document.getElementById('editDepartmentAssignmentContainer').style.display = 'block';
+                            
+                            // Seleccionar departamento
+                            const deptSelect = document.getElementById('editTaskDepartmentSelect');
+                            if (deptSelect && task.assigned_department) {
+                                // Llenar el select con departamentos
+                                deptSelect.innerHTML = '<option value="">Seleccionar departamento...</option>';
+                                allDepartments.forEach(dept => {
+                                    const option = document.createElement('option');
+                                    option.value = dept._id;
+                                    option.textContent = dept.name;
+                                    option.selected = dept._id === task.assigned_department;
+                                    deptSelect.appendChild(option);
+                                });
+                            }
+                        } else {
+                            // Mostrar selección de usuarios
+                            if (userCard) {
+                                userCard.classList.add('border-primary', 'bg-primary', 'text-white');
+                            }
+                            document.getElementById('editUserAssignmentContainer').style.display = 'block';
+                            document.getElementById('editDepartmentAssignmentContainer').style.display = 'none';
+                            
+                            // Cargar y seleccionar usuarios
+                            const usersContainer = document.getElementById('editTaskUsers');
+                            if (usersContainer && allEmployees.length > 0) {
+                                usersContainer.innerHTML = '';
+                                allEmployees.forEach(emp => {
+                                    const isChecked = task.assigned_users && task.assigned_users.includes(emp._id);
+                                    usersContainer.innerHTML += `
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="editUser_${emp._id}" value="${emp._id}" ${isChecked ? 'checked' : ''}>
+                                            <label class="form-check-label" for="editUser_${emp._id}">
+                                                ${emp.name || emp.nombre} - ${emp.cargo}
+                                            </label>
+                                        </div>
+                                    `;
+                                });
+                            }
+                        }
+                        
+                        // Cargar y seleccionar etiquetas
+                        const tagsContainer = document.getElementById('editTaskTags');
+                        if (tagsContainer && allTags.length > 0) {
+                            tagsContainer.innerHTML = '';
+                            allTags.forEach(tag => {
+                                const isChecked = task.tags && task.tags.includes(tag._id);
+                                tagsContainer.innerHTML += `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               id="editTag_${tag._id}" value="${tag._id}" ${isChecked ? 'checked' : ''}>
+                                        <label class="form-check-label" for="editTag_${tag._id}">
+                                            <span class="badge" style="background-color: ${tag.color}; color: white;">
+                                                ${tag.display_name}
+                                            </span>
+                                        </label>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        // Manejar días específicos para tareas mensuales
+                        if (task.periodicity === 'monthly' && task.specific_days && task.specific_days.length > 0) {
+                            setTimeout(() => {
+                                task.specific_days.forEach(day => {
+                                    const dayBtn = document.getElementById(`editDay_${day}`);
+                                    if (dayBtn) {
+                                        dayBtn.classList.remove('btn-outline-primary');
+                                        dayBtn.classList.add('btn-primary');
+                                    }
+                                });
+                            }, 100);
+                        }
+                    }, 300);
                 } else {
                     showAlert('Error al cargar datos de la tarea: ' + (data.message || 'Error desconocido'), 'danger');
                 }
@@ -2281,16 +2500,35 @@
                     'biweekly': 'Quincenal'
                 }[task.periodicity] || task.periodicity;
                 
-                // Obtener nombres de empleados asignados
-                let assignedUsersText = 'Sin empleados asignados';
-                if (task.assigned_users && task.assigned_users.length > 0 && Array.isArray(allEmployees)) {
-                    const assignedUserNames = task.assigned_users.map(userId => {
-                        const employee = allEmployees.find(e => e._id === userId);
-                        return employee ? employee.name : 'Empleado no encontrado';
-                    });
-                    assignedUsersText = `Asignada a: ${assignedUserNames.join(', ')}`;
-                } else if (task.assigned_users && task.assigned_users.length > 0) {
-                    assignedUsersText = `Asignada a: ${task.assigned_users.length} usuario(s)`;
+                // Obtener información de asignación según el tipo
+                let assignedUsersText = 'Sin asignación';
+                
+                // CASO 1: Asignación por DEPARTAMENTO
+                if (task.assignment_type === 'department' && task.assigned_department) {
+                    let departmentName = task.assigned_department;
+                    
+                    // Buscar el nombre del departamento
+                    if (Array.isArray(allDepartments) && allDepartments.length > 0) {
+                        const department = allDepartments.find(d => d._id === task.assigned_department);
+                        if (department) {
+                            departmentName = department.name;
+                        }
+                    }
+                    
+                    assignedUsersText = `Asignado a: Departamento ${departmentName}`;
+                }
+                // CASO 2: Asignación por USUARIOS (o sin assignment_type definido)
+                else if (task.assigned_users && task.assigned_users.length > 0) {
+                    // Buscar los nombres de los usuarios
+                    if (Array.isArray(allEmployees) && allEmployees.length > 0) {
+                        const assignedUserNames = task.assigned_users.map(userId => {
+                            const employee = allEmployees.find(e => e._id === userId);
+                            return employee ? (employee.name || employee.nombre) : 'Usuario no encontrado';
+                        });
+                        assignedUsersText = `Asignado a: ${assignedUserNames.join(', ')}`;
+                    } else {
+                        assignedUsersText = `Asignado a: ${task.assigned_users.length} usuario(s)`;
+                    }
                 }
                 
                 // Obtener etiquetas de la tarea
@@ -2303,18 +2541,44 @@
                     tagsHTML = `<div class="mb-2">${taskTags.join('')}</div>`;
                 }
                 
+                // Determinar si es tarea temporal
+                const isTemporary = task.task_type === 'temporary';
+                const cardClass = isTemporary ? 'card h-100 border-warning' : 'card h-100';
+                const cardStyle = isTemporary ? 'border: 2px solid #ffc107 !important; background-color: #fff8e1;' : '';
+                
+                // Badge temporal
+                const temporaryBadge = isTemporary ? '<span class="badge bg-warning text-dark me-1"><i class="fas fa-clock me-1"></i>Temporal</span>' : '';
+                
+                // Información temporal
+                let temporaryInfo = '';
+                if (isTemporary && task.temporary_config) {
+                    const config = task.temporary_config;
+                    if (config.type === 'single' && config.single_date) {
+                        const date = new Date(config.single_date).toLocaleDateString();
+                        temporaryInfo = `<p class="small text-warning mb-1"><i class="fas fa-calendar-day me-1"></i>Fecha: ${date}</p>`;
+                    } else if (config.type === 'range' && config.start_date && config.end_date) {
+                        const startDate = new Date(config.start_date).toLocaleDateString();
+                        const endDate = new Date(config.end_date).toLocaleDateString();
+                        temporaryInfo = `<p class="small text-warning mb-1"><i class="fas fa-calendar-range me-1"></i>Rango: ${startDate} - ${endDate}</p>`;
+                    } else if (config.type === 'recurring' && config.specific_days && config.specific_days.length > 0) {
+                        temporaryInfo = `<p class="small text-warning mb-1"><i class="fas fa-repeat me-1"></i>Días: ${config.specific_days.join(', ')}</p>`;
+                    }
+                }
+                
                 return `
                     <div class="col-md-6 col-lg-4 mb-3">
-                        <div class="card h-100">
+                        <div class="${cardClass}" style="${cardStyle}">
                             <div class="card-body">
                                 <h6 class="card-title">${task.title}</h6>
                                 <p class="card-text text-muted small">${task.description || 'Sin descripción'}</p>
                                 <div class="mb-2">
                                     <span class="badge bg-primary me-1">${modeText}</span>
                                     <span class="badge bg-secondary me-1">${periodicityText}</span>
+                                    ${temporaryBadge}
                                     ${task.requires_evidence ? '<span class="badge bg-warning">Evidencia</span>' : ''}
                                 </div>
                                 ${tagsHTML}
+                                ${temporaryInfo}
                                 <p class="small text-info mb-1">${assignedUsersText}</p>
                                 ${task.sla_time ? `<p class="small text-muted mb-1">SLA: ${task.sla_time}</p>` : ''}
                                 ${task.target_per_period > 1 ? `<p class="small text-muted mb-1">Meta: ${task.target_per_period}</p>` : ''}
@@ -4173,7 +4437,320 @@ async function cargarRutasConfirmaciones() {
             console.log('✅ Datos de prueba creados');
             alert('¡Botones habilitados! Ahora puedes probar PDF y Excel.');
         }
+
+        // Funciones para el modal de agregar tarea
+        function updateTaskMode(type) {
+            const mode = document.getElementById(`${type}TaskMode`).value;
+            const targetContainer = document.getElementById(`${type}TaskTargetContainer`);
+            
+            if (mode === 'counter') {
+                if (targetContainer) targetContainer.style.display = 'block';
+            } else {
+                if (targetContainer) targetContainer.style.display = 'none';
+            }
+        }
+
+        function updateFrequencyOptions(type) {
+            const periodicity = document.getElementById(`${type}TaskPeriodicity`).value;
+            const specificDaysRow = document.getElementById(`${type}SpecificDaysRow`);
+            
+            if (periodicity === 'monthly') {
+                if (specificDaysRow) {
+                    specificDaysRow.style.display = 'block';
+                    generateDaysSelection(type);
+                }
+            } else {
+                if (specificDaysRow) specificDaysRow.style.display = 'none';
+            }
+        }
+
+        function generateDaysSelection(type) {
+            const container = document.getElementById(`${type}DaysSelectionContainer`);
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            for (let day = 1; day <= 31; day++) {
+                const dayBtn = document.createElement('button');
+                dayBtn.type = 'button';
+                dayBtn.className = 'btn btn-outline-primary day-btn me-2 mb-2';
+                dayBtn.id = `${type}Day_${day}`;
+                dayBtn.textContent = day;
+                dayBtn.onclick = () => toggleDaySelection(day, dayBtn);
+                container.appendChild(dayBtn);
+            }
+        }
+
+        function toggleDaySelection(day, button) {
+            if (button.classList.contains('btn-primary')) {
+                button.classList.remove('btn-primary');
+                button.classList.add('btn-outline-primary');
+            } else {
+                button.classList.remove('btn-outline-primary');
+                button.classList.add('btn-primary');
+            }
+        }
+
+        function selectAssignmentType(type) {
+            const userCard = document.getElementById('userAssignmentCard');
+            const departmentCard = document.getElementById('departmentAssignmentCard');
+            const assignmentTypeInput = document.getElementById('addTaskAssignmentType');
+            
+            // Remover selección anterior
+            userCard.classList.remove('border-primary', 'bg-primary', 'text-white');
+            departmentCard.classList.remove('border-success', 'bg-success', 'text-white');
+            
+            // Ocultar contenedores
+            document.getElementById('userAssignmentContainer').style.display = 'none';
+            document.getElementById('departmentAssignmentContainer').style.display = 'none';
+            
+            if (type === 'user') {
+                // Seleccionar usuarios
+                userCard.classList.add('border-primary', 'bg-primary', 'text-white');
+                document.getElementById('userAssignmentContainer').style.display = 'block';
+                assignmentTypeInput.value = 'user';
+                
+                // Cargar usuarios si no están cargados
+                if (allEmployees.length === 0) {
+                    loadEmployeesForTaskModals();
+                } else {
+                    // Si ya están cargados, mostrar usuarios
+                    filterUsersByDepartment('add');
+                }
+            } else if (type === 'department') {
+                // Seleccionar departamento
+                departmentCard.classList.add('border-success', 'bg-success', 'text-white');
+                document.getElementById('departmentAssignmentContainer').style.display = 'block';
+                assignmentTypeInput.value = 'department';
+                
+                // Cargar departamentos si no están cargados
+                if (allDepartments.length === 0) {
+                    loadDepartmentsForSelect();
+                } else {
+                    // Si ya están cargados, llenar el select
+                    loadDepartmentsForTaskSelect();
+                }
+            }
+        }
+
+        function toggleEvidenceRequirement(type) {
+            const evidenceBtn = document.getElementById(`${type}TaskEvidenceBtn`);
+            const noEvidenceBtn = document.getElementById(`${type}TaskNoEvidenceBtn`);
+            const evidenceInput = document.getElementById(`${type}TaskEvidence`);
+            
+            if (!evidenceBtn || !noEvidenceBtn || !evidenceInput) return;
+            
+            if (evidenceInput.value === 'false') {
+                evidenceInput.value = 'true';
+                evidenceBtn.className = 'btn btn-success';
+                noEvidenceBtn.className = 'btn btn-outline-secondary';
+            } else {
+                evidenceInput.value = 'false';
+                evidenceBtn.className = 'btn btn-outline-success';
+                noEvidenceBtn.className = 'btn btn-secondary';
+            }
+        }
     </script>
+
+    <!-- Modal Agregar Tarea -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Agregar Nueva Tarea</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="addTaskForm">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label for="addTaskTitle" class="form-label">Título de la Tarea *</label>
+                    <input type="text" class="form-control" id="addTaskTitle" required>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label for="addTaskDescription" class="form-label">Descripción</label>
+                    <textarea class="form-control" id="addTaskDescription" rows="3"></textarea>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="addTaskMode" class="form-label">Modo *</label>
+                    <select class="form-select" id="addTaskMode" required onchange="updateTaskMode('add')">
+                      <option value="binary">Binaria (Sí/No)</option>
+                      <option value="counter">Contador</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="addTaskPeriodicity" class="form-label">Periodicidad *</label>
+                    <select class="form-select" id="addTaskPeriodicity" required onchange="updateFrequencyOptions('add')">
+                      <option value="daily">Diaria</option>
+                      <option value="weekly">Semanal</option>
+                      <option value="monthly">Mensual</option>
+                      <option value="biweekly">Quincenal</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Días específicos -->
+              <div class="row" id="addSpecificDaysRow" style="display: none;">
+                <div class="col-md-12">
+                  <div class="mb-3">
+                    <label class="form-label">Días específicos</label>
+                    <div id="addDaysSelectionContainer" class="border rounded p-3">
+                      <!-- Los días se generarán dinámicamente -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6" id="addTaskTargetContainer" style="display: none;">
+                  <div class="mb-3">
+                    <label for="addTaskTarget" class="form-label">Veces por día</label>
+                    <input type="number" class="form-control" id="addTaskTarget" min="1" value="1">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label class="form-label">Evidencia</label>
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-outline-success" id="addTaskEvidenceBtn" onclick="toggleEvidenceRequirement('add')">
+                        <i class="fas fa-camera me-1"></i>Requiere Evidencia
+                      </button>
+                      <button type="button" class="btn btn-outline-secondary" id="addTaskNoEvidenceBtn" onclick="toggleEvidenceRequirement('add')">
+                        <i class="fas fa-times me-1"></i>No Requiere
+                      </button>
+                    </div>
+                    <input type="hidden" id="addTaskEvidence" value="false">
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Tipo de Asignación -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <label class="form-label">¿Cómo asignar esta tarea? *</label>
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="card border-2 assignment-type-card" onclick="selectAssignmentType('user')" id="userAssignmentCard">
+                        <div class="card-body text-center">
+                          <i class="fas fa-user fa-2x text-primary mb-2"></i>
+                          <h6>Usuarios Específicos</h6>
+                          <p class="text-muted small mb-0">Cada usuario seleccionado debe completar individualmente</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <div class="card border-2 assignment-type-card" onclick="selectAssignmentType('department')" id="departmentAssignmentCard">
+                        <div class="card-body text-center">
+                          <i class="fas fa-building fa-2x text-success mb-2"></i>
+                          <h6>Departamento Completo</h6>
+                          <p class="text-muted small mb-0">Todos los empleados del departamento reciben la tarea</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="hidden" id="addTaskAssignmentType" required>
+                </div>
+              </div>
+              
+              <!-- Contenedor para Asignación por Usuarios -->
+              <div id="userAssignmentContainer" style="display: none;">
+                <div class="row">
+                  <div class="col-12">
+                    <label class="form-label">Seleccionar Usuarios *</label>
+                    
+                    <!-- Buscador de Usuarios -->
+                    <div class="mb-3">
+                      <div class="input-group">
+                        <span class="input-group-text">
+                          <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="userSearchInput" 
+                               placeholder="Buscar usuarios por nombre, cargo o departamento..."
+                               onkeyup="filterUsers()">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearUserSearch()">
+                          <i class="fas fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Contador de usuarios seleccionados -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <small class="text-muted">
+                        <span id="selectedUsersCount">0</span> usuarios seleccionados
+                      </small>
+                      <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-primary" onclick="selectAllUsers()">
+                          <i class="fas fa-check-double me-1"></i>Todos
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearAllUsers()">
+                          <i class="fas fa-times me-1"></i>Ninguno
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <!-- Lista de usuarios con scroll -->
+                    <div id="addTaskUsers" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+                      <div class="text-center text-muted py-3">
+                        Selecciona un tipo de asignación primero
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contenedor para Asignación por Departamento -->
+              <div id="departmentAssignmentContainer" style="display: none;">
+                <div class="row">
+                  <div class="col-12">
+                    <label for="addTaskDepartmentSelect" class="form-label">Seleccionar Departamento *</label>
+                    <select class="form-select" id="addTaskDepartmentSelect">
+                      <option value="">Seleccionar departamento...</option>
+                    </select>
+                    <div class="alert alert-success mt-2">
+                      <i class="fas fa-building me-2"></i>
+                      <strong>Asignación automática:</strong> Todos los empleados del departamento recibirán esta tarea.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Etiquetas -->
+              <div class="row">
+                <div class="col-12">
+                  <div class="mb-3">
+                    <label class="form-label">Etiquetas</label>
+                    <div id="addTaskTags" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                      <div class="text-center text-muted">Cargando etiquetas...</div>
+                    </div>
+                    <div class="form-text">Las etiquetas ayudan a categorizar y filtrar las tareas</div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <button type="button" class="btn btn-primary" onclick="saveTask()">
+              <i class="fas fa-save me-1"></i>Guardar Tarea
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     
 </body>

@@ -5,6 +5,10 @@ const router = express.Router();
 
 console.log('🚀 Cargando router de agenda TCE...');
 
+// Conectar a la base de datos local
+const { connectDB } = require('../../config/database');
+connectDB().catch(console.error);
+
 // Configurar multer para subida de archivos
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
