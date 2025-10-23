@@ -1,0 +1,1159 @@
+<!-- Dashboard Futurista -->
+<div class="futuristic-dashboard">
+  <!-- Partículas de fondo -->
+  <div class="particles-container" id="particles"></div>
+  
+  <!-- Header Futurista -->
+  <div class="cyber-header">
+    <div class="header-grid">
+      <div class="user-section">
+        <div class="cyber-avatar">
+          <div class="avatar-glow"></div>
+          <div class="avatar-core">
+            <i class="fas fa-user"></i>
+          </div>
+          <div class="avatar-ring"></div>
+        </div>
+        <div class="user-info">
+          <h2 class="cyber-title" id="user-name">Usuario</h2>
+          <p class="cyber-subtitle" id="user-role">Cargando...</p>
+          <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>Online</span>
+          </div>
+        </div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-display">
+          <div class="stat-value" id="today-tasks-count">0</div>
+          <div class="stat-label">Tareas Hoy</div>
+        </div>
+        <div class="stat-display">
+          <div class="stat-value" id="completed-tasks-count">0</div>
+          <div class="stat-label">Completadas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards Futuristas -->
+  <div class="cyber-stats-grid">
+    <div class="cyber-card primary">
+      <div class="card-glow"></div>
+      <div class="card-content">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-tasks"></i>
+          </div>
+          <div class="card-title">
+            <h3>Tareas de Hoy</h3>
+            <p>Por completar</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cyber-number" id="today-tasks-count">0</div>
+          <div class="progress-cyber">
+            <div class="progress-track"></div>
+            <div class="progress-fill" id="today-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cyber-card success">
+      <div class="card-glow"></div>
+      <div class="card-content">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="card-title">
+            <h3>Completadas</h3>
+            <p>Hoy</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cyber-number" id="completed-tasks-count">0</div>
+          <div class="success-animation">
+            <div class="checkmark-cyber"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cyber-card warning">
+      <div class="card-glow"></div>
+      <div class="card-content">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="card-title">
+            <h3>En Progreso</h3>
+            <p>Pendientes</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cyber-number" id="in-progress-count">0</div>
+          <div class="clock-cyber">
+            <div class="clock-face"></div>
+            <div class="clock-hand"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cyber-card danger">
+      <div class="card-glow"></div>
+      <div class="card-content">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="card-title">
+            <h3>Atrasadas</h3>
+            <p>SLA vencido</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="cyber-number" id="overdue-tasks-count">0</div>
+          <div class="alert-cyber">
+            <div class="alert-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section Futurista -->
+  <div class="cyber-charts-section">
+    <div class="cyber-chart-card">
+      <div class="chart-header">
+        <h4>Progreso Semanal</h4>
+        <div class="chart-controls">
+          <button class="cyber-btn active">7D</button>
+          <button class="cyber-btn">30D</button>
+          <button class="cyber-btn">90D</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="weeklyProgressChart"></canvas>
+        <div class="chart-overlay">
+          <div class="chart-stats">
+            <div class="chart-stat">
+              <span class="stat-number" id="chart-completed">0</span>
+              <span class="stat-text">Completadas</span>
+            </div>
+            <div class="chart-stat">
+              <span class="stat-number" id="chart-remaining">0</span>
+              <span class="stat-text">Pendientes</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cyber-activity-card">
+      <div class="activity-header">
+        <h4>Actividad Reciente</h4>
+        <div class="activity-indicator">
+          <div class="live-dot"></div>
+          <span>En vivo</span>
+        </div>
+      </div>
+      <div class="activity-timeline" id="recent-activity-container">
+        <div class="loading-cyber">
+          <div class="cyber-spinner"></div>
+          <p>Inicializando sistema...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Terminal Section -->
+  <div class="cyber-terminal">
+    <div class="terminal-header">
+      <div class="terminal-controls">
+        <div class="control-btn red"></div>
+        <div class="control-btn yellow"></div>
+        <div class="control-btn green"></div>
+      </div>
+      <div class="terminal-title">Sistema de Agenda v3.0</div>
+    </div>
+    <div class="terminal-body">
+      <div class="terminal-line">
+        <span class="prompt">agenda@system:~$</span>
+        <span class="command">inicializando_dashboard</span>
+      </div>
+      <div class="terminal-line">
+        <span class="output">✓ Conexión establecida con base de datos</span>
+      </div>
+      <div class="terminal-line">
+        <span class="output">✓ Cargando estadísticas del usuario</span>
+      </div>
+      <div class="terminal-line">
+        <span class="output">✓ Sistema listo para operaciones</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Futuristic Dashboard Styles */
+.futuristic-dashboard {
+  padding: 20px;
+  background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+  min-height: 100vh;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Partículas de fondo */
+.particles-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #00ffff;
+  border-radius: 50%;
+  animation: float 6s infinite linear;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(100vh) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(100px);
+    opacity: 0;
+  }
+}
+
+/* Header Futurista */
+.cyber-header {
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.cyber-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  animation: scan 3s infinite;
+}
+
+@keyframes scan {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.header-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 30px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.cyber-avatar {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.avatar-glow {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent);
+  border-radius: 50%;
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.avatar-core {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #00ffff, #ff00ff);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #000;
+  z-index: 2;
+  box-shadow: 
+    0 0 20px rgba(0, 255, 255, 0.5),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
+}
+
+.avatar-ring {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border: 2px solid #00ffff;
+  border-radius: 50%;
+  animation: rotate 4s linear infinite;
+  z-index: 1;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.user-info h2 {
+  color: #00ffff;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.user-info p {
+  color: #ff00ff;
+  margin: 0;
+  font-size: 16px;
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
+  border-radius: 50%;
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+.status-indicator span {
+  color: #00ff00;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 30px;
+}
+
+.stat-display {
+  text-align: center;
+  padding: 15px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #ff00ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+/* Stats Grid Futurista */
+.cyber-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.cyber-card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(26, 26, 46, 0.8));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cyber-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 255, 255, 0.2);
+}
+
+.cyber-card.primary {
+  border-color: rgba(0, 255, 255, 0.5);
+}
+
+.cyber-card.success {
+  border-color: rgba(0, 255, 0, 0.5);
+}
+
+.cyber-card.warning {
+  border-color: rgba(255, 255, 0, 0.5);
+}
+
+.cyber-card.danger {
+  border-color: rgba(255, 0, 0, 0.5);
+}
+
+.card-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.cyber-card:hover .card-glow {
+  opacity: 1;
+}
+
+.card-content {
+  position: relative;
+  z-index: 1;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-icon {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #00ffff, #ff00ff);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #000;
+  margin-right: 15px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.card-title h3 {
+  color: #00ffff;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.card-title p {
+  color: #ff00ff;
+  margin: 0;
+  font-size: 14px;
+}
+
+.card-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cyber-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #00ffff;
+  text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+  line-height: 1;
+}
+
+/* Progress Cyber */
+.progress-cyber {
+  width: 100px;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  animation: progress-scan 2s infinite;
+}
+
+@keyframes progress-scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ffff, #ff00ff);
+  border-radius: 10px;
+  transition: width 1s ease;
+  width: 0%;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* Success Animation */
+.success-animation {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.checkmark-cyber {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #00ff00, #00ffff);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: cyber-pulse 2s infinite;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+}
+
+@keyframes cyber-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Clock Cyber */
+.clock-cyber {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.clock-face {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #ffff00, #ff00ff);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
+}
+
+.clock-hand {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 15px;
+  background: #000;
+  border-radius: 2px;
+  transform-origin: bottom center;
+  animation: cyber-tick 2s linear infinite;
+}
+
+@keyframes cyber-tick {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Alert Cyber */
+.alert-cyber {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.alert-pulse {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #ff0000, #ff00ff);
+  border-radius: 50%;
+  animation: cyber-alert 1s infinite;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+@keyframes cyber-alert {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* Charts Section */
+.cyber-charts-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.cyber-chart-card, .cyber-activity-card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(26, 26, 46, 0.8));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-header, .activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-header h4, .activity-header h4 {
+  color: #00ffff;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.chart-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.cyber-btn {
+  padding: 8px 16px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 10px;
+  color: #00ffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.cyber-btn.active {
+  background: rgba(0, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.cyber-btn:hover {
+  background: rgba(0, 255, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.activity-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #00ff00;
+  font-size: 14px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
+  border-radius: 50%;
+  animation: blink 1s infinite;
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+.chart-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 10px;
+  padding: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.chart-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+.stat-text {
+  font-size: 12px;
+  color: #ff00ff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Activity Timeline */
+.activity-timeline {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.loading-cyber {
+  text-align: center;
+  padding: 40px 20px;
+  color: #00ffff;
+}
+
+.cyber-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 255, 255, 0.3);
+  border-top: 3px solid #00ffff;
+  border-radius: 50%;
+  animation: cyber-spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes cyber-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Terminal */
+.cyber-terminal {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(26, 26, 46, 0.9));
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 15px;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.terminal-header {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.terminal-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.control-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.control-btn.red { background: #ff5f56; }
+.control-btn.yellow { background: #ffbd2e; }
+.control-btn.green { background: #27ca3f; }
+
+.terminal-title {
+  color: #00ffff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.terminal-body {
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.terminal-line {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.prompt {
+  color: #00ff00;
+  font-weight: 600;
+}
+
+.command {
+  color: #00ffff;
+  margin-left: 10px;
+}
+
+.output {
+  color: #ffffff;
+  margin-left: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cyber-charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .header-stats {
+    justify-content: center;
+  }
+}
+</style>
+
+<script>
+// Funciones específicas del dashboard futurista
+function loadDashboardData() {
+  console.log('📊 Cargando datos del dashboard futurista...');
+  
+  // Crear partículas
+  createParticles();
+  
+  loadUserStats();
+  setTimeout(() => {
+    loadPriorityTasks();
+  }, 100);
+  loadRecentActivity();
+  setTimeout(() => {
+    loadWeeklyProgress();
+  }, 200);
+}
+
+function createParticles() {
+  const container = document.getElementById('particles');
+  if (!container) return;
+  
+  function createParticle() {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = Math.random() * 100 + '%';
+    particle.style.animationDelay = Math.random() * 6 + 's';
+    particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+    container.appendChild(particle);
+    
+    setTimeout(() => {
+      particle.remove();
+    }, 6000);
+  }
+  
+  // Crear partículas cada 200ms
+  setInterval(createParticle, 200);
+}
+
+function loadUserStats() {
+  console.log('📊 Cargando estadísticas del usuario...');
+  fetch('/agendatce/api/dashboard/stats', {
+    credentials: 'include'
+  })
+    .then(response => {
+      console.log('📡 Respuesta stats:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('📊 Datos stats:', data);
+      if (data.success) {
+        const todayTasksEl = document.getElementById('today-tasks-count');
+        const completedEl = document.getElementById('completed-tasks-count');
+        const inProgressEl = document.getElementById('in-progress-count');
+        const overdueEl = document.getElementById('overdue-tasks-count');
+        
+        if (todayTasksEl) {
+          todayTasksEl.textContent = data.data.today_tasks || 0;
+          animateCyberNumber(todayTasksEl, 0, data.data.today_tasks || 0);
+        }
+        if (completedEl) {
+          completedEl.textContent = data.data.completed_today || 0;
+          animateCyberNumber(completedEl, 0, data.data.completed_today || 0);
+        }
+        if (inProgressEl) {
+          inProgressEl.textContent = data.data.in_progress || 0;
+          animateCyberNumber(inProgressEl, 0, data.data.in_progress || 0);
+        }
+        if (overdueEl) {
+          overdueEl.textContent = data.data.overdue || 0;
+          animateCyberNumber(overdueEl, 0, data.data.overdue || 0);
+        }
+        
+        // Animar progress bar
+        updateCyberProgress(data.data.today_tasks || 0, data.data.completed_today || 0);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando estadísticas:', error);
+    });
+}
+
+function animateCyberNumber(element, start, end) {
+  const duration = 2000;
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeOut = 1 - Math.pow(1 - progress, 4);
+    const current = Math.floor(start + (end - start) * easeOut);
+    element.textContent = current;
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+function updateCyberProgress(total, completed) {
+  const progressFill = document.getElementById('today-progress-fill');
+  if (progressFill && total > 0) {
+    const percentage = (completed / total) * 100;
+    setTimeout(() => {
+      progressFill.style.width = percentage + '%';
+    }, 1000);
+  }
+}
+
+function loadRecentActivity() {
+  fetch('/agendatce/api/activity/recent', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        displayRecentActivity(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando actividad reciente:', error);
+    });
+}
+
+function displayRecentActivity(activities) {
+  const container = document.getElementById('recent-activity-container');
+  
+  if (!container) {
+    console.error('❌ Container recent-activity-container no encontrado');
+    return;
+  }
+  
+  if (activities.length === 0) {
+    container.innerHTML = '<p class="text-center" style="color: #00ffff;">No hay actividad reciente</p>';
+    return;
+  }
+  
+  container.innerHTML = activities.map((activity, index) => `
+    <div class="activity-item" style="
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+      border: 1px solid rgba(0, 255, 255, 0.3);
+      border-radius: 15px;
+      animation: cyberSlideIn 0.5s ease ${index * 0.1}s both;
+    ">
+      <div class="activity-icon" style="
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #00ff00, #00ffff);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #000;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+      ">
+        <i class="fas fa-check"></i>
+      </div>
+      <div class="activity-content">
+        <h6 style="color: #00ffff; margin: 0 0 5px 0; font-size: 14px; text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);">${activity.task_title}</h6>
+        <small style="color: #ff00ff; text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);">${activity.user_name} - ${formatDateTime(activity.created_at)}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatDateTime(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function loadWeeklyProgress() {
+  fetch('/agendatce/api/dashboard/weekly', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        createWeeklyChart(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando progreso semanal:', error);
+    });
+}
+
+function createWeeklyChart(data) {
+  const canvas = document.getElementById('weeklyProgressChart');
+  if (!canvas) {
+    console.warn('⚠️ Canvas weeklyProgressChart no encontrado');
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+  
+  const completed = data.completed ? data.completed.reduce((a, b) => a + b, 0) : 0;
+  const target = data.target ? data.target.reduce((a, b) => a + b, 0) : 0;
+  const remaining = Math.max(0, target - completed);
+  
+  // Actualizar stats del overlay
+  const completedStat = document.getElementById('chart-completed');
+  const remainingStat = document.getElementById('chart-remaining');
+  if (completedStat) completedStat.textContent = completed;
+  if (remainingStat) remainingStat.textContent = remaining;
+  
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completadas', 'Pendientes'],
+      datasets: [{
+        data: [completed, remaining],
+        backgroundColor: [
+          'rgba(0, 255, 255, 0.8)',
+          'rgba(255, 0, 255, 0.3)'
+        ],
+        borderColor: [
+          'rgba(0, 255, 255, 1)',
+          'rgba(255, 0, 255, 0.5)'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#00ffff',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: '#00ffff',
+          bodyColor: '#ffffff',
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+              return `${label}: ${value} tareas (${percentage}%)`;
+            }
+          }
+        }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+// Actualizar información del usuario
+function updateDashboardUserInfo() {
+  if (window.currentUser) {
+    const userNameEl = document.getElementById('user-name');
+    const userRoleEl = document.getElementById('user-role');
+    
+    if (userNameEl) userNameEl.textContent = window.currentUser.name;
+    if (userRoleEl) userRoleEl.textContent = window.currentUser.role_name;
+  }
+}
+
+// Cargar datos cuando se carga la sección
+loadDashboardData();
+updateDashboardUserInfo();
+
+// Agregar animaciones CSS
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes cyberSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+`;
+document.head.appendChild(style);
+</script>

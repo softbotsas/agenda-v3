@@ -1,0 +1,960 @@
+<!-- Dashboard Neumorphism -->
+<div class="neumorphism-dashboard">
+  <!-- Header Neumorphism -->
+  <div class="neu-header">
+    <div class="header-content">
+      <div class="user-profile">
+        <div class="neu-avatar">
+          <div class="avatar-ring"></div>
+          <div class="avatar-content">
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
+        <div class="user-details">
+          <h2 class="neu-title" id="user-name">Usuario</h2>
+          <p class="neu-subtitle" id="user-role">Cargando...</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="neu-btn primary">
+          <i class="fas fa-plus"></i>
+          Nueva Tarea
+        </button>
+        <button class="neu-btn secondary">
+          <i class="fas fa-cog"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards Neumorphism -->
+  <div class="neu-stats-grid">
+    <div class="neu-card primary">
+      <div class="card-header">
+        <div class="card-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="card-title">
+          <h3>Tareas de Hoy</h3>
+          <p>Por completar</p>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="neu-number" id="today-tasks-count">0</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="today-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="neu-card success">
+      <div class="card-header">
+        <div class="card-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="card-title">
+          <h3>Completadas</h3>
+          <p>Hoy</p>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="neu-number" id="completed-tasks-count">0</div>
+        <div class="success-indicator">
+          <div class="checkmark"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="neu-card warning">
+      <div class="card-header">
+        <div class="card-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="card-title">
+          <h3>En Progreso</h3>
+          <p>Pendientes</p>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="neu-number" id="in-progress-count">0</div>
+        <div class="clock-animation">
+          <div class="clock-hand"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="neu-card danger">
+      <div class="card-header">
+        <div class="card-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="card-title">
+          <h3>Atrasadas</h3>
+          <p>SLA vencido</p>
+        </div>
+      </div>
+      <div class="card-content">
+        <div class="neu-number" id="overdue-tasks-count">0</div>
+        <div class="alert-indicator">
+          <div class="alert-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="neu-charts-section">
+    <div class="neu-chart-card">
+      <div class="chart-header">
+        <h4>Progreso Semanal</h4>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-color completed"></div>
+            <span>Completadas</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-color pending"></div>
+            <span>Pendientes</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="weeklyProgressChart"></canvas>
+      </div>
+    </div>
+
+    <div class="neu-activity-card">
+      <div class="activity-header">
+        <h4>Actividad Reciente</h4>
+        <div class="activity-filter">
+          <select class="neu-select">
+            <option>Todas</option>
+            <option>Hoy</option>
+            <option>Esta semana</option>
+          </select>
+        </div>
+      </div>
+      <div class="activity-list" id="recent-activity-container">
+        <div class="loading-neu">
+          <div class="neu-spinner"></div>
+          <p>Cargando actividad...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="neu-quick-actions">
+    <h4>Acciones Rápidas</h4>
+    <div class="actions-grid">
+      <button class="neu-action-btn">
+        <i class="fas fa-plus-circle"></i>
+        <span>Nueva Tarea</span>
+      </button>
+      <button class="neu-action-btn">
+        <i class="fas fa-calendar"></i>
+        <span>Ver Calendario</span>
+      </button>
+      <button class="neu-action-btn">
+        <i class="fas fa-chart-bar"></i>
+        <span>Reportes</span>
+      </button>
+      <button class="neu-action-btn">
+        <i class="fas fa-users"></i>
+        <span>Equipo</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Neumorphism Dashboard Styles */
+.neumorphism-dashboard {
+  padding: 20px;
+  background: #e6e7ee;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Header Neumorphism */
+.neu-header {
+  background: #e6e7ee;
+  border-radius: 25px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 
+    20px 20px 60px #bebebe,
+    -20px -20px 60px #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.neu-avatar {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.avatar-ring {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 50%;
+  background: #e6e7ee;
+  box-shadow: 
+    inset 8px 8px 16px #bebebe,
+    inset -8px -8px 16px #ffffff;
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.avatar-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #e6e7ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #4a5568;
+  box-shadow: 
+    8px 8px 16px #bebebe,
+    -8px -8px 16px #ffffff;
+  z-index: 1;
+}
+
+.user-details h2 {
+  color: #2d3748;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.user-details p {
+  color: #718096;
+  margin: 0;
+  font-size: 16px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+}
+
+.neu-btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 15px;
+  background: #e6e7ee;
+  color: #4a5568;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    8px 8px 16px #bebebe,
+    -8px -8px 16px #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.neu-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    12px 12px 24px #bebebe,
+    -12px -12px 24px #ffffff;
+}
+
+.neu-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 4px 4px 8px #bebebe,
+    inset -4px -4px 8px #ffffff;
+}
+
+.neu-btn.primary {
+  background: linear-gradient(145deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 
+    8px 8px 16px #bebebe,
+    -8px -8px 16px #ffffff;
+}
+
+/* Stats Grid */
+.neu-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.neu-card {
+  background: #e6e7ee;
+  border-radius: 25px;
+  padding: 25px;
+  box-shadow: 
+    20px 20px 60px #bebebe,
+    -20px -20px 60px #ffffff;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.neu-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 
+    25px 25px 75px #bebebe,
+    -25px -25px 75px #ffffff;
+}
+
+.neu-card.primary {
+  border-left: 5px solid #667eea;
+}
+
+.neu-card.success {
+  border-left: 5px solid #38ef7d;
+}
+
+.neu-card.warning {
+  border-left: 5px solid #f093fb;
+}
+
+.neu-card.danger {
+  border-left: 5px solid #ff6b6b;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.card-icon {
+  width: 50px;
+  height: 50px;
+  background: #e6e7ee;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #4a5568;
+  box-shadow: 
+    inset 4px 4px 8px #bebebe,
+    inset -4px -4px 8px #ffffff;
+  margin-right: 15px;
+}
+
+.card-title h3 {
+  color: #2d3748;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.card-title p {
+  color: #718096;
+  margin: 0;
+  font-size: 14px;
+}
+
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.neu-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #2d3748;
+  line-height: 1;
+}
+
+/* Progress Bar */
+.progress-bar {
+  width: 100px;
+  height: 8px;
+  background: #e6e7ee;
+  border-radius: 10px;
+  box-shadow: 
+    inset 2px 2px 4px #bebebe,
+    inset -2px -2px 4px #ffffff;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 10px;
+  transition: width 1s ease;
+  width: 0%;
+}
+
+/* Success Indicator */
+.success-indicator {
+  width: 40px;
+  height: 40px;
+  background: #e6e7ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    4px 4px 8px #bebebe,
+    -4px -4px 8px #ffffff;
+}
+
+.checkmark {
+  width: 20px;
+  height: 20px;
+  background: #38ef7d;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse-success 2s infinite;
+}
+
+@keyframes pulse-success {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Clock Animation */
+.clock-animation {
+  width: 40px;
+  height: 40px;
+  background: #e6e7ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    4px 4px 8px #bebebe,
+    -4px -4px 8px #ffffff;
+  position: relative;
+}
+
+.clock-hand {
+  width: 2px;
+  height: 15px;
+  background: #f093fb;
+  border-radius: 2px;
+  animation: clock-tick 2s linear infinite;
+  transform-origin: bottom center;
+}
+
+@keyframes clock-tick {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Alert Indicator */
+.alert-indicator {
+  width: 40px;
+  height: 40px;
+  background: #e6e7ee;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    4px 4px 8px #bebebe,
+    -4px -4px 8px #ffffff;
+}
+
+.alert-dot {
+  width: 12px;
+  height: 12px;
+  background: #ff6b6b;
+  border-radius: 50%;
+  animation: alert-pulse 1s infinite;
+}
+
+@keyframes alert-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+/* Charts Section */
+.neu-charts-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 25px;
+  margin-bottom: 30px;
+}
+
+.neu-chart-card, .neu-activity-card {
+  background: #e6e7ee;
+  border-radius: 25px;
+  padding: 25px;
+  box-shadow: 
+    20px 20px 60px #bebebe,
+    -20px -20px 60px #ffffff;
+}
+
+.chart-header, .activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-header h4, .activity-header h4 {
+  color: #2d3748;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #718096;
+  font-size: 14px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-color.completed {
+  background: #38ef7d;
+}
+
+.legend-color.pending {
+  background: #e6e7ee;
+  box-shadow: 
+    inset 2px 2px 4px #bebebe,
+    inset -2px -2px 4px #ffffff;
+}
+
+.activity-filter {
+  position: relative;
+}
+
+.neu-select {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 15px;
+  background: #e6e7ee;
+  color: #4a5568;
+  font-size: 14px;
+  box-shadow: 
+    inset 4px 4px 8px #bebebe,
+    inset -4px -4px 8px #ffffff;
+  cursor: pointer;
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+/* Activity List */
+.activity-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.loading-neu {
+  text-align: center;
+  padding: 40px 20px;
+  color: #718096;
+}
+
+.neu-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e6e7ee;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Quick Actions */
+.neu-quick-actions {
+  background: #e6e7ee;
+  border-radius: 25px;
+  padding: 25px;
+  box-shadow: 
+    20px 20px 60px #bebebe,
+    -20px -20px 60px #ffffff;
+}
+
+.neu-quick-actions h4 {
+  color: #2d3748;
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+}
+
+.neu-action-btn {
+  padding: 20px;
+  border: none;
+  border-radius: 20px;
+  background: #e6e7ee;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 
+    8px 8px 16px #bebebe,
+    -8px -8px 16px #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.neu-action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    12px 12px 24px #bebebe,
+    -12px -12px 24px #ffffff;
+}
+
+.neu-action-btn:active {
+  transform: translateY(0);
+  box-shadow: 
+    inset 4px 4px 8px #bebebe,
+    inset -4px -4px 8px #ffffff;
+}
+
+.neu-action-btn i {
+  font-size: 24px;
+  color: #667eea;
+}
+
+.neu-action-btn span {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .neu-charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+</style>
+
+<script>
+// Funciones específicas del dashboard neumorphism
+function loadDashboardData() {
+  console.log('📊 Cargando datos del dashboard neumorphism...');
+  
+  loadUserStats();
+  setTimeout(() => {
+    loadPriorityTasks();
+  }, 100);
+  loadRecentActivity();
+  setTimeout(() => {
+    loadWeeklyProgress();
+  }, 200);
+}
+
+function loadUserStats() {
+  console.log('📊 Cargando estadísticas del usuario...');
+  fetch('/agendatce/api/dashboard/stats', {
+    credentials: 'include'
+  })
+    .then(response => {
+      console.log('📡 Respuesta stats:', response.status);
+      return response.json();
+    })
+    .then(data => {
+      console.log('📊 Datos stats:', data);
+      if (data.success) {
+        const todayTasksEl = document.getElementById('today-tasks-count');
+        const completedEl = document.getElementById('completed-tasks-count');
+        const inProgressEl = document.getElementById('in-progress-count');
+        const overdueEl = document.getElementById('overdue-tasks-count');
+        
+        if (todayTasksEl) {
+          todayTasksEl.textContent = data.data.today_tasks || 0;
+          animateNeuNumber(todayTasksEl, 0, data.data.today_tasks || 0);
+        }
+        if (completedEl) {
+          completedEl.textContent = data.data.completed_today || 0;
+          animateNeuNumber(completedEl, 0, data.data.completed_today || 0);
+        }
+        if (inProgressEl) {
+          inProgressEl.textContent = data.data.in_progress || 0;
+          animateNeuNumber(inProgressEl, 0, data.data.in_progress || 0);
+        }
+        if (overdueEl) {
+          overdueEl.textContent = data.data.overdue || 0;
+          animateNeuNumber(overdueEl, 0, data.data.overdue || 0);
+        }
+        
+        // Animar progress bar
+        updateProgressBar(data.data.today_tasks || 0, data.data.completed_today || 0);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando estadísticas:', error);
+    });
+}
+
+function animateNeuNumber(element, start, end) {
+  const duration = 1500;
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const easeOut = 1 - Math.pow(1 - progress, 3);
+    const current = Math.floor(start + (end - start) * easeOut);
+    element.textContent = current;
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+function updateProgressBar(total, completed) {
+  const progressBar = document.getElementById('today-progress-bar');
+  if (progressBar && total > 0) {
+    const percentage = (completed / total) * 100;
+    setTimeout(() => {
+      progressBar.style.width = percentage + '%';
+    }, 500);
+  }
+}
+
+function loadRecentActivity() {
+  fetch('/agendatce/api/activity/recent', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        displayRecentActivity(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando actividad reciente:', error);
+    });
+}
+
+function displayRecentActivity(activities) {
+  const container = document.getElementById('recent-activity-container');
+  
+  if (!container) {
+    console.error('❌ Container recent-activity-container no encontrado');
+    return;
+  }
+  
+  if (activities.length === 0) {
+    container.innerHTML = '<p class="text-center" style="color: #718096;">No hay actividad reciente</p>';
+    return;
+  }
+  
+  container.innerHTML = activities.map((activity, index) => `
+    <div class="activity-item" style="
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: #e6e7ee;
+      border-radius: 15px;
+      box-shadow: 
+        4px 4px 8px #bebebe,
+        -4px -4px 8px #ffffff;
+      animation: slideInUp 0.5s ease ${index * 0.1}s both;
+    ">
+      <div class="activity-icon" style="
+        width: 40px;
+        height: 40px;
+        background: #e6e7ee;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #38ef7d;
+        box-shadow: 
+          inset 2px 2px 4px #bebebe,
+          inset -2px -2px 4px #ffffff;
+      ">
+        <i class="fas fa-check"></i>
+      </div>
+      <div class="activity-content">
+        <h6 style="color: #2d3748; margin: 0 0 5px 0; font-size: 14px;">${activity.task_title}</h6>
+        <small style="color: #718096;">${activity.user_name} - ${formatDateTime(activity.created_at)}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatDateTime(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function loadWeeklyProgress() {
+  fetch('/agendatce/api/dashboard/weekly', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        createWeeklyChart(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando progreso semanal:', error);
+    });
+}
+
+function createWeeklyChart(data) {
+  const canvas = document.getElementById('weeklyProgressChart');
+  if (!canvas) {
+    console.warn('⚠️ Canvas weeklyProgressChart no encontrado');
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+  
+  const completed = data.completed ? data.completed.reduce((a, b) => a + b, 0) : 0;
+  const target = data.target ? data.target.reduce((a, b) => a + b, 0) : 0;
+  const remaining = Math.max(0, target - completed);
+  
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completadas', 'Pendientes'],
+      datasets: [{
+        data: [completed, remaining],
+        backgroundColor: [
+          '#38ef7d',
+          '#e6e7ee'
+        ],
+        borderColor: [
+          '#38ef7d',
+          '#bebebe'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            color: '#4a5568',
+            font: {
+              size: 14,
+              weight: 'bold'
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          titleColor: 'white',
+          bodyColor: 'white',
+          callbacks: {
+            label: function(context) {
+              const label = context.label || '';
+              const value = context.parsed;
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+              return `${label}: ${value} tareas (${percentage}%)`;
+            }
+          }
+        }
+      },
+      cutout: '60%'
+    }
+  });
+}
+
+// Actualizar información del usuario
+function updateDashboardUserInfo() {
+  if (window.currentUser) {
+    const userNameEl = document.getElementById('user-name');
+    const userRoleEl = document.getElementById('user-role');
+    
+    if (userNameEl) userNameEl.textContent = window.currentUser.name;
+    if (userRoleEl) userRoleEl.textContent = window.currentUser.role_name;
+  }
+}
+
+// Cargar datos cuando se carga la sección
+loadDashboardData();
+updateDashboardUserInfo();
+
+// Agregar animaciones CSS
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+document.head.appendChild(style);
+</script>

@@ -1,37 +1,80 @@
-<!-- Dashboard Personalizado -->
-<div class="row">
-  <!-- Header del Dashboard -->
+<!-- Dashboard Styles -->
+<link rel="stylesheet" href="/agendatce/src/views/agenda/sections/dashboard-styles.css">
+
+<!-- Dashboard Selector -->
+<div class="row mb-4">
   <div class="col-12">
-    <div class="card border-0 shadow-lg mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <div class="card border-0 shadow-sm">
       <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <h2 class="mb-1 text-white">
-              <i class="fas fa-tachometer-alt me-2"></i>
-              Mi Agenda
-            </h2>
-            <p class="text-white-50 mb-0">Resumen de tu productividad y tareas</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-1">
+              <i class="fas fa-palette me-2 text-primary"></i>
+              Selector de Estilo de Dashboard
+            </h5>
+            <p class="text-muted mb-0">Elige el estilo que más te guste</p>
           </div>
-          <div class="col-md-4 text-end">
-            <div class="user-info d-flex align-items-center justify-content-end">
-              <div class="user-avatar me-3">
-                <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="25" cy="25" r="25" fill="rgba(255,255,255,0.2)"/>
-                  <circle cx="25" cy="20" r="8" fill="rgba(255,255,255,0.8)"/>
-                  <path d="M12 42c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="rgba(255,255,255,0.8)"/>
-                </svg>
-              </div>
-              <div class="text-end">
-                <div class="fw-bold text-white" id="user-name">Usuario</div>
-                <small class="text-white-50" id="user-role">Cargando...</small>
-              </div>
-            </div>
+          <div class="dashboard-selector">
+            <button class="btn btn-outline-primary me-2" onclick="switchDashboard('default')">
+              <i class="fas fa-chart-bar me-1"></i>
+              Clásico
+            </button>
+            <button class="btn btn-outline-success me-2" onclick="switchDashboard('glassmorphism')">
+              <i class="fas fa-gem me-1"></i>
+              Glassmorphism
+            </button>
+            <button class="btn btn-outline-warning me-2" onclick="switchDashboard('neumorphism')">
+              <i class="fas fa-circle me-1"></i>
+              Neumorphism
+            </button>
+            <button class="btn btn-outline-danger" onclick="switchDashboard('futuristic')">
+              <i class="fas fa-rocket me-1"></i>
+              Futurista
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Dashboard Container -->
+<div id="dashboard-container">
+  <!-- Dashboard Clásico (Default) -->
+  <div id="dashboard-default" class="dashboard-style">
+    <div class="row">
+      <!-- Header del Dashboard -->
+      <div class="col-12">
+        <div class="card border-0 shadow-lg mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-md-8">
+                <h2 class="mb-1 text-white">
+                  <i class="fas fa-tachometer-alt me-2"></i>
+                  Mi Agenda
+                </h2>
+                <p class="text-white-50 mb-0">Resumen de tu productividad y tareas</p>
+              </div>
+              <div class="col-md-4 text-end">
+                <div class="user-info d-flex align-items-center justify-content-end">
+                  <div class="user-avatar me-3">
+                    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="25" cy="25" r="25" fill="rgba(255,255,255,0.2)"/>
+                      <circle cx="25" cy="20" r="8" fill="rgba(255,255,255,0.8)"/>
+                      <path d="M12 42c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="rgba(255,255,255,0.8)"/>
+                    </svg>
+                  </div>
+                  <div class="text-end">
+                    <div class="fw-bold text-white" id="user-name">Usuario</div>
+                    <small class="text-white-50" id="user-role">Cargando...</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
 <!-- Estadísticas Principales -->
 <div class="row mb-4">
@@ -418,4 +461,350 @@ function updateDashboardUserInfo() {
 // Cargar datos cuando se carga la sección
 loadDashboardData();
 updateDashboardUserInfo();
+
+// Función para cambiar entre dashboards
+function switchDashboard(style) {
+  console.log('🎨 Cambiando a dashboard:', style);
+  
+  // Ocultar todos los dashboards
+  const dashboards = document.querySelectorAll('.dashboard-style');
+  dashboards.forEach(dashboard => {
+    dashboard.style.display = 'none';
+  });
+  
+  // Mostrar el dashboard seleccionado
+  const selectedDashboard = document.getElementById(`dashboard-${style}`);
+  if (selectedDashboard) {
+    selectedDashboard.style.display = 'block';
+    
+    // Actualizar botones del selector
+    const buttons = document.querySelectorAll('.dashboard-selector button');
+    buttons.forEach(btn => {
+      btn.classList.remove('btn-primary', 'btn-success', 'btn-warning', 'btn-danger');
+      btn.classList.add('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning', 'btn-outline-danger');
+    });
+    
+    // Resaltar el botón activo
+    const activeButton = event.target;
+    if (activeButton) {
+      activeButton.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning', 'btn-outline-danger');
+      if (style === 'default') activeButton.classList.add('btn-primary');
+      if (style === 'glassmorphism') activeButton.classList.add('btn-success');
+      if (style === 'neumorphism') activeButton.classList.add('btn-warning');
+      if (style === 'futuristic') activeButton.classList.add('btn-danger');
+    }
+    
+    // Cargar datos específicos del dashboard
+    if (style === 'glassmorphism') {
+      loadGlassmorphismDashboard();
+    } else if (style === 'neumorphism') {
+      loadNeumorphismDashboard();
+    } else if (style === 'futuristic') {
+      loadFuturisticDashboard();
+    } else {
+      loadDashboardData();
+    }
+  }
+}
+
+// Funciones específicas para cada dashboard
+function loadGlassmorphismDashboard() {
+  console.log('🔮 Cargando dashboard Glassmorphism...');
+  loadGlassmorphismData();
+}
+
+function loadGlassmorphismData() {
+  // Cargar estadísticas para glassmorphism
+  fetch('/agendatce/api/dashboard/stats', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const todayTasksEl = document.getElementById('today-tasks-count-glass');
+        const completedEl = document.getElementById('completed-tasks-count-glass');
+        const inProgressEl = document.getElementById('in-progress-count-glass');
+        const overdueEl = document.getElementById('overdue-tasks-count-glass');
+        
+        if (todayTasksEl) {
+          todayTasksEl.textContent = data.data.today_tasks || 0;
+          animateNumber(todayTasksEl, 0, data.data.today_tasks || 0);
+        }
+        if (completedEl) {
+          completedEl.textContent = data.data.completed_today || 0;
+          animateNumber(completedEl, 0, data.data.completed_today || 0);
+        }
+        if (inProgressEl) {
+          inProgressEl.textContent = data.data.in_progress || 0;
+          animateNumber(inProgressEl, 0, data.data.in_progress || 0);
+        }
+        if (overdueEl) {
+          overdueEl.textContent = data.data.overdue || 0;
+          animateNumber(overdueEl, 0, data.data.overdue || 0);
+        }
+        
+        // Animar progress ring
+        updateProgressRing(data.data.today_tasks || 0, data.data.completed_today || 0);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando estadísticas glassmorphism:', error);
+    });
+  
+  // Cargar actividad reciente
+  loadRecentActivityGlass();
+}
+
+function animateNumber(element, start, end) {
+  const duration = 1000;
+  const startTime = performance.now();
+  
+  function update(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const current = Math.floor(start + (end - start) * progress);
+    element.textContent = current;
+    
+    if (progress < 1) {
+      requestAnimationFrame(update);
+    }
+  }
+  
+  requestAnimationFrame(update);
+}
+
+function updateProgressRing(total, completed) {
+  const progressFill = document.getElementById('today-progress-glass');
+  if (progressFill && total > 0) {
+    const percentage = (completed / total) * 100;
+    const circumference = 157; // 2 * PI * 25
+    const offset = circumference - (percentage / 100) * circumference;
+    
+    progressFill.style.strokeDashoffset = offset;
+  }
+}
+
+function loadRecentActivityGlass() {
+  fetch('/agendatce/api/activity/recent', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        displayRecentActivityGlass(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando actividad reciente glassmorphism:', error);
+    });
+}
+
+function displayRecentActivityGlass(activities) {
+  const container = document.getElementById('recent-activity-container-glass');
+  
+  if (!container) {
+    console.error('❌ Container recent-activity-container-glass no encontrado');
+    return;
+  }
+  
+  if (activities.length === 0) {
+    container.innerHTML = '<p class="text-center" style="color: rgba(255,255,255,0.8);">No hay actividad reciente</p>';
+    return;
+  }
+  
+  container.innerHTML = activities.map((activity, index) => `
+    <div class="activity-item" style="
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      border-left: 4px solid #4ade80;
+      animation: slideInUp 0.5s ease ${index * 0.1}s both;
+    ">
+      <div class="activity-icon" style="
+        width: 40px;
+        height: 40px;
+        background: rgba(74, 222, 128, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: #4ade80;
+      ">
+        <i class="fas fa-check"></i>
+      </div>
+      <div class="activity-content">
+        <h6 style="color: white; margin: 0 0 5px 0; font-size: 14px;">${activity.task_title}</h6>
+        <small style="color: rgba(255,255,255,0.7);">${activity.user_name} - ${formatDateTime(activity.created_at)}</small>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadNeumorphismDashboard() {
+  console.log('🎨 Cargando dashboard Neumorphism...');
+  // Aquí irían las funciones específicas del neumorphism
+  loadDashboardData(); // Por ahora usar las funciones generales
+}
+
+function loadFuturisticDashboard() {
+  console.log('🚀 Cargando dashboard Futurista...');
+  // Aquí irían las funciones específicas del futurista
+  loadDashboardData(); // Por ahora usar las funciones generales
+}
+
+// Inicializar con dashboard clásico
+document.addEventListener('DOMContentLoaded', function() {
+  switchDashboard('default');
+});
 </script>
+
+<!-- Dashboard Glassmorphism -->
+<div id="dashboard-glassmorphism" class="dashboard-style" style="display: none;">
+  <div class="dashboard-container">
+    <!-- Header con efecto cristal -->
+    <div class="glass-header">
+      <div class="header-content">
+        <div class="user-section">
+          <div class="user-avatar-glass">
+            <div class="avatar-ring"></div>
+            <div class="avatar-inner">
+              <i class="fas fa-user"></i>
+            </div>
+          </div>
+          <div class="user-info">
+            <h2 class="user-name" id="user-name-glass">Usuario</h2>
+            <p class="user-role" id="user-role-glass">Cargando...</p>
+          </div>
+        </div>
+        <div class="header-stats">
+          <div class="stat-item">
+            <span class="stat-number" id="today-tasks-count-glass">0</span>
+            <span class="stat-label">Hoy</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" id="completed-tasks-count-glass">0</span>
+            <span class="stat-label">Completadas</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards con efecto cristal -->
+    <div class="stats-grid">
+      <div class="glass-card primary">
+        <div class="card-icon">
+          <i class="fas fa-tasks"></i>
+        </div>
+        <div class="card-content">
+          <h3 id="today-tasks-count-glass">0</h3>
+          <p>Tareas de Hoy</p>
+          <div class="progress-ring">
+            <svg class="progress-circle" width="60" height="60">
+              <circle cx="30" cy="30" r="25" class="progress-bg"></circle>
+              <circle cx="30" cy="30" r="25" class="progress-fill" id="today-progress-glass"></circle>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card success">
+        <div class="card-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="card-content">
+          <h3 id="completed-tasks-count-glass">0</h3>
+          <p>Completadas</p>
+          <div class="success-animation">
+            <div class="checkmark"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card warning">
+        <div class="card-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="card-content">
+          <h3 id="in-progress-count-glass">0</h3>
+          <p>En Progreso</p>
+          <div class="pulse-indicator"></div>
+        </div>
+      </div>
+
+      <div class="glass-card danger">
+        <div class="card-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="card-content">
+          <h3 id="overdue-tasks-count-glass">0</h3>
+          <p>Atrasadas</p>
+          <div class="alert-pulse"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de gráficos con efecto cristal -->
+    <div class="charts-section">
+      <div class="glass-chart-card">
+        <div class="chart-header">
+          <h4>Progreso Semanal</h4>
+          <div class="chart-controls">
+            <button class="control-btn active">7D</button>
+            <button class="control-btn">30D</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="weeklyProgressChartGlass"></canvas>
+        </div>
+      </div>
+
+      <div class="glass-activity-card">
+        <div class="activity-header">
+          <h4>Actividad Reciente</h4>
+          <div class="activity-indicator">
+            <div class="indicator-dot"></div>
+            <span>En vivo</span>
+          </div>
+        </div>
+        <div class="activity-timeline" id="recent-activity-container-glass">
+          <div class="loading-state">
+            <div class="loading-dots">
+              <span></span><span></span><span></span>
+            </div>
+            <p>Cargando actividad...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard Neumorphism -->
+<div id="dashboard-neumorphism" class="dashboard-style" style="display: none;">
+  <!-- Aquí iría el contenido del dashboard neumorphism -->
+  <div class="text-center p-5">
+    <h3>Dashboard Neumorphism</h3>
+    <p>Estilo con efectos de relieve y sombras suaves</p>
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      Este dashboard está en desarrollo. Próximamente disponible.
+    </div>
+  </div>
+</div>
+
+<!-- Dashboard Futurista -->
+<div id="dashboard-futuristic" class="dashboard-style" style="display: none;">
+  <!-- Aquí iría el contenido del dashboard futurista -->
+  <div class="text-center p-5">
+    <h3>Dashboard Futurista</h3>
+    <p>Estilo ciberpunk con efectos de partículas y neón</p>
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>
+      Este dashboard está en desarrollo. Próximamente disponible.
+    </div>
+  </div>
+</div>
