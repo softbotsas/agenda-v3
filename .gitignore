@@ -2,3 +2,6 @@ node_modules
 
 # Ignorar archivos subidos por los usuarios
 public/assets/media
+
+# Ignorar archivos de configuración local
+.cursorrules
