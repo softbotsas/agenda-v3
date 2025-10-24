@@ -817,18 +817,43 @@ const getTaskHistory = async (userId, startDate, endDate) => {
 // Obtener estadísticas del dashboard
 const getDashboardStats = async (userId) => {
   try {
+    console.log('📊 getDashboardStats - userId:', userId);
+    
     // Obtener tareas de hoy
     const todayTasks = await getTodayTasks(userId);
     const todayTasksData = todayTasks.success ? todayTasks.data : [];
     
+    console.log('📊 Tareas de hoy obtenidas:', todayTasksData.length);
+    
+    // Obtener logs de hoy para contar completadas
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    
+    const todayLogs = await TaskLog.find({
+      user: userId,
+      log_date: { $gte: today, $lte: endOfDay },
+      action_type: 'completed'
+    });
+    
+    console.log('📊 Logs de hoy (completadas):', todayLogs.length);
+    
     // Calcular estadísticas
+    const completedToday = todayLogs.length;
+    const totalToday = todayTasksData.length + completedToday; // Todas las tareas del día
+    const inProgress = todayTasksData.filter(t => !t.completed && t.current > 0).length;
+    const overdue = todayTasksData.filter(t => t.sla_status === 'danger').length;
+    
     const stats = {
-      today_tasks: todayTasksData.length,
-      completed_today: todayTasksData.filter(t => t.completed).length,
-      in_progress: todayTasksData.filter(t => !t.completed && t.current > 0).length,
-      overdue: todayTasksData.filter(t => t.sla_status === 'danger').length,
+      today_tasks: totalToday, // Total de tareas del día (completadas + pendientes)
+      completed_today: completedToday, // Tareas completadas hoy
+      in_progress: inProgress,
+      overdue: overdue,
       sla_compliance: calculateSLACompliance(todayTasksData)
     };
+    
+    console.log('📊 Estadísticas calculadas:', stats);
     
     return stats;
   } catch (error) {

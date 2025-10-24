@@ -1,222 +1,595 @@
 <!-- Dashboard Styles -->
-<link rel="stylesheet" href="/agendatce/src/views/agenda/sections/dashboard-styles.css">
+<style>
+/* Glassmorphism Dashboard - Estilo 1 */
+.dashboard-container {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
 
-<!-- Dashboard Selector -->
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h5 class="mb-1">
-              <i class="fas fa-palette me-2 text-primary"></i>
-              Selector de Estilo de Dashboard
-            </h5>
-            <p class="text-muted mb-0">Elige el estilo que más te guste</p>
+.dashboard-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Glass Header */
+.glass-header {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: rotate(45deg);
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-avatar-glass {
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.avatar-ring {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.avatar-inner {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.user-info h2 {
+  color: white;
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.user-info p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+  font-size: 16px;
+}
+
+.header-stats {
+  display: flex;
+  gap: 30px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.glass-card.primary {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+}
+
+.glass-card.success {
+  background: linear-gradient(135deg, rgba(17, 153, 142, 0.2), rgba(56, 239, 125, 0.2));
+}
+
+.glass-card.warning {
+  background: linear-gradient(135deg, rgba(240, 147, 251, 0.2), rgba(245, 87, 108, 0.2));
+}
+
+.glass-card.danger {
+  background: linear-gradient(135deg, rgba(255, 154, 158, 0.2), rgba(254, 207, 239, 0.2));
+}
+
+.card-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+}
+
+.card-content h3 {
+  font-size: 36px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 10px 0;
+}
+
+.card-content p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 20px 0;
+  font-size: 16px;
+}
+
+/* Progress Ring */
+.progress-ring {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+}
+
+.progress-circle {
+  transform: rotate(-90deg);
+}
+
+.progress-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 3;
+}
+
+.progress-fill {
+  fill: none;
+  stroke: white;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 157;
+  stroke-dashoffset: 157;
+  transition: stroke-dashoffset 1s ease;
+}
+
+/* Charts Section */
+.charts-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.glass-chart-card, .glass-activity-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 25px;
+}
+
+/* Chart Controls */
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-header h4 {
+  color: white;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  transform: translateY(-1px);
+}
+
+.control-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.control-btn.active:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-header, .activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-header h4, .activity-header h4 {
+  color: white;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+/* Activity Timeline */
+.activity-timeline {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  margin-bottom: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  border-left: 4px solid #4ade80;
+  animation: slideInUp 0.5s ease forwards;
+}
+
+.activity-icon {
+  width: 40px;
+  height: 40px;
+  background: rgba(74, 222, 128, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+  color: #4ade80;
+}
+
+.activity-content h6 {
+  color: white;
+  margin: 0 0 5px 0;
+  font-size: 14px;
+}
+
+.activity-content small {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Animations */
+.success-animation {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+}
+
+.checkmark {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.pulse-indicator {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  background: #ff6b6b;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+.alert-pulse {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  background: #ff4757;
+  border-radius: 50%;
+  animation: alert-pulse 1s infinite;
+}
+
+@keyframes alert-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(2); opacity: 0.3; }
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.loading-dots span {
+  width: 8px;
+  height: 8px;
+  background: white;
+  border-radius: 50%;
+  animation: loading-bounce 1.4s infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+.loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes loading-bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .header-stats {
+    justify-content: center;
+  }
+}
+</style>
+
+<!-- Dashboard Glassmorphism - Estilo 1 -->
+<div class="dashboard-container">
+  <!-- Header con efecto cristal -->
+  <div class="glass-header">
+    <div class="header-content">
+      <div class="user-section">
+        <div class="user-avatar-glass">
+          <div class="avatar-ring"></div>
+          <div class="avatar-inner">
+            <i class="fas fa-user"></i>
           </div>
-          <div class="dashboard-selector">
-            <button class="btn btn-outline-primary me-2" onclick="switchDashboard('default')">
-              <i class="fas fa-chart-bar me-1"></i>
-              Clásico
-            </button>
-            <button class="btn btn-outline-success me-2" onclick="switchDashboard('glassmorphism')">
-              <i class="fas fa-gem me-1"></i>
-              Glassmorphism
-            </button>
-            <button class="btn btn-outline-warning me-2" onclick="switchDashboard('neumorphism')">
-              <i class="fas fa-circle me-1"></i>
-              Neumorphism
-            </button>
-            <button class="btn btn-outline-danger" onclick="switchDashboard('futuristic')">
-              <i class="fas fa-rocket me-1"></i>
-              Futurista
-            </button>
-          </div>
+        </div>
+        <div class="user-info">
+          <h2 class="user-name" id="user-name-glass">Usuario</h2>
+          <p class="user-role" id="user-role-glass">Cargando...</p>
+        </div>
+      </div>
+      <div class="header-stats">
+        <div class="stat-item">
+          <span class="stat-number" id="today-tasks-count-glass">0</span>
+          <span class="stat-label">Hoy</span>
+    </div>
+        <div class="stat-item">
+          <span class="stat-number" id="completed-tasks-count-glass">0</span>
+          <span class="stat-label">Completadas</span>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Cards con efecto cristal -->
+  <div class="stats-grid">
+    <div class="glass-card primary">
+      <div class="card-icon">
+        <i class="fas fa-tasks"></i>
+      </div>
+      <div class="card-content">
+        <h3 id="card-today-tasks-count">0</h3>
+        <p>Tareas de Hoy</p>
+        <div class="progress-ring">
+          <svg class="progress-circle" width="60" height="60">
+            <circle cx="30" cy="30" r="25" class="progress-bg"></circle>
+            <circle cx="30" cy="30" r="25" class="progress-fill" id="card-today-progress"></circle>
+              </svg>
+      </div>
+    </div>
+  </div>
+
+    <div class="glass-card success">
+      <div class="card-icon">
+        <i class="fas fa-check-circle"></i>
+            </div>
+      <div class="card-content">
+        <h3 id="card-completed-tasks-count">0</h3>
+        <p>Completadas</p>
+        <div class="success-animation">
+          <div class="checkmark">
+            <i class="fas fa-check"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <div class="glass-card warning">
+      <div class="card-icon">
+        <i class="fas fa-clock"></i>
+            </div>
+      <div class="card-content">
+        <h3 id="card-in-progress-count">0</h3>
+        <p>En Progreso</p>
+        <div class="pulse-indicator"></div>
   </div>
 </div>
 
-<!-- Dashboard Container -->
-<div id="dashboard-container">
-  <!-- Dashboard Clásico (Default) -->
-  <div id="dashboard-default" class="dashboard-style">
-    <div class="row">
-      <!-- Header del Dashboard -->
-      <div class="col-12">
-        <div class="card border-0 shadow-lg mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-          <div class="card-body">
-            <div class="row align-items-center">
-              <div class="col-md-8">
-                <h2 class="mb-1 text-white">
-                  <i class="fas fa-tachometer-alt me-2"></i>
-                  Mi Agenda
-                </h2>
-                <p class="text-white-50 mb-0">Resumen de tu productividad y tareas</p>
-              </div>
-              <div class="col-md-4 text-end">
-                <div class="user-info d-flex align-items-center justify-content-end">
-                  <div class="user-avatar me-3">
-                    <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="25" cy="25" r="25" fill="rgba(255,255,255,0.2)"/>
-                      <circle cx="25" cy="20" r="8" fill="rgba(255,255,255,0.8)"/>
-                      <path d="M12 42c0-7.18 5.82-13 13-13s13 5.82 13 13" fill="rgba(255,255,255,0.8)"/>
-                    </svg>
-                  </div>
-                  <div class="text-end">
-                    <div class="fw-bold text-white" id="user-name">Usuario</div>
-                    <small class="text-white-50" id="user-role">Cargando...</small>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="glass-card danger">
+      <div class="card-icon">
+        <i class="fas fa-exclamation-triangle"></i>
       </div>
-    </div>
-
-<!-- Estadísticas Principales -->
-<div class="row mb-4">
-  <div class="col-xl-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-white bg-opacity-20 rounded-3 p-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5M9 9H15M9 13H15M9 17H13" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </div>
-          <div class="flex-grow-1 ms-3">
-            <h6 class="mb-1 text-white-50">Tareas de Hoy</h6>
-            <h3 class="mb-0 text-white fw-bold" id="today-tasks-count">0</h3>
-            <small class="text-white-50">Por completar</small>
-          </div>
-        </div>
+      <div class="card-content">
+        <h3 id="card-overdue-tasks-count">0</h3>
+        <p>Vencidas</p>
+        <div class="alert-pulse"></div>
       </div>
     </div>
   </div>
 
-  <div class="col-xl-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-white bg-opacity-20 rounded-3 p-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#11998e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </div>
-          <div class="flex-grow-1 ms-3">
-            <h6 class="mb-1 text-white-50">Completadas</h6>
-            <h3 class="mb-0 text-white fw-bold" id="completed-tasks-count">0</h3>
-            <small class="text-white-50">Hoy</small>
-          </div>
+  <!-- Charts Section -->
+  <div class="charts-section">
+    <div class="glass-chart-card">
+      <div class="chart-header">
+        <h4>Progreso Semanal</h4>
+        <div class="chart-controls">
+          <button class="control-btn active">Semana</button>
+          <button class="control-btn">Mes</button>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="col-xl-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-white bg-opacity-20 rounded-3 p-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 6V12L16 14M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#f093fb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </div>
-          <div class="flex-grow-1 ms-3">
-            <h6 class="mb-1 text-white-50">En Progreso</h6>
-            <h3 class="mb-0 text-white fw-bold" id="in-progress-count">0</h3>
-            <small class="text-white-50">Pendientes</small>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-3 col-md-6 mb-3">
-    <div class="card border-0 shadow-lg h-100" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); color: #333;">
-      <div class="card-body">
-        <div class="d-flex align-items-center">
-          <div class="flex-shrink-0">
-            <div class="bg-dark bg-opacity-20 rounded-3 p-3">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 9V13M12 17H12.01M10.29 3.86L1.82 18C1.64547 18.3024 1.57298 18.6453 1.60217 18.9873C1.63137 19.3294 1.76026 19.6567 1.97119 19.9247C2.18212 20.1928 2.4669 20.3901 2.79171 20.4913C3.11653 20.5925 3.4667 20.5937 3.792 20.4949L20.208 15.5051C20.5333 15.4063 20.8181 15.209 21.029 14.9409C21.2399 14.6729 21.3688 14.3456 21.398 14.0035C21.4272 13.6615 21.3547 13.3186 21.18 13.016L12.71 -1.14C12.5318 -1.44355 12.2431 -1.66729 11.9021 -1.76644C11.5611 -1.86559 11.1957 -1.83299 10.8787 -1.67474C10.5618 -1.51649 10.3156 -1.24311 10.188 0.91C10.0604 -1.24311 9.81419 -1.51649 9.49726 -1.67474C9.18033 -1.83299 8.81489 -1.86559 8.47388 -1.76644C8.13288 -1.66729 7.84419 -1.44355 7.666 0.91L10.29 3.86Z" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </div>
-          <div class="flex-grow-1 ms-3">
-            <h6 class="mb-1 text-dark">Atrasadas</h6>
-            <h3 class="mb-0 text-dark fw-bold" id="overdue-tasks-count">0</h3>
-            <small class="text-dark">SLA vencido</small>
-          </div>
-        </div>
-      </div>
-    </div>
+      <div class="chart-container">
+        <canvas id="weeklyProgressChart"></canvas>
   </div>
 </div>
 
-<!-- Gráfico de Progreso Semanal -->
-<div class="row mb-4">
-  <div class="col-lg-8">
-    <div class="card border-0 shadow-lg" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
-      <div class="card-header border-0" style="background: transparent;">
-        <h5 class="mb-0 text-dark">
-          <i class="fas fa-chart-pie text-dark me-2"></i>
-          Progreso Semanal
-        </h5>
-      </div>
-      <div class="card-body">
-        <div style="height: 350px;">
-          <canvas id="weeklyProgressChart"></canvas>
+    <div class="glass-activity-card">
+      <div class="activity-header">
+        <h4>Actividad Reciente</h4>
+        <div class="activity-indicator">
+          <div class="indicator-dot"></div>
+          <span>En vivo</span>
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="col-lg-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white border-0">
-        <h5 class="mb-0">
-          <i class="fas fa-exclamation-circle text-warning me-2"></i>
-          Tareas Prioritarias
-        </h5>
-      </div>
-      <div class="card-body">
-        <div id="priority-tasks-container">
-          <div class="text-center text-muted py-3">
-            <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
-            <p>Cargando tareas prioritarias...</p>
+      <div class="activity-timeline" id="recent-activity-container-glass">
+        <div class="loading-state">
+          <div class="loading-dots">
+            <span></span><span></span><span></span>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Actividad Reciente -->
-<div class="row">
-  <div class="col-12">
-    <div class="card border-0 shadow-sm">
-      <div class="card-header bg-white border-0">
-        <h5 class="mb-0">
-          <i class="fas fa-clock text-info me-2"></i>
-          Actividad Reciente
-        </h5>
-      </div>
-      <div class="card-body">
-        <div id="recent-activity-container">
-          <div class="text-center text-muted py-3">
-            <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
-            <p>Cargando actividad reciente...</p>
-          </div>
+          <p>Cargando actividad...</p>
         </div>
       </div>
     </div>
@@ -224,30 +597,11 @@
 </div>
 
 <script>
-// Funciones específicas del dashboard
+// Funciones para el dashboard Glassmorphism
 function loadDashboardData() {
   console.log('📊 Cargando datos del dashboard...');
-  console.log('🔍 Usuario actual:', window.currentUser);
   
-  // Cargar estadísticas del usuario
-  loadUserStats();
-  
-  // Cargar tareas prioritarias
-  setTimeout(() => {
-    loadPriorityTasks();
-  }, 100);
-  
-  // Cargar actividad reciente
-  loadRecentActivity();
-  
-  // Cargar progreso semanal
-  setTimeout(() => {
-    loadWeeklyProgress();
-  }, 200);
-}
-
-function loadUserStats() {
-  console.log('📊 Cargando estadísticas del usuario...');
+  // Cargar estadísticas
   fetch('/agendatce/api/dashboard/stats', {
     credentials: 'include'
   })
@@ -256,300 +610,85 @@ function loadUserStats() {
       return response.json();
     })
     .then(data => {
-      console.log('📊 Datos stats:', data);
-      if (data.success) {
-        // Verificar que los elementos existan antes de asignar textContent
-        const todayTasksEl = document.getElementById('today-tasks-count');
-        const completedEl = document.getElementById('completed-tasks-count');
-        const inProgressEl = document.getElementById('in-progress-count');
-        const overdueEl = document.getElementById('overdue-tasks-count');
-        
-        if (todayTasksEl) todayTasksEl.textContent = data.data.today_tasks || 0;
-        if (completedEl) completedEl.textContent = data.data.completed_today || 0;
-        if (inProgressEl) inProgressEl.textContent = data.data.in_progress || 0;
-        if (overdueEl) overdueEl.textContent = data.data.overdue || 0;
-      }
-    })
-    .catch(error => {
-      console.error('Error cargando estadísticas:', error);
-    });
-}
-
-function loadPriorityTasks() {
-  fetch('/agendatce/api/tasks/priority', {
-    credentials: 'include'
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        displayPriorityTasks(data.data);
-      }
-    })
-    .catch(error => {
-      console.error('Error cargando tareas prioritarias:', error);
-    });
-}
-
-function displayPriorityTasks(tasks) {
-  const container = document.getElementById('priority-tasks-container');
-  
-  if (!container) {
-    console.warn('⚠️ Contenedor priority-tasks-container no encontrado');
-    return;
-  }
-  
-  if (tasks.length === 0) {
-    container.innerHTML = '<p class="text-muted text-center">No hay tareas prioritarias</p>';
-    return;
-  }
-  
-  container.innerHTML = tasks.map(task => `
-    <div class="d-flex align-items-center mb-3">
-      <div class="flex-shrink-0">
-        <div class="bg-warning bg-opacity-10 rounded-circle p-2">
-          <i class="fas fa-exclamation text-warning"></i>
-        </div>
-      </div>
-      <div class="flex-grow-1 ms-3">
-        <h6 class="mb-1">${task.title}</h6>
-        <small class="text-muted">SLA: ${task.sla_time}</small>
-      </div>
-    </div>
-  `).join('');
-}
-
-function loadRecentActivity() {
-  fetch('/agendatce/api/activity/recent', {
-    credentials: 'include'
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        displayRecentActivity(data.data);
-      }
-    })
-    .catch(error => {
-      console.error('Error cargando actividad reciente:', error);
-    });
-}
-
-function displayRecentActivity(activities) {
-  const container = document.getElementById('recent-activity-container');
-  
-  if (!container) {
-    console.error('❌ Container recent-activity-container no encontrado');
-    return;
-  }
-  
-  if (activities.length === 0) {
-    container.innerHTML = '<p class="text-muted text-center">No hay actividad reciente</p>';
-    return;
-  }
-  
-  container.innerHTML = activities.map(activity => `
-    <div class="d-flex align-items-center mb-3">
-      <div class="flex-shrink-0">
-        <div class="bg-success bg-opacity-10 rounded-circle p-2">
-          <i class="fas fa-check text-success"></i>
-        </div>
-      </div>
-      <div class="flex-grow-1 ms-3">
-        <h6 class="mb-1">${activity.task_title}</h6>
-        <small class="text-muted">${activity.user_name} - ${formatDateTime(activity.created_at)}</small>
-      </div>
-    </div>
-  `).join('');
-}
-
-function formatDateTime(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('es-ES') + ' ' + date.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
-function loadWeeklyProgress() {
-  fetch('/agendatce/api/dashboard/weekly', {
-    credentials: 'include'
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        createWeeklyChart(data.data);
-      }
-    })
-    .catch(error => {
-      console.error('Error cargando progreso semanal:', error);
-    });
-}
-
-function createWeeklyChart(data) {
-  const canvas = document.getElementById('weeklyProgressChart');
-  if (!canvas) {
-    console.warn('⚠️ Canvas weeklyProgressChart no encontrado');
-    return;
-  }
-  const ctx = canvas.getContext('2d');
-  
-  const completed = data.completed ? data.completed.reduce((a, b) => a + b, 0) : 0;
-  const target = data.target ? data.target.reduce((a, b) => a + b, 0) : 0;
-  const remaining = Math.max(0, target - completed);
-  
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Completadas', 'Pendientes'],
-      datasets: [{
-        data: [completed, remaining],
-        backgroundColor: [
-          'rgba(102, 126, 234, 0.8)',
-          'rgba(255, 255, 255, 0.3)'
-        ],
-        borderColor: [
-          'rgba(102, 126, 234, 1)',
-          'rgba(255, 255, 255, 0.5)'
-        ],
-        borderWidth: 2
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: '#333',
-            font: {
-              size: 14,
-              weight: 'bold'
-            }
-          }
-        },
-        tooltip: {
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          titleColor: 'white',
-          bodyColor: 'white',
-          callbacks: {
-            label: function(context) {
-              const label = context.label || '';
-              const value = context.parsed;
-              const total = context.dataset.data.reduce((a, b) => a + b, 0);
-              const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-              return `${label}: ${value} tareas (${percentage}%)`;
-            }
-          }
-        }
-      },
-      cutout: '60%'
-    }
-  });
-}
-
-// Actualizar información del usuario
-function updateDashboardUserInfo() {
-  if (window.currentUser) {
-    const userNameEl = document.getElementById('user-name');
-    const userRoleEl = document.getElementById('user-role');
+    console.log('📊 Datos stats completos:', data);
     
-    if (userNameEl) userNameEl.textContent = window.currentUser.name;
-    if (userRoleEl) userRoleEl.textContent = window.currentUser.role_name;
-  }
-}
-
-// Cargar datos cuando se carga la sección
-loadDashboardData();
-updateDashboardUserInfo();
-
-// Función para cambiar entre dashboards
-function switchDashboard(style) {
-  console.log('🎨 Cambiando a dashboard:', style);
-  
-  // Ocultar todos los dashboards
-  const dashboards = document.querySelectorAll('.dashboard-style');
-  dashboards.forEach(dashboard => {
-    dashboard.style.display = 'none';
-  });
-  
-  // Mostrar el dashboard seleccionado
-  const selectedDashboard = document.getElementById(`dashboard-${style}`);
-  if (selectedDashboard) {
-    selectedDashboard.style.display = 'block';
-    
-    // Actualizar botones del selector
-    const buttons = document.querySelectorAll('.dashboard-selector button');
-    buttons.forEach(btn => {
-      btn.classList.remove('btn-primary', 'btn-success', 'btn-warning', 'btn-danger');
-      btn.classList.add('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning', 'btn-outline-danger');
-    });
-    
-    // Resaltar el botón activo
-    const activeButton = event.target;
-    if (activeButton) {
-      activeButton.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning', 'btn-outline-danger');
-      if (style === 'default') activeButton.classList.add('btn-primary');
-      if (style === 'glassmorphism') activeButton.classList.add('btn-success');
-      if (style === 'neumorphism') activeButton.classList.add('btn-warning');
-      if (style === 'futuristic') activeButton.classList.add('btn-danger');
-    }
-    
-    // Cargar datos específicos del dashboard
-    if (style === 'glassmorphism') {
-      loadGlassmorphismDashboard();
-    } else if (style === 'neumorphism') {
-      loadNeumorphismDashboard();
-    } else if (style === 'futuristic') {
-      loadFuturisticDashboard();
+      if (data.success) {
+      // Usar los datos directamente del backend (ya calculados correctamente)
+      const totalToday = data.data.today_tasks || 0; // Total de tareas del día
+      const completedToday = data.data.completed_today || 0; // Tareas completadas hoy
+      const inProgress = data.data.in_progress || 0;
+      const overdue = data.data.overdue || 0;
+      
+      console.log('📊 Datos del backend:', {
+        totalToday,
+        completedToday,
+        inProgress,
+        overdue
+      });
+      
+      // Actualizar elementos del header
+      const headerTodayEl = document.getElementById('today-tasks-count-glass');
+      const headerCompletedEl = document.getElementById('completed-tasks-count-glass');
+      
+      // Actualizar elementos de las tarjetas principales
+      const cardTodayEl = document.getElementById('card-today-tasks-count');
+      const cardCompletedEl = document.getElementById('card-completed-tasks-count');
+      const cardInProgressEl = document.getElementById('card-in-progress-count');
+      const cardOverdueEl = document.getElementById('card-overdue-tasks-count');
+      
+      console.log('🔍 Elementos encontrados:', {
+        headerTodayEl: !!headerTodayEl,
+        headerCompletedEl: !!headerCompletedEl,
+        cardTodayEl: !!cardTodayEl,
+        cardCompletedEl: !!cardCompletedEl,
+        cardInProgressEl: !!cardInProgressEl,
+        cardOverdueEl: !!cardOverdueEl
+      });
+      
+      // Actualizar header
+      if (headerTodayEl) {
+        headerTodayEl.textContent = totalToday;
+        console.log('✅ Header - Total tareas de hoy actualizadas:', totalToday);
+      }
+      if (headerCompletedEl) {
+        headerCompletedEl.textContent = completedToday;
+        console.log('✅ Header - Tareas completadas actualizadas:', completedToday);
+      }
+      
+      // Actualizar tarjetas principales
+      if (cardTodayEl) {
+        cardTodayEl.textContent = totalToday;
+        animateNumber(cardTodayEl, 0, totalToday);
+        console.log('✅ Tarjeta - Total tareas de hoy actualizadas:', totalToday);
+      }
+      if (cardCompletedEl) {
+        cardCompletedEl.textContent = completedToday;
+        animateNumber(cardCompletedEl, 0, completedToday);
+        console.log('✅ Tarjeta - Tareas completadas actualizadas:', completedToday);
+      }
+      if (cardInProgressEl) {
+        cardInProgressEl.textContent = inProgress;
+        animateNumber(cardInProgressEl, 0, inProgress);
+        console.log('✅ Tarjeta - Tareas en progreso actualizadas:', inProgress);
+      }
+      if (cardOverdueEl) {
+        cardOverdueEl.textContent = overdue;
+        animateNumber(cardOverdueEl, 0, overdue);
+        console.log('✅ Tarjeta - Tareas vencidas actualizadas:', overdue);
+      }
+      
+      // Animar progress ring con el total de hoy
+      updateProgressRing(totalToday, completedToday);
     } else {
-      loadDashboardData();
-    }
-  }
-}
-
-// Funciones específicas para cada dashboard
-function loadGlassmorphismDashboard() {
-  console.log('🔮 Cargando dashboard Glassmorphism...');
-  loadGlassmorphismData();
-}
-
-function loadGlassmorphismData() {
-  // Cargar estadísticas para glassmorphism
-  fetch('/agendatce/api/dashboard/stats', {
-    credentials: 'include'
-  })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        const todayTasksEl = document.getElementById('today-tasks-count-glass');
-        const completedEl = document.getElementById('completed-tasks-count-glass');
-        const inProgressEl = document.getElementById('in-progress-count-glass');
-        const overdueEl = document.getElementById('overdue-tasks-count-glass');
-        
-        if (todayTasksEl) {
-          todayTasksEl.textContent = data.data.today_tasks || 0;
-          animateNumber(todayTasksEl, 0, data.data.today_tasks || 0);
-        }
-        if (completedEl) {
-          completedEl.textContent = data.data.completed_today || 0;
-          animateNumber(completedEl, 0, data.data.completed_today || 0);
-        }
-        if (inProgressEl) {
-          inProgressEl.textContent = data.data.in_progress || 0;
-          animateNumber(inProgressEl, 0, data.data.in_progress || 0);
-        }
-        if (overdueEl) {
-          overdueEl.textContent = data.data.overdue || 0;
-          animateNumber(overdueEl, 0, data.data.overdue || 0);
-        }
-        
-        // Animar progress ring
-        updateProgressRing(data.data.today_tasks || 0, data.data.completed_today || 0);
+      console.error('❌ Error en respuesta de stats:', data.message);
       }
     })
     .catch(error => {
-      console.error('Error cargando estadísticas glassmorphism:', error);
-    });
+    console.error('❌ Error cargando estadísticas:', error);
+  });
+  
+  // Cargar progreso semanal
+  loadWeeklyProgress();
   
   // Cargar actividad reciente
   loadRecentActivityGlass();
@@ -574,29 +713,95 @@ function animateNumber(element, start, end) {
 }
 
 function updateProgressRing(total, completed) {
-  const progressFill = document.getElementById('today-progress-glass');
+  const progressFill = document.getElementById('card-today-progress');
   if (progressFill && total > 0) {
     const percentage = (completed / total) * 100;
     const circumference = 157; // 2 * PI * 25
     const offset = circumference - (percentage / 100) * circumference;
     
     progressFill.style.strokeDashoffset = offset;
+    console.log('🔄 Progress ring actualizado:', percentage + '%');
   }
+}
+
+function loadWeeklyProgress() {
+  fetch('/agendatce/api/dashboard/weekly', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        createWeeklyChart(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando progreso semanal:', error);
+    });
+}
+
+function createWeeklyChart(data) {
+  const canvas = document.getElementById('weeklyProgressChart');
+  if (!canvas) {
+    console.warn('⚠️ Canvas weeklyProgressChart no encontrado');
+    return;
+  }
+  
+  // Destruir chart existente si existe
+  if (window.weeklyChart) {
+    window.weeklyChart.destroy();
+    window.weeklyChart = null;
+  }
+  
+  const ctx = canvas.getContext('2d');
+  
+  const completed = data.completed ? data.completed.reduce((a, b) => a + b, 0) : 0;
+  const target = data.target ? data.target.reduce((a, b) => a + b, 0) : 0;
+  const remaining = Math.max(0, target - completed);
+  
+  window.weeklyChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completadas', 'Pendientes'],
+      datasets: [{
+        data: [completed, remaining],
+        backgroundColor: [
+          'rgba(102, 126, 234, 0.8)',
+          'rgba(255, 255, 255, 0.3)'
+        ],
+        borderColor: [
+          'rgba(102, 126, 234, 1)',
+          'rgba(255, 255, 255, 0.5)'
+        ],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: 'white'
+          }
+        }
+      }
+    }
+  });
 }
 
 function loadRecentActivityGlass() {
   fetch('/agendatce/api/activity/recent', {
     credentials: 'include'
   })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        displayRecentActivityGlass(data.data);
-      }
-    })
-    .catch(error => {
-      console.error('Error cargando actividad reciente glassmorphism:', error);
-    });
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      displayRecentActivityGlass(data.data);
+    }
+  })
+  .catch(error => {
+    console.error('Error cargando actividad reciente glassmorphism:', error);
+  });
 }
 
 function displayRecentActivityGlass(activities) {
@@ -623,188 +828,181 @@ function displayRecentActivityGlass(activities) {
       border-left: 4px solid #4ade80;
       animation: slideInUp 0.5s ease ${index * 0.1}s both;
     ">
-      <div class="activity-icon" style="
-        width: 40px;
-        height: 40px;
-        background: rgba(74, 222, 128, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 15px;
-        color: #4ade80;
-      ">
-        <i class="fas fa-check"></i>
+      <div class="activity-icon">
+        <i class="fas fa-check-circle"></i>
       </div>
       <div class="activity-content">
-        <h6 style="color: white; margin: 0 0 5px 0; font-size: 14px;">${activity.task_title}</h6>
-        <small style="color: rgba(255,255,255,0.7);">${activity.user_name} - ${formatDateTime(activity.created_at)}</small>
+        <h6>${activity.task_title}</h6>
+        <small>${activity.user_name} - ${new Date(activity.created_at).toLocaleString()}</small>
       </div>
     </div>
   `).join('');
 }
 
-function loadNeumorphismDashboard() {
-  console.log('🎨 Cargando dashboard Neumorphism...');
-  // Aquí irían las funciones específicas del neumorphism
-  loadDashboardData(); // Por ahora usar las funciones generales
+function updateDashboardUserInfo() {
+  // Actualizar información del usuario
+  const userNameEl = document.getElementById('user-name-glass');
+  const userRoleEl = document.getElementById('user-role-glass');
+  
+  if (window.currentUser) {
+    if (userNameEl) userNameEl.textContent = window.currentUser.name || 'Usuario';
+    if (userRoleEl) userRoleEl.textContent = window.currentUser.role_name || 'Cargando...';
+    console.log('👤 Usuario actualizado:', window.currentUser.name);
+  } else {
+    console.log('⚠️ currentUser no disponible');
+  }
 }
 
-function loadFuturisticDashboard() {
-  console.log('🚀 Cargando dashboard Futurista...');
-  // Aquí irían las funciones específicas del futurista
-  loadDashboardData(); // Por ahora usar las funciones generales
+// Función para refrescar datos
+function refreshDashboardData() {
+  console.log('🔄 Refrescando datos del dashboard...');
+  loadDashboardData();
 }
 
-// Inicializar con dashboard clásico
+// Función para manejar el cambio de período
+function switchChartPeriod(period) {
+  console.log('📊 Cambiando período a:', period);
+  
+  // Actualizar botones activos
+  const buttons = document.querySelectorAll('.control-btn');
+  buttons.forEach(btn => btn.classList.remove('active'));
+  
+  const activeButton = Array.from(buttons).find(btn => btn.textContent === period);
+  if (activeButton) {
+    activeButton.classList.add('active');
+  }
+  
+  // Actualizar título del gráfico
+  const chartTitle = document.querySelector('.chart-header h4');
+  if (chartTitle) {
+    chartTitle.textContent = period === 'Semana' ? 'Progreso Semanal' : 'Progreso Mensual';
+  }
+  
+  // Cargar datos según el período
+  if (period === 'Semana') {
+    loadWeeklyProgress();
+  } else if (period === 'Mes') {
+    loadMonthlyProgress();
+  }
+}
+
+// Función para cargar progreso mensual
+function loadMonthlyProgress() {
+  console.log('📊 Cargando progreso mensual...');
+  
+  // Por ahora usamos los mismos datos semanales
+  // En el futuro se puede crear un endpoint específico para mensual
+  fetch('/agendatce/api/dashboard/weekly', {
+    credentials: 'include'
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        createMonthlyChart(data.data);
+      }
+    })
+    .catch(error => {
+      console.error('Error cargando progreso mensual:', error);
+    });
+}
+
+// Función para crear gráfico mensual
+function createMonthlyChart(data) {
+  const canvas = document.getElementById('weeklyProgressChart');
+  if (!canvas) {
+    console.warn('⚠️ Canvas weeklyProgressChart no encontrado');
+    return;
+  }
+
+  // Destruir gráfico existente si existe
+  if (window.weeklyChart) {
+    window.weeklyChart.destroy();
+  }
+
+  const ctx = canvas.getContext('2d');
+  
+  // Simular datos mensuales (4 semanas)
+  const weeklyData = [8, 12, 6, 15]; // Datos simulados para 4 semanas
+  const weeklyTargets = [10, 10, 10, 10]; // Metas semanales
+  
+  window.weeklyChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
+      datasets: [{
+        label: 'Completadas',
+        data: weeklyData,
+        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+        borderColor: 'rgba(102, 126, 234, 1)',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+      }, {
+        label: 'Meta',
+        data: weeklyTargets,
+        backgroundColor: 'rgba(255, 255, 255, 0.3)',
+        borderColor: 'rgba(255, 255, 255, 0.5)',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+        type: 'line',
+        fill: false,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: 'rgba(255, 255, 255, 0.8)'
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.7)'
+          }
+        },
+        y: {
+          grid: {
+            color: 'rgba(255, 255, 255, 0.1)'
+          },
+          ticks: {
+            color: 'rgba(255, 255, 255, 0.7)'
+          }
+        }
+      }
+    }
+  });
+  
+  console.log('📊 Gráfico mensual creado');
+}
+
+// Cargar datos cuando se carga la sección
+console.log('🚀 Inicializando dashboard Glassmorphism...');
+loadDashboardData();
+updateDashboardUserInfo();
+
+// Configurar event listeners para los botones de control
 document.addEventListener('DOMContentLoaded', function() {
-  switchDashboard('default');
+  const controlButtons = document.querySelectorAll('.control-btn');
+  controlButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const period = this.textContent;
+      switchChartPeriod(period);
+    });
+  });
 });
+
+// Refrescar datos cada 30 segundos
+setInterval(refreshDashboardData, 30000);
+
+// También refrescar cuando se hace foco en la ventana
+window.addEventListener('focus', refreshDashboardData);
 </script>
-
-<!-- Dashboard Glassmorphism -->
-<div id="dashboard-glassmorphism" class="dashboard-style" style="display: none;">
-  <div class="dashboard-container">
-    <!-- Header con efecto cristal -->
-    <div class="glass-header">
-      <div class="header-content">
-        <div class="user-section">
-          <div class="user-avatar-glass">
-            <div class="avatar-ring"></div>
-            <div class="avatar-inner">
-              <i class="fas fa-user"></i>
-            </div>
-          </div>
-          <div class="user-info">
-            <h2 class="user-name" id="user-name-glass">Usuario</h2>
-            <p class="user-role" id="user-role-glass">Cargando...</p>
-          </div>
-        </div>
-        <div class="header-stats">
-          <div class="stat-item">
-            <span class="stat-number" id="today-tasks-count-glass">0</span>
-            <span class="stat-label">Hoy</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number" id="completed-tasks-count-glass">0</span>
-            <span class="stat-label">Completadas</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Cards con efecto cristal -->
-    <div class="stats-grid">
-      <div class="glass-card primary">
-        <div class="card-icon">
-          <i class="fas fa-tasks"></i>
-        </div>
-        <div class="card-content">
-          <h3 id="today-tasks-count-glass">0</h3>
-          <p>Tareas de Hoy</p>
-          <div class="progress-ring">
-            <svg class="progress-circle" width="60" height="60">
-              <circle cx="30" cy="30" r="25" class="progress-bg"></circle>
-              <circle cx="30" cy="30" r="25" class="progress-fill" id="today-progress-glass"></circle>
-            </svg>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass-card success">
-        <div class="card-icon">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div class="card-content">
-          <h3 id="completed-tasks-count-glass">0</h3>
-          <p>Completadas</p>
-          <div class="success-animation">
-            <div class="checkmark"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="glass-card warning">
-        <div class="card-icon">
-          <i class="fas fa-clock"></i>
-        </div>
-        <div class="card-content">
-          <h3 id="in-progress-count-glass">0</h3>
-          <p>En Progreso</p>
-          <div class="pulse-indicator"></div>
-        </div>
-      </div>
-
-      <div class="glass-card danger">
-        <div class="card-icon">
-          <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="card-content">
-          <h3 id="overdue-tasks-count-glass">0</h3>
-          <p>Atrasadas</p>
-          <div class="alert-pulse"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sección de gráficos con efecto cristal -->
-    <div class="charts-section">
-      <div class="glass-chart-card">
-        <div class="chart-header">
-          <h4>Progreso Semanal</h4>
-          <div class="chart-controls">
-            <button class="control-btn active">7D</button>
-            <button class="control-btn">30D</button>
-          </div>
-        </div>
-        <div class="chart-container">
-          <canvas id="weeklyProgressChartGlass"></canvas>
-        </div>
-      </div>
-
-      <div class="glass-activity-card">
-        <div class="activity-header">
-          <h4>Actividad Reciente</h4>
-          <div class="activity-indicator">
-            <div class="indicator-dot"></div>
-            <span>En vivo</span>
-          </div>
-        </div>
-        <div class="activity-timeline" id="recent-activity-container-glass">
-          <div class="loading-state">
-            <div class="loading-dots">
-              <span></span><span></span><span></span>
-            </div>
-            <p>Cargando actividad...</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Dashboard Neumorphism -->
-<div id="dashboard-neumorphism" class="dashboard-style" style="display: none;">
-  <!-- Aquí iría el contenido del dashboard neumorphism -->
-  <div class="text-center p-5">
-    <h3>Dashboard Neumorphism</h3>
-    <p>Estilo con efectos de relieve y sombras suaves</p>
-    <div class="alert alert-info">
-      <i class="fas fa-info-circle me-2"></i>
-      Este dashboard está en desarrollo. Próximamente disponible.
-    </div>
-  </div>
-</div>
-
-<!-- Dashboard Futurista -->
-<div id="dashboard-futuristic" class="dashboard-style" style="display: none;">
-  <!-- Aquí iría el contenido del dashboard futurista -->
-  <div class="text-center p-5">
-    <h3>Dashboard Futurista</h3>
-    <p>Estilo ciberpunk con efectos de partículas y neón</p>
-    <div class="alert alert-info">
-      <i class="fas fa-info-circle me-2"></i>
-      Este dashboard está en desarrollo. Próximamente disponible.
-    </div>
-  </div>
-</div>
