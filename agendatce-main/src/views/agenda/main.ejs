@@ -2937,7 +2937,13 @@
 
         async function confirmCompleteAllOverdue() {
             try {
-                const overdueTasks = (window.todayTasksData || []).filter(task => task.assignment_type === 'overdue');
+                console.log('🔍 Todas las tareas disponibles para completar:', window.todayTasksData);
+                const overdueTasks = (window.todayTasksData || []).filter(task => {
+                    console.log('🔍 Verificando tarea para completar:', task.title, 'assignment_type:', task.assignment_type);
+                    return task.assignment_type === 'overdue';
+                });
+                console.log('🔍 Tareas atrasadas para completar:', overdueTasks.length, overdueTasks);
+                
                 const comment = document.getElementById('bulkCompletionComment').value;
 
                 if (overdueTasks.length === 0) {
@@ -3191,7 +3197,13 @@
         // Función para confirmar el salto de todas las tareas atrasadas
         async function confirmSkipAllOverdue() {
             try {
-                const overdueTasks = (window.todayTasksData || []).filter(task => task.assignment_type === 'overdue');
+                console.log('🔍 Todas las tareas disponibles:', window.todayTasksData);
+                const overdueTasks = (window.todayTasksData || []).filter(task => {
+                    console.log('🔍 Verificando tarea:', task.title, 'assignment_type:', task.assignment_type);
+                    return task.assignment_type === 'overdue';
+                });
+                console.log('🔍 Tareas atrasadas encontradas:', overdueTasks.length, overdueTasks);
+                
                 const reason = document.getElementById('bulkSkipReason').value;
 
                 if (!reason.trim()) {
