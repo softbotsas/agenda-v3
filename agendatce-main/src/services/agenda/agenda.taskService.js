@@ -34,12 +34,17 @@ const getOverdueTasks = async (userId) => {
     // Verificar si la tarea debe aparecer en días anteriores
     const overdueDays = [];
     
+    // Obtener la fecha de creación de la tarea
+    const taskCreatedDate = new Date(taskDef.createdAt || taskDef.created_at);
+    taskCreatedDate.setHours(0, 0, 0, 0);
+    
     // Verificar últimos 7 días
     for (let i = 1; i <= 7; i++) {
       const checkDate = new Date(today);
       checkDate.setDate(checkDate.getDate() - i);
       
-      if (shouldShowTaskToday(taskDef, checkDate)) {
+      // Solo verificar días que sean posteriores a la creación de la tarea
+      if (checkDate >= taskCreatedDate && shouldShowTaskToday(taskDef, checkDate)) {
         // Verificar si hay logs para este día
         const dayStart = new Date(checkDate);
         dayStart.setHours(0, 0, 0, 0);
@@ -125,8 +130,13 @@ const getOverdueTasks = async (userId) => {
       isCompletedToday = true;
     }
     
-    // Solo agregar a tareas atrasadas si NO está completada HOY y tiene días atrasados
-    if (overdueDays.length > 0 && !isCompletedToday) {
+    // Solo agregar a tareas atrasadas si:
+    // 1. NO está completada HOY
+    // 2. Tiene días atrasados
+    // 3. La tarea no se creó hoy (para evitar marcar tareas nuevas como atrasadas)
+    const isTaskCreatedToday = taskCreatedDate.getTime() === today.getTime();
+    
+    if (overdueDays.length > 0 && !isCompletedToday && !isTaskCreatedToday) {
       overdueTasks.push({
         ...taskDef.toObject(),
         _id: `overdue_${taskDef._id}_${userId}`, // ID especial para tareas atrasadas
