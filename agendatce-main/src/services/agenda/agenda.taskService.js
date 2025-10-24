@@ -246,39 +246,59 @@ const shouldShowTaskToday = (taskDef, targetDate = new Date()) => {
 // Obtener tareas de hoy para un usuario
 const getTodayTasks = async (userId) => {
   try {
-  
+    console.log('🔍 getTodayTasks - userId:', userId);
+    
+    // Obtener información del usuario para verificar su departamento
+    const AgendaUser = require('../../models/agenda.User');
+    const user = await AgendaUser.findById(userId);
+    const userDepartment = user ? user.departamento : null;
+    console.log('🔍 Usuario departamento:', userDepartment);
     
     // Obtener todas las tareas activas (sin populate para evitar problemas)
     const allAvailableTasks = await TaskDefinition.find({
       active: true
     });
     
+    console.log('🔍 Total tareas activas:', allAvailableTasks.length);
  
     // Filtrar tareas por usuario asignado
-   
     const userTasks = allAvailableTasks.filter(taskDef => {
-     
+      console.log('🔍 Verificando tarea:', taskDef.title, 'assignment_type:', taskDef.assignment_type);
       
       // Verificar si el usuario está en la lista de usuarios asignados
       if (taskDef.assigned_users && taskDef.assigned_users.length > 0) {
         const isAssigned = taskDef.assigned_users.some(assignedUserId => {
           const match = assignedUserId.toString() === userId.toString();
-          
           return match;
         });
         
-        if (isAssigned) return true;
+        if (isAssigned) {
+          console.log('✅ Tarea asignada directamente al usuario');
+          return true;
+        }
+      }
+      
+      // Verificar asignación por departamento
+      if (taskDef.assignment_type === 'department' && taskDef.assigned_department && userDepartment) {
+        const isDepartmentMatch = taskDef.assigned_department === userDepartment;
+        console.log('🔍 Verificando departamento:', taskDef.assigned_department, 'vs usuario:', userDepartment, 'match:', isDepartmentMatch);
+        
+        if (isDepartmentMatch) {
+          console.log('✅ Tarea asignada al departamento del usuario');
+          return true;
+        }
       }
       
       // Compatibilidad temporal: verificar specific_user
       if (taskDef.specific_user) {
         const isSpecific = taskDef.specific_user.toString() === userId;
-       
-        if (isSpecific) return true;
+        if (isSpecific) {
+          console.log('✅ Tarea asignada específicamente al usuario');
+          return true;
+        }
       }
       
-      // Si no tiene usuarios asignados, no mostrar la tarea
-     
+      console.log('❌ Tarea no asignada al usuario');
       return false;
     });
     
@@ -1006,6 +1026,12 @@ const getAllUserTasks = async (userId) => {
     console.log('🔍 getAllUserTasks service - Recibiendo userId:', userId);
     console.log('🔍 getAllUserTasks service - Tipo de userId:', typeof userId);
     
+    // Obtener información del usuario para verificar su departamento
+    const AgendaUser = require('../../models/agenda.User');
+    const user = await AgendaUser.findById(userId);
+    const userDepartment = user ? user.departamento : null;
+    console.log('🔍 getAllUserTasks - Usuario departamento:', userDepartment);
+    
     // Obtener todas las tareas asignadas al usuario
     const allAvailableTasks = await TaskDefinition.find({
       active: true
@@ -1016,7 +1042,9 @@ const getAllUserTasks = async (userId) => {
     // Filtrar tareas por usuario asignado
     const userTasks = allAvailableTasks.filter(taskDef => {
       console.log(`🔍 getAllUserTasks - REVISANDO TAREA: "${taskDef.title}"`);
+      console.log(`🔍 getAllUserTasks -   - assignment_type:`, taskDef.assignment_type);
       console.log(`🔍 getAllUserTasks -   - assigned_users:`, taskDef.assigned_users);
+      console.log(`🔍 getAllUserTasks -   - assigned_department:`, taskDef.assigned_department);
       console.log(`🔍 getAllUserTasks -   - Buscando userId: "${userId}"`);
       
       // Verificar si el usuario está en la lista de usuarios asignados
@@ -1030,6 +1058,17 @@ const getAllUserTasks = async (userId) => {
         if (isAssigned) return true;
       }
       
+      // Verificar asignación por departamento
+      if (taskDef.assignment_type === 'department' && taskDef.assigned_department && userDepartment) {
+        const isDepartmentMatch = taskDef.assigned_department === userDepartment;
+        console.log(`🔍 getAllUserTasks -   - Verificando departamento: "${taskDef.assigned_department}" vs usuario: "${userDepartment}" => ${isDepartmentMatch}`);
+        
+        if (isDepartmentMatch) {
+          console.log('✅ getAllUserTasks - Tarea asignada al departamento del usuario');
+          return true;
+        }
+      }
+      
       // Compatibilidad temporal: verificar specific_user
       if (taskDef.specific_user) {
         const isSpecific = taskDef.specific_user.toString() === userId.toString();
@@ -1037,6 +1076,7 @@ const getAllUserTasks = async (userId) => {
         if (isSpecific) return true;
       }
       
+      console.log('❌ getAllUserTasks - Tarea no asignada al usuario');
       return false;
     });
 
