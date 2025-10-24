@@ -2951,7 +2951,7 @@
                 for (const task of overdueTasks) {
                     try {
                         // Crear JSON para cada tarea
-                        const response = await fetch('/agendatce/api/tasks/complete-all-overdue', {
+                        const response = await fetch('/agendatce/agenda/api/tasks/complete-all-overdue', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -3097,7 +3097,7 @@
 
                 console.log('🔍 confirmNotApplicable:', { taskId, reason });
 
-                const response = await fetch('/agendatce/api/tasks/not-applicable', {
+                const response = await fetch('/agendatce/agenda/api/tasks/not-applicable', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3218,7 +3218,7 @@
                             assignmentId = `virtual_${task._id}_${currentUser._id}`;
                         }
 
-                        const response = await fetch('/agendatce/api/tasks/skip-all-overdue', {
+                        const response = await fetch('/agendatce/agenda/api/tasks/skip-all-overdue', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

@@ -376,6 +376,78 @@ const getAllHistory = async (req, res) => {
   }
 };
 
+// Completar todas las tareas atrasadas
+const completeAllOverdue = async (req, res) => {
+  try {
+    const { assignment_id, comment } = req.body;
+    const userId = req.user._id;
+    
+    console.log('🔄 completeAllOverdue - assignment_id:', assignment_id, 'userId:', userId);
+    
+    const result = await TaskService.completeAllOverdue(assignment_id, userId, comment);
+    
+    res.json({
+      success: true,
+      message: 'Tarea atrasada completada exitosamente',
+      data: result
+    });
+  } catch (error) {
+    console.error('Error completing all overdue tasks:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al completar tareas atrasadas'
+    });
+  }
+};
+
+// Saltar todas las tareas atrasadas
+const skipAllOverdue = async (req, res) => {
+  try {
+    const { assignment_id, reason } = req.body;
+    const userId = req.user._id;
+    
+    console.log('⏭️ skipAllOverdue - assignment_id:', assignment_id, 'userId:', userId);
+    
+    const result = await TaskService.skipAllOverdue(assignment_id, userId, reason);
+    
+    res.json({
+      success: true,
+      message: 'Tarea atrasada saltada exitosamente',
+      data: result
+    });
+  } catch (error) {
+    console.error('Error skipping all overdue tasks:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al saltar tareas atrasadas'
+    });
+  }
+};
+
+// Marcar tarea como no aplicable
+const markNotApplicable = async (req, res) => {
+  try {
+    const { assignment_id, reason } = req.body;
+    const userId = req.user._id;
+    
+    console.log('🚫 markNotApplicable - assignment_id:', assignment_id, 'userId:', userId);
+    
+    const result = await TaskService.markNotApplicable(assignment_id, userId, reason);
+    
+    res.json({
+      success: true,
+      message: 'Tarea marcada como no aplicable',
+      data: result
+    });
+  } catch (error) {
+    console.error('Error marking task as not applicable:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al marcar tarea como no aplicable'
+    });
+  }
+};
+
 module.exports = {
   getTodayTasks,
   logTask,
@@ -393,5 +465,8 @@ module.exports = {
   createDepartment,
   updateDepartment,
   deleteDepartment,
-  getAllHistory
+  getAllHistory,
+  completeAllOverdue,
+  skipAllOverdue,
+  markNotApplicable
 };

@@ -1391,6 +1391,132 @@ const createTag = async (tagData) => {
   }
 };
 
+// Completar todas las tareas atrasadas
+const completeAllOverdue = async (assignmentId, userId, comment) => {
+  try {
+    console.log('🔄 completeAllOverdue service - assignmentId:', assignmentId, 'userId:', userId);
+    
+    // Buscar la asignación de tarea
+    const assignment = await TaskAssignment.findById(assignmentId);
+    if (!assignment) {
+      throw new Error('Asignación de tarea no encontrada');
+    }
+    
+    // Crear log de completado
+    const logEntry = new TaskLog({
+      user: userId,
+      task_assignment: assignmentId,
+      action_type: 'completed',
+      value: 1,
+      comment: comment || 'Completado masivamente',
+      log_date: new Date(),
+      is_late: true // Las tareas atrasadas siempre se marcan como tardías
+    });
+    
+    await logEntry.save();
+    
+    // Actualizar la asignación como completada
+    assignment.completed = true;
+    assignment.completed_at = new Date();
+    await assignment.save();
+    
+    console.log('✅ Tarea atrasada completada exitosamente');
+    
+    return {
+      assignment_id: assignmentId,
+      completed: true,
+      completed_at: new Date()
+    };
+  } catch (error) {
+    console.error('Error in completeAllOverdue:', error);
+    throw error;
+  }
+};
+
+// Saltar todas las tareas atrasadas
+const skipAllOverdue = async (assignmentId, userId, reason) => {
+  try {
+    console.log('⏭️ skipAllOverdue service - assignmentId:', assignmentId, 'userId:', userId);
+    
+    // Buscar la asignación de tarea
+    const assignment = await TaskAssignment.findById(assignmentId);
+    if (!assignment) {
+      throw new Error('Asignación de tarea no encontrada');
+    }
+    
+    // Crear log de saltado
+    const logEntry = new TaskLog({
+      user: userId,
+      task_assignment: assignmentId,
+      action_type: 'skipped',
+      value: 0,
+      comment: reason || 'Saltado masivamente',
+      log_date: new Date(),
+      is_late: true
+    });
+    
+    await logEntry.save();
+    
+    // Marcar como saltado
+    assignment.skipped = true;
+    assignment.skipped_at = new Date();
+    await assignment.save();
+    
+    console.log('✅ Tarea atrasada saltada exitosamente');
+    
+    return {
+      assignment_id: assignmentId,
+      skipped: true,
+      skipped_at: new Date()
+    };
+  } catch (error) {
+    console.error('Error in skipAllOverdue:', error);
+    throw error;
+  }
+};
+
+// Marcar tarea como no aplicable
+const markNotApplicable = async (assignmentId, userId, reason) => {
+  try {
+    console.log('🚫 markNotApplicable service - assignmentId:', assignmentId, 'userId:', userId);
+    
+    // Buscar la asignación de tarea
+    const assignment = await TaskAssignment.findById(assignmentId);
+    if (!assignment) {
+      throw new Error('Asignación de tarea no encontrada');
+    }
+    
+    // Crear log de no aplicable
+    const logEntry = new TaskLog({
+      user: userId,
+      task_assignment: assignmentId,
+      action_type: 'not_applicable',
+      value: 0,
+      comment: reason || 'Marcada como no aplicable',
+      log_date: new Date(),
+      is_late: false
+    });
+    
+    await logEntry.save();
+    
+    // Marcar como no aplicable
+    assignment.not_applicable = true;
+    assignment.not_applicable_at = new Date();
+    await assignment.save();
+    
+    console.log('✅ Tarea marcada como no aplicable exitosamente');
+    
+    return {
+      assignment_id: assignmentId,
+      not_applicable: true,
+      not_applicable_at: new Date()
+    };
+  } catch (error) {
+    console.error('Error in markNotApplicable:', error);
+    throw error;
+  }
+};
+
 // Crear nueva tarea
 const createTask = async (taskData) => {
   try {
@@ -1526,5 +1652,8 @@ module.exports = {
   createTask,
   updateTask,
   deleteTask,
-  createTag
+  createTag,
+  completeAllOverdue,
+  skipAllOverdue,
+  markNotApplicable
 };

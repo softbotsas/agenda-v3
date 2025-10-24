@@ -31,6 +31,27 @@ const TaskAssignmentSchema = new Schema({
   notes: {
     type: String,
     trim: true
+  },
+  completed: {
+    type: Boolean,
+    default: false
+  },
+  completed_at: {
+    type: Date
+  },
+  skipped: {
+    type: Boolean,
+    default: false
+  },
+  skipped_at: {
+    type: Date
+  },
+  not_applicable: {
+    type: Boolean,
+    default: false
+  },
+  not_applicable_at: {
+    type: Date
   }
 }, {
   timestamps: true
